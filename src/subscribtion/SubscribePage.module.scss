@@ -1,0 +1,345 @@
+.page {
+  width: 100%;
+  position: relative;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 40vh;
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+.contentContainer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.textContent {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: 50px;
+  color: white;
+}
+
+// Subscribe Section
+.subscribeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mainTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.2;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.subTitle {
+  font-size: 12px;
+  margin: 0 0 12px 0;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0.9;
+  line-height: 1.3;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.subscribeForm {
+  width: 100%;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.emailInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Poppins', sans-serif;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  min-height: 32px;
+  
+  &:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 1px rgba(245, 171, 30, 0.3);
+  }
+  
+  &::placeholder {
+    color: #666;
+    font-size: 11px;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.subscribeButton {
+  padding: 8px 16px;
+  background: #f5ab1e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 80px;
+  min-height: 32px;
+  
+  &:hover:not(:disabled) {
+    background: #e09a1a;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.loadingText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 1px solid transparent;
+  border-top: 1px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.message {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  animation: slideDown 0.2s ease;
+  
+  &.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fecaca;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Success Sections
+.successSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.successIcon, .infoIcon {
+  width: 44px;
+  height: 44px;
+  background: #10b981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  margin: 0;
+}
+
+.infoIcon {
+  background: #3b82f6;
+}
+
+.successTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.successMessage {
+  font-size: 17px;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+.couponCode {
+  color: #f5ab1e;
+  font-weight: 700;
+}
+
+.terms {
+  font-size: 13px;
+  opacity: 0.7;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  font-style: italic;
+}
+.terms1 {
+  font-size: 13px;
+  opacity: 0.7;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 12px;
+  font-style: italic;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .backgroundImage {
+    height: 35vh;
+  }
+  
+  .contentContainer {
+    padding: 0 15px;
+  }
+  
+  .textContent {
+    margin-right: 20px;
+    max-width: 300px;
+  }
+  
+  .mainTitle {
+    font-size: 18px;
+  }
+  
+  .subTitle {
+    font-size: 11px;
+  }
+  
+  .inputGroup {
+    gap: 6px;
+  }
+  
+  .emailInput {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 28px;
+  }
+  
+  .subscribeButton {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 70px;
+    min-height: 28px;
+  }
+  
+  .successTitle {
+    font-size: 14px;
+  }
+  
+  .successMessage {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .backgroundImage {
+    height: 30vh;
+  }
+  
+  .textContent {
+    margin-right: 15px;
+    max-width: 250px;
+  }
+  
+  .mainTitle {
+    font-size: 16px;
+  }
+  
+  .subTitle {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+  
+  .emailInput {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-height: 26px;
+    
+    &::placeholder {
+      font-size: 10px;
+    }
+  }
+  
+  .subscribeButton {
+    padding: 5px 10px;
+    font-size: 10px;
+    min-width: 60px;
+    min-height: 26px;
+  }
+  
+  .successTitle {
+    font-size: 13px;
+  }
+  
+  .successMessage {
+    font-size: 9px;
+  }
+  
+  .terms {
+    font-size: 8px;
+  }
+  
+  .successIcon, .infoIcon {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+.bannerSection {
+  background: transparent; 
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.bannerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  width: 100%;
+}
+
+.textContent {
+  max-width: 500px;
+  text-align: left;
+  
+  .subtitle {
+    font-size: 1.1rem;
+    color: white;
+   margin: 0;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .title {
+    font-size: 2rem;
+    color: white;
+  margin: 15px 0px 20px 0px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.1;
+  }
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  
+  .timeUnit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .timeNumber {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      background:#f5ab1e;
+      padding: 10px 15px;
+      border-radius: 8px;
+      min-width: 70px;
+      text-align: center;
+      border: none;
+    }
+    
+    .timeLabel {
+      font-size: 0.8rem;
+      color: white;
+      margin-top: 5px;
+      font-family: 'Poppins', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  }
+  
+  .timeSeparator {
+    font-size: 2rem;
+    color: #f5ab1e;
+    font-weight: 700;
+    margin-top: -15px;
+  }
+}
+
+.shopNowButton {
+  background: #f5ab1e;
+  color: white;
+  border: 1px solid #f5ab1e;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  
+  &:hover {
+    background: transparent;
+   border: 1px solid #f5ab1e;
+   color: #f5ab1e;
+  }
+}
+.loading {
+  text-align: center;
+  color: #666;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+}
+.noOffer{
+  text-align: center;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+// Responsive
+@media (max-width: 768px) {
+  .bannerSection {
+    min-height: 400px;
+    text-align: center;
+  }
+  
+  .bannerContent {
+    padding: 0 20px;
+  }
+  
+  .textContent {
+    max-width: 100%;
+    text-align: center;
+    
+    .subtitle {
+      font-size: 1rem;
+    }
+    
+    .title {
+      font-size: 2.2rem;
+    }
+  }
+  
+  .timer {
+    justify-content: center;
+    
+    .timeUnit {
+      .timeNumber {
+        font-size: 2rem;
+        min-width: 60px;
+        padding: 8px 12px;
+      }
+      
+      .timeLabel {
+        font-size: 0.7rem;
+      }
+    }
+    
+    .timeSeparator {
+      font-size: 1.5rem;
+      margin-top: -10px;
+    }
+  }
+  
+  .shopNowButton {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .timer {
+    gap: 10px;
+    
+    .timeUnit {
+      .timeNumber {
+        font-size: 1.5rem;
+        min-width: 50px;
+        padding: 6px 10px;
+      }
+    }
+    
+    .timeSeparator {
+      font-size: 1.2rem;
+      margin-top: -8px;
+    }
+  }
+}

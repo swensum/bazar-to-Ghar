@@ -1,0 +1,663 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroSlider {
+  position: relative;
+  width: 100%;
+  height: 580px;
+  overflow: hidden;
+
+  // Override slick slider styles
+  :global {
+    .slick-slider {
+      height: 100%;
+    }
+    
+    .slick-list, .slick-track {
+      height: 100%;
+    }
+    
+    .slick-slide > div {
+      height: 100%;
+    }
+
+    
+    .slick-dots {
+      display: none !important;
+    }
+  }
+}
+
+.slider {
+  height: 100%;
+}
+
+.slideContainer {
+  height: 100%;
+  outline: none;
+}
+
+.slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.overlay {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  max-width: 50%;
+  text-align: left;
+  padding: 20px;
+
+  .saleTag {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333333;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .title {
+    width: 500px;
+    margin: 0 0 20px 0;
+    font-size: 48px;
+    line-height: 1.3;
+    font-weight: 600;
+    color: #333333;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .shopNowBtn {
+    background: #f5ab1e;
+    color: white;
+    border: 2px solid transparent;
+    margin-top: 10px;
+    padding: 11px 32px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+
+    &:hover {
+      background: transparent;
+      border: 2px solid #f5ab1e;
+      color: #f5ab1e;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+.overlayLeft {
+  left: 148px;
+  right: auto;
+  text-align: left;
+}
+
+.overlayRight {
+  left: auto;
+  right: 148px;
+  text-align: right;
+  
+  .title {
+    margin-left: auto;
+  }
+  
+  .shopNowBtn {
+    margin-left: auto;
+    display: block;
+  }
+}
+
+.logoContainer {
+  text-align: center !important; 
+  
+  width: 100%; 
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+}
+
+.logo {
+  max-width: 130px; 
+  height: auto;
+  display: block;
+   margin: 0 auto;
+}
+.overlayCenter {
+top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+    .logoContainer {
+      
+    margin-bottom: 8px;
+  }
+  .title {
+    margin: 0 auto 20px auto;
+  }
+  
+  .shopNowBtn {
+    margin: 10px auto 0 auto;
+    display: block;
+  }
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #f5ab1e;
+  border: 2px solid transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 10;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      background: #f5ab1e;
+      border: 2px solid transparent;
+      color: white;
+      
+      svg {
+        stroke: white;
+        transform: none;
+      }
+    }
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &:hover:not(:disabled) {
+    background: transparent;
+    border: 2px solid #f5ab1e;
+    color: #f5ab1e;
+    transform: translateY(-50%) scale(1.05);
+
+    svg {
+      stroke: #f5ab1e;
+      transform: scale(1.1);
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+.arrowLeft {
+  left: 20px;
+}
+
+.arrowRight {
+  right: 20px;
+}
+
+// Page Indicators - EXACTLY THE SAME AS YOUR ORIGINAL DESIGN
+.indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  padding: 8px;
+}
+
+.indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #f5ab1e;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: inline-block;
+  
+  &:hover {
+    background: #333333;
+    transform: scale(1.1);
+  }
+
+  &.active {
+    background: #333333;
+    transform: scale(1.2);
+  }
+}
+
+
+.categoriesSection {
+  padding: 80px 20px;
+  background-color: #fff;
+}
+
+.categoriesContainer {
+  display: flex;
+  gap: 50px;
+  max-width: 1400px;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.categoryCard {
+  flex: 1;
+  max-width: 620px;
+  
+  overflow: hidden;
+ 
+  
+
+}
+
+.categoryImage {
+  position: relative;
+  height: 380px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden; 
+ 
+}.categoryImage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.5s ease;
+  z-index: 1;
+}
+
+.categoryCard:nth-child(1) .categoryImage::before {
+  background-image: url('../assets/banner1.jpg'); 
+}
+
+.categoryCard:nth-child(2) .categoryImage::before {
+  background-image: url('../assets/banner2.jpg');
+}
+
+.categoryCard:hover .categoryImage::before {
+  transform: scale(1.05);
+}
+
+.categoryOverlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  color: white;
+  padding: 40px 30px 30px;
+  width: 100%;
+  text-align: left;
+   position: relative;
+  z-index: 2; 
+}
+
+.categoryTitle {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  font-family: 'Poppins', sans-serif;
+  color: white;
+}
+
+.categoryDescription {
+  font-size: 16px;
+  margin: 0 0 20px 0;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.categoryShopBtn {
+  background: #f5ab1e;
+  color: white;
+  border: 2px solid transparent;
+  padding: 12px 32px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    background: transparent;
+    border: 2px solid #f5ab1e;
+    color: #f5ab1e;
+  }
+}
+.discountCircle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 90px;  
+  
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s infinite;
+}
+
+.discountCircleGreen {
+  background: linear-gradient(135deg, #678368, #45a049);
+}
+
+.discountCircleOrange {
+  background: linear-gradient(135deg, #524e47, #f57c00);
+}
+
+
+
+.discountContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+   transform: rotate(10deg);
+}
+
+
+
+.discountPercent {
+  color: white;
+  font-size: 23px;
+  font-weight: 600;
+
+  line-height: 1.1;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .discountCircle {
+    width: 80px;
+    height: 80px;
+    top: 15px;
+    right: 15px;
+  }
+  
+  .discountText {
+    font-size: 11px;
+  }
+  
+  .discountLabel {
+    font-size: 9px;
+  }
+  
+  .discountPercent {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discountCircle {
+    width: 70px;
+    height: 70px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .discountText {
+    font-size: 10px;
+  }
+  
+  .discountLabel {
+    font-size: 8px;
+  }
+  
+  .discountPercent {
+    font-size: 11px;
+  }
+}
+@media (max-width: 1024px) {
+  .categoriesContainer {
+    gap: 20px;
+  }
+  
+  .categoryImage {
+    height: 350px;
+  }
+  
+  .categoryTitle {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .categoriesSection {
+    padding: 40px 15px;
+  }
+  
+  .categoriesContainer {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .categoryCard {
+    max-width: 100%;
+  }
+  
+  .categoryImage {
+    height: 300px;
+  }
+  
+  .categoryOverlay {
+    padding: 30px 20px 20px;
+  }
+  
+  .categoryTitle {
+    font-size: 24px;
+  }
+  
+  .categoryDescription {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .categoriesSection {
+    padding: 30px 10px;
+  }
+  
+  .categoryImage {
+    height: 250px;
+  }
+  
+  .categoryOverlay {
+    padding: 25px 15px 15px;
+  }
+  
+  .categoryTitle {
+    font-size: 20px;
+  }
+  
+  .categoryShopBtn {
+    padding: 10px 24px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 1200px) {
+  .overlay {
+    max-width: 70%;
+    
+    .saleTag {
+      font-size: 16px;
+    }
+
+    .title {
+      font-size: 32px;
+    }
+
+    .shopNowBtn {
+      padding: 12px 28px;
+      font-size: 14px;
+    }
+  }
+
+  .overlayLeft {
+    left: 24px;
+  }
+
+  .overlayRight {
+    right: 24px;
+  }
+
+  .arrow {
+    width: 45px;
+    height: 45px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .heroSlider {
+    height: 450px;
+  }
+
+  .overlay {
+    max-width: 85%;
+    
+    .saleTag {
+      font-size: 14px;
+    }
+
+    .title {
+      font-size: 28px;
+      margin-bottom: 16px;
+      width: 280px;
+    }
+
+    .shopNowBtn {
+      padding: 10px 24px;
+      font-size: 13px;
+    }
+  }
+
+  .overlayLeft {
+    left: 16px;
+  }
+
+  .overlayRight {
+    right: 16px;
+  }
+
+  .overlayCenter {
+    left: 50%;
+  }
+
+  .arrow {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .arrowLeft {
+    left: 10px;
+  }
+
+  .arrowRight {
+    right: 10px;
+  }
+
+  .indicators {
+    bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSlider {
+    height: 400px;
+  }
+
+  .overlay {
+    .title {
+      font-size: 24px;
+      width: 250px;
+    }
+  }
+
+  .overlayLeft {
+    left: 12px;
+  }
+
+  .overlayRight {
+    right: 12px;
+  }
+
+  .arrow {
+    width: 35px;
+    height: 35px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .indicators {
+    bottom: 15px;
+  }
+}

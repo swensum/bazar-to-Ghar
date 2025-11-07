@@ -1,0 +1,478 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.page {
+  min-height: 60vh;
+ background-color: white;
+  padding: 60px 20px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 18px;
+  color: #666;
+  font-family: 'Poppins', sans-serif;
+}
+
+.headerSection {
+  text-align: center;
+  padding-top: 20px;
+  margin-bottom: 50px;
+ 
+  .mainHeading {
+    font-size: 34px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.5px;
+  }
+  
+  .subHeading {
+    font-size: 16px;
+    color: #666;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+  }
+}
+
+.productsSection {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.productsContainer {
+  max-width: 1300px;
+  padding: 0 20px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.productsViewport {
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.productsTrack {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.productCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+ 
+  transition: all 0.3s ease;
+  
+  &:hover {
+   
+  
+    
+    .productOverlay {
+      opacity: 1;
+    }
+    
+    .productImage {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.productImageContainer {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+  background: #f8f8f8;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.outOfStock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
+
+.productOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+ 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content:end;
+  margin-bottom: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  gap: 15px;
+}
+
+
+.actionIcons {
+  display: flex;
+  gap: 15px;
+  
+}
+
+.iconBtn {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #f5ab1e;
+    
+    svg {
+      color: white;
+    }
+  }
+  
+  svg {
+    color: #333;
+    transition: color 0.3s ease;
+  }
+}
+
+.productInfo {
+  
+  
+  .productName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333333;
+    margin: 10px 0 8px 0;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.4;
+    
+    overflow: hidden;
+    display: -webkit-box;
+   
+    -webkit-box-orient: vertical;
+  }
+  
+  
+}
+
+.productReviews {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  .stars {
+    display: flex;
+    gap: 2px;
+  }
+  
+  .reviewCount {
+    font-size: 11px;
+    color: #666;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+/* Arrow Styles */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background:#f5ab1e;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  z-index: 10;
+  transition: all 0.3s ease;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+  
+  &:hover {
+    background: white;
+    box-shadow: 0 1px 15px rgba(0, 0, 0, 0.1);
+    
+    svg {
+      color:#f5ab1e;
+    }
+  }
+  
+  svg {
+    color: white;
+    transition: color 0.3s ease;
+  }
+}
+
+.arrowLeft {
+  left: 0;
+}
+
+.arrowRight {
+  right: 0;
+}
+
+// Discount badge - same position as out of stock
+.discountBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ff4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  z-index: 2;
+}
+
+.priceContainer {
+  margin-bottom: 10px;
+}
+
+.discountPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.discountedPrice {
+  font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.originalPrice {
+  font-size: 14px;
+  color: #4e4d4d;
+  text-decoration: line-through;
+  font-family: 'Poppins', sans-serif;
+}
+
+.normalPrice {
+  font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.outOfStockText {
+  font-size: 14px;
+  color: #ff4444;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 10px;
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .discountedPrice {
+    font-size: 16px;
+  }
+  
+  .originalPrice {
+    font-size: 13px;
+  }
+  
+  .normalPrice {
+    font-size: 16px;
+  }
+  
+  .discountBadge {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+  
+  .outOfStockText {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discountedPrice {
+    font-size: 15px;
+  }
+  
+  .originalPrice {
+    font-size: 12px;
+  }
+  
+  .normalPrice {
+    font-size: 15px;
+  }
+  
+  .discountBadge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  
+  .outOfStockText {
+    font-size: 12px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .arrow {
+    width: 42px;
+    height: 42px;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  .productImageContainer {
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 40px 15px;
+  }
+
+  .headerSection {
+    margin-bottom: 30px;
+
+    .mainHeading {
+      font-size: 28px;
+    }
+    
+    .subHeading {
+      font-size: 14px;
+    }
+  }
+  
+  .arrow {
+    width: 38px;
+    height: 38px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .productImageContainer {
+    height: 160px;
+  }
+  
+  .productInfo {
+    padding: 12px;
+    
+    .productName {
+      font-size: 13px;
+      height: 36px;
+    }
+    
+    .productPrice {
+      font-size: 16px;
+    }
+  }
+  
+  .actionIcons {
+    gap: 12px;
+  }
+  
+  .iconBtn {
+    width: 36px;
+    height: 36px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .arrow {
+    width: 34px;
+    height: 34px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  .productImageContainer {
+    height: 140px;
+  }
+  
+  .productInfo {
+    padding: 10px;
+    
+    .productName {
+      font-size: 12px;
+      height: 32px;
+    }
+    
+    .productPrice {
+      font-size: 15px;
+    }
+  }
+  
+  .actionIcons {
+    gap: 10px;
+  }
+  
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
