@@ -80,6 +80,90 @@ export default function Navbar(): JSX.Element {
     fetchCollectionDiscounts();
   }, []);
 
+  const handleShopItemClick = async (item: { name: string; type: string }) => {
+  if (item.type === 'category') {
+    try {
+      // Fetch the full category data
+      const { data: categoryData, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('name', item.name)
+        .single();
+
+      if (error) throw error;
+
+      navigate('/products', { 
+        state: { 
+          selectedCategory: categoryData,
+          filterType: 'category'
+        } 
+      });
+    } catch (error) {
+      console.error('Error fetching category:', error);
+      // Fallback: navigate with just the name
+      navigate('/products', { 
+        state: { 
+          selectedCategory: { name: item.name },
+          filterType: 'category'
+        } 
+      });
+    }
+  } else if (item.type === 'product') {
+    try {
+      // Fetch the actual product data by name
+      const { data: productData, error } = await supabase
+        .from('products')
+        .select('*')
+        .ilike('name', `%${item.name}%`) // Use ilike for case-insensitive search
+        .single();
+
+      if (error) throw error;
+
+      // Navigate to the actual product detail page
+      navigate(`/product/${productData.id}`, { 
+        state: { 
+          product: productData
+        } 
+      });
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      // Fallback: navigate to products page with search term
+      navigate('/products', { 
+        state: { 
+          searchTerm: item.name,
+          filterType: 'product'
+        } 
+      });
+    }
+  }
+};
+  const handleCollectionClick = async (collection: any) => {
+    try {
+      // Fetch the full category data for the collection
+      const { data: categoryData, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('name', collection.category)
+        .single();
+
+      if (error) throw error;
+
+      navigate('/products', { 
+        state: { 
+          selectedCategory: categoryData
+        } 
+      });
+    } catch (error) {
+      console.error('Error fetching category:', error);
+      // Fallback
+      navigate('/products', { 
+        state: { 
+          selectedCategory: { name: collection.category }
+        } 
+      });
+    }
+  };
+
   const menuItems = [
     { title: "Home", options: ["New Arrivals"]},
     {
@@ -87,19 +171,39 @@ export default function Navbar(): JSX.Element {
       categories: [
         {
           heading: "Fresh Food",
-          items: ["Fruits", "Dairy", "Bakery", "Drinks"],
+          items: [
+            { name: "Fruits", type: "category" },
+            { name: "Dairy", type: "category" },
+            { name: "Bakery", type: "category" },
+            { name: "Drinks", type: "category" }
+          ],
         },
         {
           heading: "Fresh Vegis",
-          items: ["Tomato", "Spinach", "Cucumber", "Broccoli"],
+          items: [
+            { name: "Tomato", type: "product" },
+            { name: "Spinach", type: "product" },
+            { name: "Cucumber", type: "product" },
+            { name: "Broccoli", type: "product" }
+          ],
         },
         {
           heading: "Non Vegis",
-          items: ["Chicken", "Fish", "Mutton", "Eggs"],
+          items: [
+            { name: "Chicken", type: "product" },
+            { name: "Fish", type: "product" },
+            { name: "Mutton", type: "product" },
+            { name: "Eggs", type: "product" }
+          ],
         },
         {
           heading: "Frozen Items",
-          items: ["Frozen Pizza", "Ice Cream", "French Fries", "Peas"],
+          items: [
+            { name: "Frozen Pizza", type: "product" },
+            { name: "Ice Cream", type: "product" },
+            { name: "French Fries", type: "product" },
+            { name: "Peas", type: "product" }
+          ],
         },
       ],
     },
@@ -146,27 +250,20 @@ export default function Navbar(): JSX.Element {
     { title: "Pages", options: ["About Us", "Contact Us", "FAQ"] },
   ];
 
-const handleNewArrivalsClick = () => {
-  if (location.pathname === '/') {
-    const productSection = document.getElementById('product-showcase');
-    if (productSection) {
-      productSection.scrollIntoView({ behavior: 'smooth' });
+  const handleNewArrivalsClick = () => {
+    if (location.pathname === '/') {
+      const productSection = document.getElementById('product-showcase');
+      if (productSection) {
+        productSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate('/', { 
+        state: { 
+          scrollToProducts: true,
+          filterType: 'New Product'
+        } 
+      });
     }
-  } else {
-    navigate('/', { 
-      state: { 
-        scrollToProducts: true,
-        filterType: 'New Product'
-      } 
-    });
-  }
-};
-  const handleCollectionClick = (collection: any) => {
-    navigate('/products', { 
-      state: { 
-        selectedCategory: collection.category 
-      } 
-    });
   };
 
   // Modern smooth logo click handler
@@ -242,86 +339,91 @@ const handleNewArrivalsClick = () => {
         <div className={styles.horizontalBar}></div>
 
         <nav className={styles.navMenu}>
-  <div className={styles.navLinks}>
-    {menuItems.map((item, index) => (
-      <div key={index} className={styles.navItem}>
-        <span>{item.title}</span>
-        <FontAwesomeIcon icon={faChevronDown} className={styles.navArrow} />
+          <div className={styles.navLinks}>
+            {menuItems.map((item, index) => (
+              <div key={index} className={styles.navItem}>
+                <span>{item.title}</span>
+                <FontAwesomeIcon icon={faChevronDown} className={styles.navArrow} />
 
-        <div className={`${styles.dropdown} ${item.categories ? styles.shopDropdown : item.type === 'image-grid' ? styles.collectionDropdown : styles.regularDropdown}`}>
-          {item.categories ? (
-            <div className={styles.shopContent}>
-              {item.categories.map((cat, i) => (
-                <div key={i} className={styles.shopCategory}>
-                  <h4>{cat.heading}</h4>
-                  <div className={styles.shopItems}>
-                    {cat.items.map((itm, j) => (
-                      <a key={j} href="#" className={styles.dropdownItem}>
-                        {itm}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : item.type === 'image-grid' ? (
-            <div className={styles.collectionContent}>
-              {item.collections?.map((collection, i) => (
-                <div 
-                  key={i} 
-                  className={styles.collectionItem}
-                  onClick={() => handleCollectionClick(collection)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className={styles.collectionImageWrapper}>
-                    <img 
-                      src={collection.image} 
-                      alt={collection.name} 
-                      className={styles.collectionImage}
-                    />
-                    <div className={styles.collectionOverlay}>
-                      <div className={styles.overlayContent}>
-                        <p className={styles.overlayLine1}>{collection.overlayText?.line1}</p>
-                        <h3 className={styles.overlayLine2}>{collection.overlayText?.line2}</h3>
-                        <p className={styles.overlayLine3}>{collection.overlayText?.line3}</p>
-                      </div>
+                <div className={`${styles.dropdown} ${item.categories ? styles.shopDropdown : item.type === 'image-grid' ? styles.collectionDropdown : styles.regularDropdown}`}>
+                  {item.categories ? (
+                    <div className={styles.shopContent}>
+                      {item.categories.map((cat, i) => (
+                        <div key={i} className={styles.shopCategory}>
+                          <h4>{cat.heading}</h4>
+                          <div className={styles.shopItems}>
+                            {cat.items.map((itm, j) => (
+                              <div 
+                                key={j} 
+                                className={styles.dropdownItem}
+                                onClick={() => handleShopItemClick(itm)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                {itm.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : item.type === 'image-grid' ? (
+                    <div className={styles.collectionContent}>
+                      {item.collections?.map((collection, i) => (
+                        <div 
+                          key={i} 
+                          className={styles.collectionItem}
+                          onClick={() => handleCollectionClick(collection)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className={styles.collectionImageWrapper}>
+                            <img 
+                              src={collection.image} 
+                              alt={collection.name} 
+                              className={styles.collectionImage}
+                            />
+                            <div className={styles.collectionOverlay}>
+                              <div className={styles.overlayContent}>
+                                <p className={styles.overlayLine1}>{collection.overlayText?.line1}</p>
+                                <h3 className={styles.overlayLine2}>{collection.overlayText?.line2}</h3>
+                                <p className={styles.overlayLine3}>{collection.overlayText?.line3}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.regularContent}>
+                      {item.options?.map((opt, i) => (
+                        <a 
+                          key={i} 
+                          href="#" 
+                          className={styles.dropdownItem}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (opt === "New Arrivals") {
+                              handleNewArrivalsClick();
+                            }
+                          }}
+                        >
+                          {opt}
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.regularContent}>
-              {item.options?.map((opt, i) => (
-                <a 
-                  key={i} 
-                  href="#" 
-                  className={styles.dropdownItem}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (opt === "New Arrivals") {
-                      handleNewArrivalsClick();
-                    }
-                  }}
-                >
-                  {opt}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    ))}
-  </div>
+              </div>
+            ))}
+          </div>
 
-  <div className={styles.hotline}>
-    <FaHeadphonesAlt className={styles.hotlineIcon} />
-    <div className={styles.hotlineTextContainer}>
-      <span className={styles.hotlineText}>Hotline:</span>
-      <span className={styles.hotlineNumber}>+1 234 567 890</span>
-    </div>
-  </div>
-</nav>
+          <div className={styles.hotline}>
+            <FaHeadphonesAlt className={styles.hotlineIcon} />
+            <div className={styles.hotlineTextContainer}>
+              <span className={styles.hotlineText}>Hotline:</span>
+              <span className={styles.hotlineNumber}>+1 234 567 890</span>
+            </div>
+          </div>
+        </nav>
       </div>
     </header>
   );

@@ -4,10 +4,50 @@ import { IoLocationOutline } from "react-icons/io5";
 import { FiPhone } from "react-icons/fi";
 import { FaFacebookF, FaInstagram, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { SiGmail } from "react-icons/si";
-
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../store/supabase";
 import logo from "../assets/logo.png";
 
 export default function Footer(): JSX.Element {
+    const navigate = useNavigate();
+
+    const handleCategoryClick = async (categoryName: string) => {
+        try {
+            // Fetch the full category data
+            const { data: categoryData, error } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('name', categoryName)
+                .single();
+
+            if (error) throw error;
+
+            navigate('/products', { 
+                state: { 
+                    selectedCategory: categoryData,
+                    filterType: 'category'
+                } 
+            });
+        } catch (error) {
+            console.error('Error fetching category:', error);
+            
+            navigate('/products', { 
+                state: { 
+                    selectedCategory: { name: categoryName },
+                    filterType: 'category'
+                } 
+            });
+        }
+    };
+
+    const handleNavigation = (filterType: string) => {
+        navigate('/products', { 
+            state: { 
+                filterType: filterType
+            } 
+        });
+    };
+
     return (
         <footer className={styles.footer}>
             <div className={styles.container}>
@@ -68,13 +108,69 @@ export default function Footer(): JSX.Element {
                         <div className={styles.linkSection}>
                             <h4 className={styles.sectionTitle}>Shop</h4>
                             <ul className={styles.linkList}>
-                                <li><a href="/products" className={styles.link}>All Products</a></li>
-                                <li><a href="/new-arrivals" className={styles.link}>New Products</a></li>
-                                <li><a href="/best-sellers" className={styles.link}>Best Sellers</a></li>
-                                <li><a href="/sale" className={styles.link}>Fruits</a></li>
-                                <li><a href="/bundles" className={styles.link}>Vegitables</a></li>
+                                <li>
+                                    <a 
+                                        href="/products" 
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/products');
+                                        }}
+                                    >
+                                        All Products
+                                    </a>
+                                </li>
+                                <li>
+                                    <a 
+                                        href="/new-arrivals" 
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleNavigation('New Product');
+                                        }}
+                                    >
+                                        New Products
+                                    </a>
+                                </li>
+                                <li>
+                                    <a 
+                                        href="/best-sellers" 
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleNavigation('Best Seller');
+                                        }}
+                                    >
+                                        Best Sellers
+                                    </a>
+                                </li>
+                                <li>
+                                    <a 
+                                        href="/fruits" 
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleCategoryClick('Fruits');
+                                        }}
+                                    >
+                                        Fruits
+                                    </a>
+                                </li>
+                                <li>
+                                    <a 
+                                        href="/vegetables" 
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleCategoryClick('Vegitables'); // Fixed typo
+                                        }}
+                                    >
+                                        Vegetables
+                                    </a>
+                                </li>
                             </ul>
                         </div>
+
 
                         {/* Information Section */}
                         <div className={styles.linkSection}>

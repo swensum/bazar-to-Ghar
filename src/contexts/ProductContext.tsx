@@ -12,6 +12,7 @@ interface Category {
     product_count: number;
 }
 
+
 interface Product {
     id: string;
     name: string;
@@ -25,6 +26,8 @@ interface Product {
     discount_percentage: number;
     material: string | null;
     product_types?: string[];
+    reviewCount?: number; 
+    averageRating?: number; 
 }
 
 interface ProductContextType {
@@ -244,28 +247,89 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
             let productsList: Product[] = [];
             
             if (category.id === 'all-products') {
-                // Fetch all products for "All Products" category
+                // Fetch all products for "All Products" category with review data
                 const { data: allProducts, error } = await supabase
                     .from('products')
-                    .select('*');
+                    .select(`
+                        *,
+                        customer_reviews (
+                            rating,
+                            id
+                        )
+                    `);
                 
                 if (error) {
                     console.error('Supabase error:', error);
                     throw error;
                 }
-                productsList = allProducts || [];
+                
+                // Process products with review data - convert from ProductWithReviews to Product
+                productsList = (allProducts || []).map((product: any) => {
+                    const reviewCount = product.customer_reviews?.length || 0;
+                    const averageRating = product.customer_reviews?.length 
+                        ? product.customer_reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.customer_reviews.length
+                        : 0;
+                    
+                    // Return a proper Product object without customer_reviews
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        image_url: product.image_url,
+                        category_id: product.category_id,
+                        categories: product.categories,
+                        in_stock: product.in_stock,
+                        created_at: product.created_at,
+                        discount_percentage: product.discount_percentage,
+                        material: product.material,
+                        product_types: product.product_types,
+                        reviewCount: reviewCount,
+                        averageRating: averageRating
+                    };
+                });
             } else {
-                // Fetch products for specific category
+                // Fetch products for specific category with review data
                 const { data: productsData, error } = await supabase
                     .from('products')
-                    .select('*')
+                    .select(`
+                        *,
+                        customer_reviews (
+                            rating,
+                            id
+                        )
+                    `)
                     .contains('categories', `["${category.name}"]`);
 
                 if (error) {
                     console.error('Supabase error:', error);
                     throw error;
                 }
-                productsList = productsData || [];
+                
+                // Process products with review data
+                productsList = (productsData || []).map((product: any) => {
+                    const reviewCount = product.customer_reviews?.length || 0;
+                    const averageRating = product.customer_reviews?.length 
+                        ? product.customer_reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.customer_reviews.length
+                        : 0;
+                    
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        image_url: product.image_url,
+                        category_id: product.category_id,
+                        categories: product.categories,
+                        in_stock: product.in_stock,
+                        created_at: product.created_at,
+                        discount_percentage: product.discount_percentage,
+                        material: product.material,
+                        product_types: product.product_types,
+                        reviewCount: reviewCount,
+                        averageRating: averageRating
+                    };
+                });
             }
             
             setProducts(productsList);
@@ -297,11 +361,17 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 // Fallback: try to fetch all products and filter manually
                 const { data: allProducts, error: allError } = await supabase
                     .from('products')
-                    .select('*');
+                    .select(`
+                        *,
+                        customer_reviews (
+                            rating,
+                            id
+                        )
+                    `);
                 
                 if (allError) throw allError;
                 
-                let filtered: Product[] = [];
+                let filtered: any[] = [];
                 
                 if (category.id === 'all-products') {
                     filtered = allProducts || [];
@@ -312,15 +382,40 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                     }) || [];
                 }
                 
-                setProducts(filtered);
+                // Process products with review data
+                const processedProducts: Product[] = filtered.map((product: any) => {
+                    const reviewCount = product.customer_reviews?.length || 0;
+                    const averageRating = product.customer_reviews?.length 
+                        ? product.customer_reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.customer_reviews.length
+                        : 0;
+                    
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        image_url: product.image_url,
+                        category_id: product.category_id,
+                        categories: product.categories,
+                        in_stock: product.in_stock,
+                        created_at: product.created_at,
+                        discount_percentage: product.discount_percentage,
+                        material: product.material,
+                        product_types: product.product_types,
+                        reviewCount: reviewCount,
+                        averageRating: averageRating
+                    };
+                });
                 
-                const materials = extractMaterialsFromProducts(filtered);
+                setProducts(processedProducts);
+                
+                const materials = extractMaterialsFromProducts(processedProducts);
                 setAvailableMaterials(materials);
                 
-                const productTypes = extractProductTypesFromProducts(filtered);
+                const productTypes = extractProductTypesFromProducts(processedProducts);
                 setAvailableProductTypes(productTypes);
                 
-                const calculatedMaxPrice = calculateMaxPrice(filtered);
+                const calculatedMaxPrice = calculateMaxPrice(processedProducts);
                 setMaxPrice(calculatedMaxPrice);
                 setSliderValues({ min: 0, max: calculatedMaxPrice });
                 setAppliedPriceRange({ min: 0, max: calculatedMaxPrice });
@@ -328,7 +423,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 setSelectedProductTypes([]);
                 setSelectedAvailability([]);
                 
-                const sortedProducts = applySorting(filtered);
+                const sortedProducts = applySorting(processedProducts);
                 setFilteredProducts(sortedProducts);
             } catch (fallbackError) {
                 console.error('Fallback also failed:', fallbackError);

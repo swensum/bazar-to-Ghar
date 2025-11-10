@@ -1,33 +1,70 @@
 import { type JSX, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "../store/supabase";
 import { useProductDetail } from "../contexts/ProductDetailContext";
 import styles from "./ProductItemDetailPage.module.scss";
 import itembanner from "../assets/dealbanner.webp";
+import esewaLogo from "../assets/esewa.png";
+import khaltiLogo from "../assets/khalti.png";
+import visaLogo from "../assets/visa.png";
 
 export default function ProductItemDetailPage(): JSX.Element {
     const { productId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
+    
+    // Add local state for wishlist and active tab
     const [isFavorite, setIsFavorite] = useState(false);
-
-    const toggleFavorite = () => {
-        setIsFavorite(!isFavorite);
-    };
+    const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
+    const [showThankYou, setShowThankYou] = useState(false);
+    
     const {
+        // State
         selectedProduct,
         currentImageIndex,
         selectedPackage,
         quantity,
-        setSelectedProduct,
+        reviews,
+        relatedProducts,
+        randomProducts,
+        isSubmitting,
+        submitSuccess,
+        loadingRandom,
+        reviewTitle,
+        isWritingReview,
+        reviewRating,
+        reviewText,
+        reviewerName,
+        reviewerEmail,
+        
+        // Actions
         setCurrentImageIndex,
         setSelectedPackage,
         setQuantity,
-        resetProductDetail
+        resetProductDetail,
+        setReviewTitle,
+        setIsWritingReview,
+        setReviewRating,
+        setReviewText,
+        setReviewerName,
+        setReviewerEmail,
+        setSubmitSuccess,
+        
+        // Functions
+        fetchProductDetail,
+        fetchReviews,
+        fetchRelatedProducts,
+        fetchRandomProducts,
+        handleSubmitReview,
+        handleRelatedProductClick,
+        getCategoryDetails,
+        renderStars,
+        renderReviewStars
     } = useProductDetail();
 
     useEffect(() => {
         if (productId) {
-            fetchProductDetail(productId);
+            fetchProductDetail(productId).catch(() => {
+                navigate('/products');
+            });
         } else {
             resetProductDetail();
         }
@@ -37,62 +74,59 @@ export default function ProductItemDetailPage(): JSX.Element {
         };
     }, [productId]);
 
-    const fetchProductDetail = async (id: string) => {
-        try {
-            const { data: product, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (product) {
-                // Determine package options based on product type
-                let packageOptions = [];
-
-                // Customize package options based on product categories
-                if (product.categories?.includes('Fruits') || product.categories?.includes('Vegetables')) {
-                    packageOptions = ['1 piece', '250g', '500g', '1kg'];
-                } else if (product.categories?.includes('Beverages')) {
-                    packageOptions = ['250ml', '500ml', '1L', '2L'];
-                } else if (product.categories?.includes('Dairy')) {
-                    packageOptions = ['250ml', '500ml', '1L', '2L', '250g', '500g'];
-                } else {
-                    packageOptions = ['250g', '500g', '1kg']; // Default for other products
-                }
-
-                const productWithDetails = {
-                    ...product,
-                    images: product.images || [product.image_url],
-                    packageOptions: packageOptions,
-                    specifications: {
-                        'Storage': 'Keep refrigerated',
-                        'Shelf Life': '7-10 days',
-                        'Origin': 'Local farm',
-                        'Organic': product.material?.includes('Organic') ? 'Yes' : 'No',
-                        'Allergens': 'None',
-                        'Dietary Info': 'Vegetarian'
-                    }
-                };
-                setSelectedProduct(productWithDetails);
-            }
-        } catch (error) {
-            console.error('Error fetching product details:', error);
-            navigate('/products');
+    useEffect(() => {
+        if (selectedProduct) {
+            fetchRelatedProducts();
+            fetchRandomProducts();
+            fetchReviews();
+            
+            // Check if product is in wishlist (you can implement this with localStorage or context)
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            setIsFavorite(favorites.includes(selectedProduct.id));
         }
+    }, [selectedProduct]);
+
+    // Show thank you message when submitSuccess becomes true
+    useEffect(() => {
+        if (submitSuccess) {
+            setShowThankYou(true);
+            const timer = setTimeout(() => {
+                setShowThankYou(false);
+                setSubmitSuccess(false);
+            }, 3000); // Show for 3 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [submitSuccess, setSubmitSuccess]);
+
+    const toggleFavorite = () => {
+        if (!selectedProduct) return;
+        
+        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        let newFavorites;
+        
+        if (isFavorite) {
+            // Remove from favorites
+            newFavorites = favorites.filter((id: string) => id !== selectedProduct.id);
+        } else {
+            // Add to favorites
+            newFavorites = [...favorites, selectedProduct.id];
+        }
+        
+        localStorage.setItem('favorites', JSON.stringify(newFavorites));
+        setIsFavorite(!isFavorite);
     };
 
     const handleAddToCart = () => {
+        if (!selectedProduct) return;
         console.log('Added to cart:', {
             product: selectedProduct,
             package: selectedPackage,
             quantity: quantity
         });
-        // You can implement your cart logic here
     };
 
     const handleBuyNow = () => {
+        if (!selectedProduct) return;
         console.log('Buy now:', {
             product: selectedProduct,
             package: selectedPackage,
@@ -100,70 +134,11 @@ export default function ProductItemDetailPage(): JSX.Element {
         });
     };
 
-    const renderStars = (rating: number = 4.5) => {
-        const stars = [];
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 !== 0;
-
-        const size = 16;
-        const strokeWidth = 2.5;
-
-        for (let i = 0; i < fullStars; i++) {
-            stars.push(
-                <svg
-                    key={`full-${i}`}
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="#F5BE05"
-                    stroke="#F5BE05"
-                    strokeWidth={strokeWidth}
-                >
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-            );
-        }
-
-        if (hasHalfStar) {
-            stars.push(
-                <svg
-                    key="half"
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="url(#half)"
-                    stroke="#F5BE05"
-                    strokeWidth={strokeWidth}
-                >
-                    <defs>
-                        <linearGradient id="half">
-                            <stop offset="50%" stopColor="#F5BE05" />
-                            <stop offset="50%" stopColor="transparent" />
-                        </linearGradient>
-                    </defs>
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-            );
-        }
-
-        const emptyStars = 5 - stars.length;
-        for (let i = 0; i < emptyStars; i++) {
-            stars.push(
-                <svg
-                    key={`empty-${i}`}
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#ddd"
-                    strokeWidth={strokeWidth}
-                >
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-            );
-        }
-
-        return stars;
+    // Calculate average rating from reviews
+    const calculateAverageRating = () => {
+        if (reviews.length === 0) return 0;
+        const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+        return total / reviews.length;
     };
 
     if (!selectedProduct) {
@@ -178,8 +153,19 @@ export default function ProductItemDetailPage(): JSX.Element {
         ? selectedProduct.price * (1 - selectedProduct.discount_percentage / 100)
         : selectedProduct.price;
 
+    const averageRating = calculateAverageRating();
+
     return (
         <div className={styles.page}>
+            {/* Pop-down Notification */}
+            {showThankYou && (
+                <div className={styles.popdownNotification}>
+                    <div className={styles.popdownContent}>
+                        <span className={styles.popdownText}>Thank you for your review!</span>
+                    </div>
+                </div>
+            )}
+
             <div className={styles.banneritemContainer}>
                 <img src={itembanner} alt="Banner" className={styles.banneritemImage} />
             </div>
@@ -203,7 +189,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                         {/* Thumbnail Images */}
                         {selectedProduct.images && selectedProduct.images.length > 1 && (
                             <div className={styles.thumbnailContainer}>
-                                {selectedProduct.images.map((image, index) => (
+                                {selectedProduct.images.map((image: string, index: number) => (
                                     <button
                                         key={index}
                                         className={`${styles.thumbnail} ${currentImageIndex === index ? styles.active : ''}`}
@@ -214,17 +200,45 @@ export default function ProductItemDetailPage(): JSX.Element {
                                 ))}
                             </div>
                         )}
+
+                        {/* Related Products Horizontal Scroll */}
+                        {relatedProducts.length > 0 && (
+                            <div className={styles.relatedProductsSection}>
+                                <div className={styles.relatedProductsScroll}>
+                                    {relatedProducts.map((product) => (
+                                        <button
+                                            key={product.id}
+                                            className={styles.relatedProductThumb}
+                                            onClick={() => handleRelatedProductClick(product)}
+                                        >
+                                            <img
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                className={styles.relatedThumbImage}
+                                            />
+                                            {product.discount_percentage > 0 && (
+                                                <div className={styles.relatedThumbDiscount}>
+                                                    -{product.discount_percentage}%
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Middle Section - Product Info */}
                     <div className={styles.infoSection}>
                         <h1 className={styles.productName}>{selectedProduct.name}</h1>
                         <div className={styles.horizontalBar}></div>
 
-                        {/* Reviews */}
+                        {/* Reviews - Use actual average rating */}
                         <div className={styles.reviews}>
                             <div className={styles.stars}>
-                                {renderStars()}
+                                {renderStars(averageRating)}
                             </div>
-                            <span className={styles.reviewCount}>(128 reviews)</span>
+                            <span className={styles.reviewCount}>({reviews.length} reviews)</span>
                         </div>
 
                         {/* Availability */}
@@ -263,7 +277,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                     )}
                                 </div>
                                 <div className={styles.packageOptions}>
-                                    {selectedProduct.packageOptions.map((pkg) => (
+                                    {selectedProduct.packageOptions.map((pkg: string) => (
                                         <button
                                             key={pkg}
                                             className={`${styles.packageOption} ${selectedPackage === pkg ? styles.selected : ''}`}
@@ -314,6 +328,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                 Buy Now
                             </button>
                         </div>
+
                         <div className={styles.wishlistSection}>
                             <button
                                 className={`${styles.wishlistBtn} ${isFavorite ? styles.favorite : ''}`}
@@ -326,13 +341,334 @@ export default function ProductItemDetailPage(): JSX.Element {
                                     viewBox="0 0 24 24"
                                     stroke="black"
                                     strokeWidth="1.5"
+                                    fill={isFavorite ? "currentColor" : "none"}
                                 >
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                 </svg>
-                                <span className={styles.wishlistText}>WishList</span>
+                                <span className={styles.wishlistText}>
+                                    Wishlist
+                                </span>
                             </button>
                         </div>
-                      <div className={styles.horizontalBar}></div>
+
+                        <div className={styles.horizontalBar}></div>
+                        <div className={styles.paymentMethods}>
+                            <span className={styles.paymentText}>We accept:</span>
+                            <div className={styles.paymentIcons}>
+                                <img src={esewaLogo} alt="eSewa" className={styles.paymentLogo} />
+                                <img src={khaltiLogo} alt="Khalti" className={styles.paymentLogo} />
+                                <img src={visaLogo} alt="Visa" className={styles.paymentLogo} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Side - Information Cards */}
+                    <div className={styles.infoCardsSection}>
+                        <div className={styles.infoCard}>
+                            <div className={styles.infoCardContent}>
+                                <div className={styles.infoCardIcon}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                </div>
+                                <h3 className={styles.infoCardTitle}>Free Delivery</h3>
+                                <p className={styles.infoCardText}>
+                                    Free delivery on orders above $50. Same day delivery available in selected areas.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className={styles.infoCard}>
+                            <div className={styles.infoCardContent}>
+                                <div className={styles.infoCardIcon}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <h3 className={styles.infoCardTitle}>Secure Payment</h3>
+                                <p className={styles.infoCardText}>
+                                    Your payment information is protected with 256-bit SSL encryption.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className={styles.infoCard}>
+                            <div className={styles.infoCardContent}>
+                                <div className={styles.infoCardIcon}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className={styles.infoCardTitle}>Quality Guarantee</h3>
+                                <p className={styles.infoCardText}>
+                                    100% quality guarantee. Return within 7 days if not satisfied with the product.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Description and Reviews Tabs Section */}
+                <div className={styles.tabsSection}>
+                    <div className={styles.tabsContainer}>
+                        <button 
+                            className={`${styles.tabButton} ${activeTab === 'description' ? styles.active : ''}`}
+                            onClick={() => setActiveTab('description')}
+                        >
+                            DESCRIPTION
+                        </button>
+                        <button 
+                            className={`${styles.tabButton} ${activeTab === 'reviews' ? styles.active : ''}`}
+                            onClick={() => setActiveTab('reviews')}
+                        >
+                            REVIEWS
+                        </button>
+                    </div>
+
+                    <div className={styles.tabContent}>
+                        {/* Description Content - Only show when activeTab is 'description' */}
+                        {activeTab === 'description' && (
+                            <div className={styles.descriptionContent}>
+                                <h3 className={styles.detailsTitle}>{getCategoryDetails().title}</h3>
+                                <div className={styles.detailsList}>
+                                    {getCategoryDetails().points.map((point: string, index: number) => (
+                                        <div key={index} className={styles.detailItem}>
+                                            <span className={styles.detailBullet}>•</span>
+                                            <span>{point}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {getCategoryDetails().specifications && (
+                                    <div className={styles.specifications}>
+                                        <h4 className={styles.specsTitle}>Product Specifications</h4>
+                                        <div className={styles.detailsList}>
+                                            {(Object.entries(getCategoryDetails().specifications ?? {}) as [string, string][]).map(([key, value]) => (
+                                                <div key={key} className={styles.detailItem}>
+                                                    <span className={styles.detailBullet}>•</span>
+                                                    <span><strong>{key}:</strong> {value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {loadingRandom ? (
+                                    <div className={styles.loading}>Loading recommended products...</div>
+                                ) : randomProducts.length > 0 ? (
+                                    <div className={styles.bottomRelatedProducts}>
+                                        <h3 className={styles.relatedProductsTitle}>You May Also Like</h3>
+                                        <div className={styles.relatedProductsGrid}>
+                                            {randomProducts.map((product) => {
+                                                const discountedPrice = product.discount_percentage > 0
+                                                    ? product.price * (1 - product.discount_percentage / 100)
+                                                    : product.price;
+
+                                                return (
+                                                    <div
+                                                        key={product.id}
+                                                        className={styles.relatedProductCard}
+                                                        onClick={() => handleRelatedProductClick(product)}
+                                                    >
+                                                        <div className={styles.relatedProductImage}>
+                                                            <img
+                                                                src={product.image_url}
+                                                                alt={product.name}
+                                                                className={styles.relatedImage}
+                                                            />
+                                                            {!product.in_stock ? (
+                                                                <div className={styles.relatedOutOfStock}>Out of Stock</div>
+                                                            ) : product.discount_percentage > 0 ? (
+                                                                <div className={styles.relatedDiscountBadge}>-{product.discount_percentage}%</div>
+                                                            ) : null}
+
+                                                            <div className={styles.relatedProductOverlay}>
+                                                                <div className={styles.relatedActionIcons}>
+                                                                    <button className={styles.relatedIconBtn} aria-label="Add to favorites">
+                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                                                        </svg>
+                                                                    </button>
+                                                                    <button className={styles.relatedIconBtn} aria-label="Add to cart">
+                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                            <circle cx="9" cy="21" r="1" />
+                                                                            <circle cx="20" cy="21" r="1" />
+                                                                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={styles.relatedProductInfo}>
+                                                            <h3 className={styles.relatedProductName}>{product.name}</h3>
+
+                                                            {product.in_stock ? (
+                                                                <div className={styles.relatedPriceContainer}>
+                                                                    {product.discount_percentage > 0 ? (
+                                                                        <div className={styles.relatedDiscountPriceRow}>
+                                                                            <span className={styles.relatedCurrentPrice}>${discountedPrice.toFixed(2)}</span>
+                                                                            <span className={styles.relatedOriginalPrice}>${product.price.toFixed(2)}</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className={styles.relatedNormalPrice}>${product.price.toFixed(2)}</span>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div className={styles.relatedOutOfStockText}>Currently Unavailable</div>
+                                                            )}
+
+                                                            <div className={styles.relatedProductReviews}>
+    <div className={styles.relatedStars}>
+        {renderStars(product.averageRating || 0)} 
+    </div>
+    <span className={styles.relatedReviewCount}>({product.reviewCount || 0})</span> 
+</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
+
+                      
+                        {activeTab === 'reviews' && (
+                            <div className={styles.reviewsContent}>
+                                <h3 className={styles.reviewsTitle}>Customer Reviews</h3>
+
+                                {/* Show existing reviews if any - Horizontal Scroll Container */}
+                                {reviews.length > 0 ? (
+                                    <div className={styles.reviewsHorizontalContainer}>
+                                        <div className={styles.reviewsScrollWrapper}>
+                                            {reviews.map((review) => (
+                                                <div key={review.id} className={styles.reviewCard}>
+                                                    <div className={styles.reviewCardHeader}>
+                                                        <h4 className={styles.reviewerName}>{review.customer_name}</h4>
+                                                        <div className={styles.reviewStars}>
+                                                            {renderStars(review.rating)}
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.reviewCardBody}>
+                                                        <h5 className={styles.reviewTitle}>{review.review_title}</h5>
+                                                        <p className={styles.reviewText}>{review.review_text}</p>
+                                                        <span className={styles.reviewDate}>
+                                                            {new Date(review.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                   
+                                    <div className={styles.reviewEmptyState}>
+                                        <div className={styles.reviewLeftSection}>
+                                            <div className={styles.emptyStars}>
+                                                {renderStars(0)}
+                                            </div>
+                                            <span className={styles.beFirstText}>Be the first to write a review</span>
+                                        </div>
+                                        <div className={styles.verticalDivider}></div>
+                                        <button 
+                                            className={styles.writeReviewBtn}
+                                            onClick={() => setIsWritingReview(!isWritingReview)}
+                                        >
+                                            {isWritingReview ? 'Cancel Review' : 'Write a Review'}
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Review Form */}
+                                {isWritingReview && (
+                                    <div className={styles.reviewFormContainer}>
+                                        <div className={styles.horizontalBar}></div>
+                                        <div className={styles.reviewForm}>
+                                            <div className={styles.ratingSection}>
+                                                <label className={styles.ratingLabel}>Write a review</label>
+                                                <label className={styles.ratingText}>Rating</label>
+                                                <div className={styles.starRating}>
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button
+                                                            key={star}
+                                                            className={styles.starButton}
+                                                            onClick={() => setReviewRating(star)}
+                                                            disabled={isSubmitting}
+                                                        >
+                                                            {renderReviewStars(star)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {reviewRating > 0 && (
+                                                    <div className={styles.selectedRating}>
+                                                        <span>Selected: {reviewRating} star{reviewRating > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className={styles.formGroup}>
+                                                <label className={styles.formLabel}>Review Title *</label>
+                                                <input
+                                                    type="text"
+                                                    className={styles.formInput}
+                                                    placeholder="Give your review a title"
+                                                    value={reviewTitle}
+                                                    onChange={(e) => setReviewTitle(e.target.value)}
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div className={styles.formGroup}>
+                                                <label className={styles.formLabel}>Your Review *</label>
+                                                <textarea
+                                                    className={styles.reviewTextarea}
+                                                    placeholder="Share your experience with this product..."
+                                                    rows={5}
+                                                    value={reviewText}
+                                                    onChange={(e) => setReviewText(e.target.value)}
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div className={styles.formRow}>
+                                                <div className={styles.formGroup}>
+                                                    <label className={styles.formLabel}>Your Name *</label>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.formInput}
+                                                        placeholder="Enter your name"
+                                                        value={reviewerName}
+                                                        onChange={(e) => setReviewerName(e.target.value)}
+                                                        disabled={isSubmitting}
+                                                    />
+                                                </div>
+                                                <div className={styles.formGroup}>
+                                                    <label className={styles.formLabel}>Your Email *</label>
+                                                    <input
+                                                        type="email"
+                                                        className={styles.formInput}
+                                                        placeholder="Enter your email"
+                                                        value={reviewerEmail}
+                                                        onChange={(e) => setReviewerEmail(e.target.value)}
+                                                        disabled={isSubmitting}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <button 
+                                                className={styles.submitReviewBtn}
+                                                onClick={handleSubmitReview}
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

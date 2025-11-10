@@ -14,9 +14,10 @@ interface Product {
   in_stock: boolean;
   created_at: string;
   discount_percentage: number;
-  product_types: string[]; 
-  
-  material: string | null; 
+  product_types: string[];
+  material: string | null;
+  reviewCount?: number;
+  averageRating?: number;
 }
 
 type ProductType = 'Best Seller' | 'Special Product' | 'New Product';
@@ -30,18 +31,19 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(0);
   const { setSelectedProduct } = useProductDetail();
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const productsPerPage = 8;
   const trackRef = useRef<HTMLDivElement>(null);
-const location = useLocation();
+  const location = useLocation();
 
   const productTypes: ProductType[] = ['Best Seller', 'Special Product', 'New Product'];
 
   useEffect(() => {
     fetchProducts();
   }, []);
- useEffect(() => {
+
+  useEffect(() => {
     if (location.state?.filterType) {
       setSelectedType(location.state.filterType);
     }
@@ -69,18 +71,28 @@ const location = useLocation();
       setLoading(true);
       const { data: productsData, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          customer_reviews (
+            rating,
+            id
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Ensure product_types is always an array, even if null/undefined
-      const productsWithSafeTypes = (productsData || []).map(product => ({
+      // Process products with review data
+      const productsWithReviews = (productsData || []).map(product => ({
         ...product,
-        product_types: Array.isArray(product.product_types) ? product.product_types : []
+        product_types: Array.isArray(product.product_types) ? product.product_types : [],
+        reviewCount: product.customer_reviews?.length || 0,
+        averageRating: product.customer_reviews?.length 
+          ? product.customer_reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.customer_reviews.length
+          : 0
       }));
 
-      setProducts(productsWithSafeTypes);
+      setProducts(productsWithReviews);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -98,7 +110,7 @@ const location = useLocation();
       );
       setFilteredProducts(newProducts);
     } else {
-      // Filter products where the product_types array contains the selected type
+      
       const filtered = products.filter(product => 
         Array.isArray(product.product_types) && 
         product.product_types.includes(selectedType)
@@ -125,14 +137,14 @@ const location = useLocation();
     }
   };
 
-  const renderStars = (rating: number = 4.5) => {
+  const renderStars = (rating: number = 0) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-
+const strokeWidth = 2.5;
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#f5ab1e" stroke="#f5ab1e">
+        <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05"   strokeWidth={strokeWidth}>
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       );
@@ -140,10 +152,10 @@ const location = useLocation();
 
     if (hasHalfStar) {
       stars.push(
-        <svg key="half" width="16" height="16" viewBox="0 0 24 24" fill="#f5ab1e" stroke="#f5ab1e">
+        <svg key="half" width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05" strokeWidth={strokeWidth}>
           <defs>
             <linearGradient id="half">
-              <stop offset="50%" stopColor="#f5ab1e" />
+              <stop offset="50%" stopColor="#F5BE05" />
               <stop offset="50%" stopColor="transparent" />
             </linearGradient>
           </defs>
@@ -155,7 +167,7 @@ const location = useLocation();
     const emptyStars = 5 - stars.length;
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-        <svg key={`empty-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ddd">
+        <svg key={`empty-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5BE05" strokeWidth={strokeWidth}>
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       );
@@ -224,9 +236,9 @@ const location = useLocation();
 
                         return (
                           <div key={product.id} className={styles.productCard} onClick={() => {
-        setSelectedProduct(product);
-        navigate(`/product/${product.id}`);
-    }}>
+                            setSelectedProduct(product);
+                            navigate(`/product/${product.id}`);
+                          }}>
                             <div className={styles.productImageContainer}>
                               <img 
                                 src={product.image_url} 
@@ -288,9 +300,9 @@ const location = useLocation();
                               
                               <div className={styles.productReviews}>
                                 <div className={styles.stars}>
-                                  {renderStars()}
+                                  {renderStars(product.averageRating || 0)}
                                 </div>
-                                <span className={styles.reviewCount}>(128)</span>
+                                <span className={styles.reviewCount}>({product.reviewCount || 0})</span>
                               </div>
                             </div>
                           </div>
