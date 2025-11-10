@@ -36,10 +36,8 @@ const navigate = useNavigate()
   const step = itemWidth + gap;
   const viewportWidth = visibleCount * itemWidth + (visibleCount - 1) * gap;
 
-  // Create extended array for seamless rotation
   const extendedProducts = [...products, ...products, ...products];
 
-  // Keep ref in sync with state
   useEffect(() => {
     autoSlideRef.current = autoSlide;
   }, [autoSlide]);

@@ -162,7 +162,7 @@ export default function Footer(): JSX.Element {
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handleCategoryClick('Vegitables'); // Fixed typo
+                                            handleCategoryClick('Vegitables'); 
                                         }}
                                     >
                                         Vegetables
@@ -172,7 +172,7 @@ export default function Footer(): JSX.Element {
                         </div>
 
 
-                        {/* Information Section */}
+                      
                         <div className={styles.linkSection}>
                             <h4 className={styles.sectionTitle}>Information</h4>
                             <ul className={styles.linkList}>

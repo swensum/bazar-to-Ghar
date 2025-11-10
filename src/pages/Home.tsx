@@ -18,6 +18,7 @@ import CustomerReviews from "../reviews/CustomerReviews";
 import SubscribePage from "../subscribtion/ SubscribePage";
 import Blog from "./blog/blog";
 import ProductShowcase from "./product/product";
+
 interface Category {
   image: string;
   title: string;
@@ -38,6 +39,7 @@ interface Slide {
   alignment: string;
   showLogo?: boolean;
 }
+
 const slides: Slide[] = [
   {
     image: heroImg1,
@@ -83,16 +85,23 @@ const baseCategories: Category[] = [
 export default function Home(): JSX.Element {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categories, setCategories] = useState(baseCategories);
-  const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const sliderRef = useRef<Slider>(null);
   const navigate = useNavigate();
-   const location = useLocation();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Trigger entrance animations after component mounts
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const fetchCategoryDiscounts = async () => {
       try {
-        setLoading(true);
-
-
         const { data: products, error } = await supabase
           .from('products')
           .select('categories, discount_percentage')
@@ -126,8 +135,6 @@ export default function Home(): JSX.Element {
           // Count products on sale
           const productsOnSale = productsWithDiscount.length;
 
-
-
           return {
             ...baseCategory,
             averageDiscount,
@@ -140,8 +147,6 @@ export default function Home(): JSX.Element {
 
       } catch (error) {
         console.error('Error in fetchCategoryDiscounts:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -202,17 +207,10 @@ export default function Home(): JSX.Element {
     }
   };
 
-  if (loading) {
-    return (
-      <main className={styles.page}>
-        <div className={styles.loading}>Loading categories...</div>
-      </main>
-    );
-  }
-
   return (
-    <main className={styles.page}>
-      <section className={styles.heroSlider}>
+    <main className={`${styles.page} ${isVisible ? styles.pageVisible : ''}`}>
+      {/* Hero Slider Section */}
+      <section className={`${styles.heroSlider} ${isVisible ? styles.sectionVisible : ''}`}>
         <Slider
           ref={sliderRef}
           {...sliderSettings}
@@ -275,17 +273,21 @@ export default function Home(): JSX.Element {
         </div>
       </section>
 
-      <section className={styles.categoriesSection}>
+      {/* Categories Section */}
+      <section className={`${styles.categoriesSection} ${isVisible ? styles.sectionVisible : ''}`}>
         <div className={styles.categoriesContainer}>
           {categories.map((category, index) => (
-            <div key={index} className={styles.categoryCard}>
+            <div 
+              key={index} 
+              className={styles.categoryCard}
+              style={{ animationDelay: `${index * 0.2}s` }}
+            >
               <div
                 className={styles.categoryImage}
                 style={{
                   backgroundImage: `url(${category.image})`
                 }}
               >
-
                 {/* Only show discount circle if category has products on sale */}
                 {category.hasDiscount && (
                   <div className={`${styles.discountCircle} ${index === 0 ? styles.discountCircleGreen : styles.discountCircleOrange}`}>
@@ -313,20 +315,42 @@ export default function Home(): JSX.Element {
           ))}
         </div>
       </section>
-       <CategoryPage />
-      <TrendingProducts />
-      <BannerSection />
-     <ProductShowcase 
-        initialFilter={location.state?.filterType} 
-      />
-      <CustomerReviews />
-      <Blog />
-      <SubscribePage />
+      
+      {/* Other Sections with Staggered Animations */}
+      <div className={`${isVisible ? styles.sectionVisible : ''}`}>
+        <CategoryPage />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.1s' }}>
+        <TrendingProducts />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.2s' }}>
+        <BannerSection />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.3s' }}>
+        <ProductShowcase 
+          initialFilter={location.state?.filterType} 
+        />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.4s' }}>
+        <CustomerReviews />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.5s' }}>
+        <Blog />
+      </div>
+      
+      <div className={`${isVisible ? styles.sectionVisible : ''}`} style={{ animationDelay: '0.6s' }}>
+        <SubscribePage />
+      </div>
     </main>
   );
 }
 
-// Keep the NextArrow and PrevArrow components the same as before
+// Arrow components remain the same
 const NextArrow = (props: any) => {
   const { onClick } = props;
   return (

@@ -1,8 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+// Animation Styles
 .page {
   display: flex;
   flex-direction: column;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease-out;
+  
+  &.pageVisible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroSlider {
@@ -10,6 +20,14 @@
   width: 100%;
   height: 580px;
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out 0.2s;
+
+  &.sectionVisible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
   // Override slick slider styles
   :global {
@@ -25,7 +43,6 @@
       height: 100%;
     }
 
-    
     .slick-dots {
       display: none !important;
     }
@@ -45,7 +62,6 @@
   position: relative;
   width: 100%;
   height: 100%;
-
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -67,6 +83,7 @@
     letter-spacing: 1.5px;
     margin-bottom: 8px;
     font-family: 'Poppins', sans-serif;
+    animation: fadeInUp 0.8s ease-out 1s both;
   }
 
   .title {
@@ -77,6 +94,7 @@
     font-weight: 600;
     color: #333333;
     font-family: 'Poppins', sans-serif;
+    animation: fadeInUp 0.8s ease-out 1.2s both;
   }
 
   .shopNowBtn {
@@ -92,6 +110,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     letter-spacing: 0.5px;
+    animation: fadeInUp 0.8s ease-out 1.4s both;
 
     &:hover {
       background: transparent;
@@ -104,16 +123,19 @@
     }
   }
 }
+
 .overlayLeft {
   left: 148px;
   right: auto;
   text-align: left;
+  animation: slideInFromLeft 1s ease-out 0.5s both;
 }
 
 .overlayRight {
   left: auto;
   right: 148px;
   text-align: right;
+  animation: slideInFromRight 1s ease-out 0.5s both;
   
   .title {
     margin-left: auto;
@@ -125,30 +147,17 @@
   }
 }
 
-.logoContainer {
-  text-align: center !important; 
-  
-  width: 100%; 
-  display: flex;
-  justify-content: center; 
-  align-items: center; 
-}
-
-.logo {
-  max-width: 130px; 
-  height: auto;
-  display: block;
-   margin: 0 auto;
-}
 .overlayCenter {
-top: 45%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-    .logoContainer {
-      
+  animation: scaleIn 1s ease-out 0.5s both;
+  
+  .logoContainer {
     margin-bottom: 8px;
   }
+  
   .title {
     margin: 0 auto 20px auto;
   }
@@ -157,6 +166,22 @@ top: 45%;
     margin: 10px auto 0 auto;
     display: block;
   }
+}
+
+.logoContainer {
+  text-align: center !important; 
+  width: 100%; 
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  animation: bounceIn 1s ease-out 0.8s both;
+}
+
+.logo {
+  max-width: 130px; 
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .arrow {
@@ -227,7 +252,7 @@ top: 45%;
   right: 20px;
 }
 
-// Page Indicators - EXACTLY THE SAME AS YOUR ORIGINAL DESIGN
+// Page Indicators
 .indicators {
   position: absolute;
   bottom: 20px;
@@ -259,10 +284,17 @@ top: 45%;
   }
 }
 
-
 .categoriesSection {
   padding: 80px 20px;
   background-color: #fff;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out 0.4s;
+
+  &.sectionVisible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .categoriesContainer {
@@ -276,11 +308,14 @@ top: 45%;
 .categoryCard {
   flex: 1;
   max-width: 620px;
-  
   overflow: hidden;
- 
-  
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease-out forwards;
 
+  // Staggered animation for each card
+  &:nth-child(1) { animation-delay: 0.5s; }
+  &:nth-child(2) { animation-delay: 0.7s; }
 }
 
 .categoryImage {
@@ -291,9 +326,10 @@ top: 45%;
   background-repeat: no-repeat;
   display: flex;
   align-items: flex-end;
-  overflow: hidden; 
- 
-}.categoryImage::before {
+  overflow: hidden;
+}
+
+.categoryImage::before {
   content: '';
   position: absolute;
   top: 0;
@@ -325,8 +361,8 @@ top: 45%;
   padding: 40px 30px 30px;
   width: 100%;
   text-align: left;
-   position: relative;
-  z-index: 2; 
+  position: relative;
+  z-index: 2;
 }
 
 .categoryTitle {
@@ -364,12 +400,12 @@ top: 45%;
     color: #f5ab1e;
   }
 }
+
 .discountCircle {
   position: absolute;
   top: 20px;
   right: 20px;
   width: 90px;  
-  
   height: 90px;
   border-radius: 50%;
   display: flex;
@@ -388,27 +424,94 @@ top: 45%;
   background: linear-gradient(135deg, #524e47, #f57c00);
 }
 
-
-
 .discountContent {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-   transform: rotate(10deg);
+  transform: rotate(10deg);
 }
-
-
 
 .discountPercent {
   color: white;
   font-size: 23px;
   font-weight: 600;
-
   line-height: 1.1;
   font-family: 'Poppins', sans-serif;
   text-transform: uppercase;
+}
+
+// Keyframes for animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px) translateY(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px) translateY(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes pulse {
@@ -423,114 +526,14 @@ top: 45%;
   }
 }
 
-@media (max-width: 768px) {
-  .discountCircle {
-    width: 80px;
-    height: 80px;
-    top: 15px;
-    right: 15px;
-  }
-  
-  .discountText {
-    font-size: 11px;
-  }
-  
-  .discountLabel {
-    font-size: 9px;
-  }
-  
-  .discountPercent {
-    font-size: 12px;
-  }
+// Section wrapper animations
+.sectionVisible {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease-out forwards;
 }
 
-@media (max-width: 480px) {
-  .discountCircle {
-    width: 70px;
-    height: 70px;
-    top: 10px;
-    right: 10px;
-  }
-  
-  .discountText {
-    font-size: 10px;
-  }
-  
-  .discountLabel {
-    font-size: 8px;
-  }
-  
-  .discountPercent {
-    font-size: 11px;
-  }
-}
-@media (max-width: 1024px) {
-  .categoriesContainer {
-    gap: 20px;
-  }
-  
-  .categoryImage {
-    height: 350px;
-  }
-  
-  .categoryTitle {
-    font-size: 28px;
-  }
-}
-
-@media (max-width: 768px) {
-  .categoriesSection {
-    padding: 40px 15px;
-  }
-  
-  .categoriesContainer {
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .categoryCard {
-    max-width: 100%;
-  }
-  
-  .categoryImage {
-    height: 300px;
-  }
-  
-  .categoryOverlay {
-    padding: 30px 20px 20px;
-  }
-  
-  .categoryTitle {
-    font-size: 24px;
-  }
-  
-  .categoryDescription {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .categoriesSection {
-    padding: 30px 10px;
-  }
-  
-  .categoryImage {
-    height: 250px;
-  }
-  
-  .categoryOverlay {
-    padding: 25px 15px 15px;
-  }
-  
-  .categoryTitle {
-    font-size: 20px;
-  }
-  
-  .categoryShopBtn {
-    padding: 10px 24px;
-    font-size: 13px;
-  }
-}
+// Responsive Styles
 @media (max-width: 1200px) {
   .overlay {
     max-width: 70%;
@@ -565,6 +568,20 @@ top: 45%;
       width: 20px;
       height: 20px;
     }
+  }
+}
+
+@media (max-width: 1024px) {
+  .categoriesContainer {
+    gap: 20px;
+  }
+  
+  .categoryImage {
+    height: 350px;
+  }
+  
+  .categoryTitle {
+    font-size: 28px;
   }
 }
 
@@ -625,6 +642,46 @@ top: 45%;
   .indicators {
     bottom: 20px;
   }
+
+  .categoriesSection {
+    padding: 40px 15px;
+  }
+  
+  .categoriesContainer {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .categoryCard {
+    max-width: 100%;
+  }
+  
+  .categoryImage {
+    height: 300px;
+  }
+  
+  .categoryOverlay {
+    padding: 30px 20px 20px;
+  }
+  
+  .categoryTitle {
+    font-size: 24px;
+  }
+  
+  .categoryDescription {
+    font-size: 14px;
+  }
+
+  .discountCircle {
+    width: 80px;
+    height: 80px;
+    top: 15px;
+    right: 15px;
+  }
+  
+  .discountPercent {
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -659,5 +716,37 @@ top: 45%;
 
   .indicators {
     bottom: 15px;
+  }
+
+  .categoriesSection {
+    padding: 30px 10px;
+  }
+  
+  .categoryImage {
+    height: 250px;
+  }
+  
+  .categoryOverlay {
+    padding: 25px 15px 15px;
+  }
+  
+  .categoryTitle {
+    font-size: 20px;
+  }
+  
+  .categoryShopBtn {
+    padding: 10px 24px;
+    font-size: 13px;
+  }
+
+  .discountCircle {
+    width: 70px;
+    height: 70px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .discountPercent {
+    font-size: 18px;
   }
 }
