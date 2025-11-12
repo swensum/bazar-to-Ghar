@@ -1,9 +1,8 @@
 import { type JSX, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserAlt } from "@fortawesome/free-regular-svg-icons";
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faBars, faTimes, faChevronLeft, faChevronRight, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FiShoppingBag } from "react-icons/fi";
 import { FaHeadphonesAlt } from "react-icons/fa"; 
 import { supabase } from "../store/supabase";
@@ -20,7 +19,56 @@ export default function Navbar(): JSX.Element {
   const mainNavRef = useRef<HTMLDivElement>(null);
   const [navHeight, setNavHeight] = useState(0);
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileNavStack, setMobileNavStack] = useState<Array<{title: string, content: any}>>([]);
   const location = useLocation();
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (!isMobileMenuOpen) {
+      setMobileNavStack([]);
+    }
+  };
+
+  const handleMobileNavClick = (item: any) => {
+    if (item.categories || item.options) {
+      setMobileNavStack(prev => [...prev, {
+        title: item.title,
+        content: item.categories || item.options
+      }]);
+    } else {
+      if (item.title === "Home") {
+        navigate('/');
+      }
+      setIsMobileMenuOpen(false);
+      setMobileNavStack([]);
+    }
+  };
+
+  const handleMobileBack = () => {
+    if (mobileNavStack.length > 0) {
+      setMobileNavStack(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleMobileItemClick = (item: any, parentTitle?: string) => {
+    if (item && typeof item === 'object' && (item.type === 'category' || item.type === 'product')) {
+      handleShopItemClick(item);
+    } else if (parentTitle === "Home" && item === "New Arrivals") {
+      handleNewArrivalsClick();
+    } else if (parentTitle === "Blogs" || parentTitle === "Pages") {
+      console.log(`Navigate to ${item} under ${parentTitle}`);
+    } else if (typeof item === 'string') {
+      console.log(`Navigate to ${item}`);
+    }
+    setIsMobileMenuOpen(false);
+    setMobileNavStack([]);
+  };
+
+  const toggleDropdown = (title: string) => {
+    setActiveDropdown(activeDropdown === title ? null : title);
+  };
 
   useEffect(() => {
     if (mainNavRef.current) {
@@ -37,7 +85,12 @@ export default function Navbar(): JSX.Element {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch collection discounts from products
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
+  }, [location]);
+
   useEffect(() => {
     const fetchCollectionDiscounts = async () => {
       try {
@@ -81,65 +134,63 @@ export default function Navbar(): JSX.Element {
   }, []);
 
   const handleShopItemClick = async (item: { name: string; type: string }) => {
-  if (item.type === 'category') {
-    try {
-      // Fetch the full category data
-      const { data: categoryData, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('name', item.name)
-        .single();
+    if (item.type === 'category') {
+      try {
+        const { data: categoryData, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('name', item.name)
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      navigate('/products', { 
-        state: { 
-          selectedCategory: categoryData,
-          filterType: 'category'
-        } 
-      });
-    } catch (error) {
-      console.error('Error fetching category:', error);
-      // Fallback: navigate with just the name
-      navigate('/products', { 
-        state: { 
-          selectedCategory: { name: item.name },
-          filterType: 'category'
-        } 
-      });
+        navigate('/products', { 
+          state: { 
+            selectedCategory: categoryData,
+            filterType: 'category'
+          } 
+        });
+      } catch (error) {
+        console.error('Error fetching category:', error);
+        navigate('/products', { 
+          state: { 
+            selectedCategory: { name: item.name },
+            filterType: 'category'
+          } 
+        });
+      }
+    } else if (item.type === 'product') {
+      try {
+        const { data: productData, error } = await supabase
+          .from('products')
+          .select('*')
+          .ilike('name', `%${item.name}%`)
+          .single();
+
+        if (error) throw error;
+
+        navigate(`/product/${productData.id}`, { 
+          state: { 
+            product: productData
+          } 
+        });
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        navigate('/products', { 
+          state: { 
+            searchTerm: item.name,
+            filterType: 'product'
+          } 
+        });
+      }
     }
-  } else if (item.type === 'product') {
-    try {
-      // Fetch the actual product data by name
-      const { data: productData, error } = await supabase
-        .from('products')
-        .select('*')
-        .ilike('name', `%${item.name}%`) // Use ilike for case-insensitive search
-        .single();
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
+  };
 
-      if (error) throw error;
-
-      // Navigate to the actual product detail page
-      navigate(`/product/${productData.id}`, { 
-        state: { 
-          product: productData
-        } 
-      });
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      // Fallback: navigate to products page with search term
-      navigate('/products', { 
-        state: { 
-          searchTerm: item.name,
-          filterType: 'product'
-        } 
-      });
-    }
-  }
-};
   const handleCollectionClick = async (collection: any) => {
     try {
-      // Fetch the full category data for the collection
       const { data: categoryData, error } = await supabase
         .from('categories')
         .select('*')
@@ -155,13 +206,15 @@ export default function Navbar(): JSX.Element {
       });
     } catch (error) {
       console.error('Error fetching category:', error);
-      // Fallback
       navigate('/products', { 
         state: { 
           selectedCategory: { name: collection.category }
         } 
       });
     }
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
   };
 
   const menuItems = [
@@ -264,9 +317,11 @@ export default function Navbar(): JSX.Element {
         } 
       });
     }
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
   };
 
-  // Modern smooth logo click handler
   const handleLogoClick = () => {
     if (location.pathname === '/') {
       window.scrollTo({
@@ -274,9 +329,11 @@ export default function Navbar(): JSX.Element {
         behavior: 'smooth'
       });
     } else {
-      // Navigate to homepage
       navigate('/', { replace: true });
     }
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
   };
 
   return (
@@ -333,15 +390,31 @@ export default function Navbar(): JSX.Element {
 
             <FontAwesomeIcon icon={faHeart} className={styles.icon} />
             <FiShoppingBag className={styles.icon} />
+            
+            <button 
+              className={styles.mobileMenuToggle}
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+            >
+              <FontAwesomeIcon 
+                icon={isMobileMenuOpen ? faTimes : faBars} 
+                className={styles.mobileMenuIcon}
+              />
+            </button>
           </div>
         </div>
 
         <div className={styles.horizontalBar}></div>
 
-        <nav className={styles.navMenu}>
+        {/* Desktop Navigation */}
+        <nav className={`${styles.navMenu} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
           <div className={styles.navLinks}>
             {menuItems.map((item, index) => (
-              <div key={index} className={styles.navItem}>
+              <div 
+                key={index} 
+                className={`${styles.navItem} ${activeDropdown === item.title ? styles.active : ''}`}
+                onClick={() => window.innerWidth <= 768 && toggleDropdown(item.title)}
+              >
                 <span>{item.title}</span>
                 <FontAwesomeIcon icon={faChevronDown} className={styles.navArrow} />
 
@@ -424,6 +497,98 @@ export default function Navbar(): JSX.Element {
             </div>
           </div>
         </nav>
+
+        {/* Mobile Navigation Overlay */}
+        {isMobileMenuOpen && (
+          <div className={styles.mobileMenuOverlay} onClick={toggleMobileMenu} />
+        )}
+
+        {/* Mobile Side Menu */}
+        <div className={`${styles.mobileSideMenu} ${isMobileMenuOpen ? styles.mobileSideMenuOpen : ''}`}>
+          <div className={styles.mobileMenuHeader}>
+            {mobileNavStack.length > 0 ? (
+              <>
+                <button className={styles.mobileBackButton} onClick={handleMobileBack}>
+                  <FontAwesomeIcon icon={faChevronLeft} className={styles.backIcon} />
+                </button>
+                <span className={styles.mobileMenuTitle}>{mobileNavStack[mobileNavStack.length - 1].title}</span>
+              </>
+            ) : (
+              <span className={styles.mobileMenuTitle}>Menu</span>
+            )}
+            <button className={styles.mobileCloseButton} onClick={toggleMobileMenu}>
+              <FontAwesomeIcon icon={faTimes} className={styles.closeIcon} />
+            </button>
+          </div>
+
+          <div className={styles.mobileMenuContent}>
+            {mobileNavStack.length === 0 ? (
+              <div className={styles.mobileMainMenu}>
+                {menuItems.map((item, index) => (
+                  item.title !== "Collection" && (
+                    <div 
+                      key={index} 
+                      className={styles.mobileMenuItem}
+                      onClick={() => handleMobileNavClick(item)}
+                    >
+                      <span className={styles.mobileMenuText}>{item.title}</span>
+                      {(item.categories || item.options) && (
+                        <FontAwesomeIcon icon={faChevronRight} className={styles.mobileMenuArrow} />
+                      )}
+                    </div>
+                  )
+                ))}
+              </div>
+            ) : (
+              <div className={styles.mobileSubMenu}>
+                {mobileNavStack[mobileNavStack.length - 1].content && (
+                  <>
+                    {mobileNavStack[mobileNavStack.length - 1].title === "Shop" ? (
+                      // Shop categories
+                      mobileNavStack[mobileNavStack.length - 1].content.map((category: any, index: number) => (
+                        <div key={index} className={styles.mobileCategorySection}>
+                          <h4 className={styles.mobileCategoryHeading}>{category.heading}</h4>
+                          <div className={styles.mobileCategoryItems}>
+                            {category.items.map((item: any, itemIndex: number) => (
+                              <div 
+                                key={itemIndex}
+                                className={styles.mobileSubMenuItem}
+                                onClick={() => handleMobileItemClick(item)}
+                              >
+                                <span className={styles.mobileSubMenuText}>{item.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      // Home, Blogs, Pages options
+                      mobileNavStack[mobileNavStack.length - 1].content.map((option: string, index: number) => (
+                        <div 
+                          key={index}
+                          className={styles.mobileSubMenuItem}
+                          onClick={() => handleMobileItemClick(option, mobileNavStack[mobileNavStack.length - 1].title)}
+                        >
+                          <span className={styles.mobileSubMenuText}>{option}</span>
+                        </div>
+                      ))
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {mobileNavStack.length === 0 && (
+            <div className={styles.mobileHotline}>
+              <FaHeadphonesAlt className={styles.mobileHotlineIcon} />
+              <div className={styles.mobileHotlineTextContainer}>
+                <span className={styles.mobileHotlineText}>Hotline:</span>
+                <span className={styles.mobileHotlineNumber}>+1 234 567 890</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

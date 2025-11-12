@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 .bannerSection {
   background: transparent; 
   min-height: 500px;
@@ -22,7 +23,7 @@
   .subtitle {
     font-size: 1.1rem;
     color: white;
-   margin: 0;
+    margin: 0;
     font-weight: 500;
     font-family: 'Poppins', sans-serif;
     text-transform: uppercase;
@@ -32,7 +33,7 @@
   .title {
     font-size: 2rem;
     color: white;
-  margin: 15px 0px 20px 0px;
+    margin: 15px 0px 20px 0px;
     font-weight: 700;
     font-family: 'Poppins', sans-serif;
     line-height: 1.1;
@@ -55,7 +56,7 @@
       font-weight: 700;
       color: white;
       font-family: 'Poppins', sans-serif;
-      background:#f5ab1e;
+      background: #f5ab1e;
       padding: 10px 15px;
       border-radius: 8px;
       min-width: 70px;
@@ -97,17 +98,19 @@
   
   &:hover {
     background: transparent;
-   border: 1px solid #f5ab1e;
-   color: #f5ab1e;
+    border: 1px solid #f5ab1e;
+    color: #f5ab1e;
   }
 }
+
 .loading {
   text-align: center;
   color: #666;
   font-family: 'Poppins', sans-serif;
   font-size: 1.1rem;
 }
-.noOffer{
+
+.noOffer {
   text-align: center;
   color: white;
   font-family: 'Poppins', sans-serif;
@@ -115,15 +118,53 @@
   font-weight: 700;
   margin-top: 10px;
 }
-// Responsive
+
+// Tablet and Mobile Responsive
+@media (max-width: 1024px) {
+  .bannerSection {
+    min-height: 450px;
+  }
+  
+  .textContent {
+    max-width: 450px;
+    
+    .subtitle {
+      font-size: 1rem;
+    }
+    
+    .title {
+      font-size: 1.8rem;
+      margin: 12px 0px 18px 0px;
+    }
+  }
+  
+  .timer {
+    gap: 12px;
+    
+    .timeUnit {
+      .timeNumber {
+        font-size: 2.2rem;
+        min-width: 65px;
+        padding: 8px 12px;
+      }
+    }
+    
+    .timeSeparator {
+      font-size: 1.8rem;
+      margin-top: -12px;
+    }
+  }
+}
+
+// Mobile Responsive
 @media (max-width: 768px) {
   .bannerSection {
-    min-height: 400px;
+    min-height: 350px;
     text-align: center;
   }
   
   .bannerContent {
-    padding: 0 20px;
+    padding: 0 25px;
   }
   
   .textContent {
@@ -131,56 +172,155 @@
     text-align: center;
     
     .subtitle {
-      font-size: 1rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
     }
     
     .title {
-      font-size: 2.2rem;
+      font-size: 1.6rem;
+      margin: 10px 0px 15px 0px;
+      line-height: 1.2;
     }
   }
   
   .timer {
     justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
     
     .timeUnit {
       .timeNumber {
-        font-size: 2rem;
-        min-width: 60px;
-        padding: 8px 12px;
+        font-size: 1.8rem;
+        min-width: 55px;
+        padding: 6px 10px;
       }
       
       .timeLabel {
         font-size: 0.7rem;
+        margin-top: 4px;
       }
     }
     
     .timeSeparator {
-      font-size: 1.5rem;
-      margin-top: -10px;
+      font-size: 1.4rem;
+      margin-top: -8px;
     }
   }
   
   .shopNowButton {
     padding: 12px 30px;
     font-size: 1rem;
+    letter-spacing: 0.8px;
+  }
+  
+  .noOffer {
+    font-size: 1.3rem;
   }
 }
 
+// Small Mobile Responsive
 @media (max-width: 480px) {
+  .bannerSection {
+    min-height: 300px;
+  }
+  
+  .bannerContent {
+    padding: 0 20px;
+  }
+  
+  .textContent {
+    .subtitle {
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .title {
+      font-size: 1.4rem;
+      margin: 8px 0px 12px 0px;
+    }
+  }
+  
   .timer {
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 20px;
     
     .timeUnit {
       .timeNumber {
         font-size: 1.5rem;
-        min-width: 50px;
-        padding: 6px 10px;
+        min-width: 45px;
+        padding: 5px 8px;
+      }
+      
+      .timeLabel {
+        font-size: 0.65rem;
+        margin-top: 3px;
       }
     }
     
     .timeSeparator {
       font-size: 1.2rem;
-      margin-top: -8px;
+      margin-top: -6px;
     }
+  }
+  
+  .shopNowButton {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+  }
+  
+  .noOffer {
+    font-size: 1.1rem;
+  }
+  
+  .loading {
+    font-size: 1rem;
+  }
+}
+
+// Extra Small Mobile Responsive
+@media (max-width: 360px) {
+  .bannerSection {
+    min-height: 280px;
+  }
+  
+  .bannerContent {
+    padding: 0 15px;
+  }
+  
+  .textContent {
+    .subtitle {
+      font-size: 0.75rem;
+    }
+    
+    .title {
+      font-size: 1.3rem;
+    }
+  }
+  
+  .timer {
+    gap: 6px;
+    
+    .timeUnit {
+      .timeNumber {
+        font-size: 1.3rem;
+        min-width: 40px;
+        padding: 4px 6px;
+      }
+      
+      .timeLabel {
+        font-size: 0.6rem;
+      }
+    }
+    
+    .timeSeparator {
+      font-size: 1rem;
+      margin-top: -5px;
+    }
+  }
+  
+  .shopNowButton {
+    padding: 8px 20px;
+    font-size: 0.85rem;
   }
 }

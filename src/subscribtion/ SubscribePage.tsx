@@ -9,8 +9,17 @@ export default function SubscribePage(): JSX.Element {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [message, setMessage] = useState("");
   const [couponUsed, setCouponUsed] = useState(false);
+  const [, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if mobile on component mount and on resize
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     const checkExistingSubscription = async () => {
       const storedEmail = localStorage.getItem('subscriberEmail');
       if (storedEmail) {
@@ -30,6 +39,10 @@ export default function SubscribePage(): JSX.Element {
     };
 
     checkExistingSubscription();
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

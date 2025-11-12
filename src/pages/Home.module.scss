@@ -750,3 +750,16 @@
     font-size: 18px;
   }
 }
+@media (max-width: 768px) {
+  .arrow {
+    display: none !important;
+  }
+  
+  // Also hide slick slider's default arrows if they appear
+  :global {
+    .slick-prev,
+    .slick-next {
+      display: none !important;
+    }
+  }
+}

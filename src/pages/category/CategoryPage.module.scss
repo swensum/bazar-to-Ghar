@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 .page {
   min-height: 40vh;
   background-color: #f7f7f7;
@@ -76,8 +77,8 @@
   justify-content: center;
   transition: all 0.3s ease;
   position: relative;
-  width: 120px;
-  height: 120px; 
+  width: var(--circle-size, 120px); // Use CSS custom property with fallback
+  height: var(--circle-size, 120px); // Use CSS custom property with fallback
   flex-shrink: 0;
 }
 
@@ -88,7 +89,7 @@
   width: 100%;
   height: 100%;
   background: #f8f8f8;
-   display: flex;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
@@ -168,7 +169,6 @@
   &:hover {
     background: white;
     
-    
     svg {
       color: #f5ab1e;
     }
@@ -181,7 +181,7 @@
 }
 
 .arrowLeft {
-  left:0;
+  left: 0;
 }
 
 .arrowRight {
@@ -198,7 +198,6 @@
     transform: translateY(-50%) scale(1);
   }
 }
-
 
 .categoryItem:hover .categoryImage {
   transform: scale(1.05);
@@ -218,28 +217,7 @@
   color: #fff;
 }
 
-@media (max-width: 1200px) {
-  .itemsCount {
-    font-size: 13px;
-    padding: 5px 10px;
-    min-width: 55px;
-  }
-  
-  .overlayText {
-    font-size: 14px;
-  }
-  
-  .arrow {
-    width: 42px;
-    height: 42px;
-    
-    svg {
-      width: 24px;
-      height: 24px;
-    }
-  }
-}
-
+// Mobile-specific styles
 @media (max-width: 768px) {
   .page {
     padding: 20px 15px;
@@ -253,14 +231,21 @@
     }
   }
   
-  .itemsCount {
-    font-size: 12px;
-    padding: 4px 8px;
-    min-width: 50px;
+  .categoryCircle {
+    // Smaller circle size for mobile (overrides the CSS custom property)
+    width: 90px !important;
+    height: 90px !important;
   }
   
   .overlayText {
     font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  
+  .itemsCount {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 50px;
   }
   
   .arrow {
@@ -275,14 +260,21 @@
 }
 
 @media (max-width: 480px) {
-  .itemsCount {
-    font-size: 11px;
-    padding: 3px 6px;
-    min-width: 45px;
+  .categoryCircle {
+    // Even smaller for very small screens
+    width: 80px !important;
+    height: 80px !important;
   }
   
   .overlayText {
     font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  
+  .itemsCount {
+    font-size: 10px;
+    padding: 3px 6px;
+    min-width: 45px;
   }
   
   .arrow {
@@ -297,14 +289,20 @@
 }
 
 @media (max-width: 360px) {
-  .itemsCount {
-    font-size: 10px;
-    padding: 2px 5px;
-    min-width: 40px;
+  .categoryCircle {
+    // Smallest size for very small devices
+    width: 70px !important;
+    height: 70px !important;
   }
   
   .overlayText {
     font-size: 10px;
+  }
+  
+  .itemsCount {
+    font-size: 9px;
+    padding: 2px 5px;
+    min-width: 40px;
   }
   
   .arrow {
@@ -315,5 +313,22 @@
       width: 16px;
       height: 16px;
     }
+  }
+}
+
+// Desktop styles (768px and above)
+@media (min-width: 769px) {
+  .categoryCircle {
+    // Normal size for desktop
+    width: 120px;
+    height: 120px;
+  }
+  
+  .overlayText {
+    font-size: 16px;
+  }
+  
+  .itemsCount {
+    font-size: 14px;
   }
 }

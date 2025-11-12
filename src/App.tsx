@@ -9,9 +9,56 @@ import { ProductProvider } from "./contexts/ProductContext";
 import ScrollToTop from "./ScrollToTop";
 import { ProductDetailProvider } from "./contexts/ProductDetailContext";
 import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
+import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
+
 
 import "./App.css";
 import LoadingScreen from "./loading/LoadingScreen";
+import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
+
+// Create a separate component that uses the QuickView hook
+function AppContent() {
+  const { quickViewProduct, isQuickViewOpen, closeQuickView } = useQuickView();
+
+  const handleAddToCart = (product: any, quantity: number, selectedPackage?: string) => {
+    console.log('Added to cart from popup:', {
+      product,
+      quantity,
+      selectedPackage
+    });
+
+  };
+const handleBuyNow = (product: any, quantity: number, selectedPackage?: string) => {
+  console.log('Buy now from popup:', {
+    product,
+    quantity,
+    selectedPackage
+  });
+  // Add your buy now logic here (redirect to checkout, etc.)
+  closeQuickView();
+};
+  return (
+    <>
+      <div className="app-content">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<ProductDetail />} />
+          <Route path="/product/:productId" element={<ProductItemDetailPage />} />
+        </Routes>
+        <Footer />
+      </div>
+      
+     <ProductQuickViewPopup
+  product={quickViewProduct}
+  isOpen={isQuickViewOpen}
+  onClose={closeQuickView}
+  onAddToCart={handleAddToCart}
+  onBuyNow={handleBuyNow}
+/>
+    </>
+  );
+}
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -33,18 +80,12 @@ function App() {
   return (
     <ProductProvider>
       <ProductDetailProvider>
-        <Router>
-          <ScrollToTop />
-          <div className="app-content">
-            <Navbar />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<ProductDetail />} />
-              <Route path="/product/:productId" element={<ProductItemDetailPage />} />
-            </Routes>
-            <Footer />
-          </div>
-        </Router>
+        <QuickViewProvider>
+          <Router>
+            <ScrollToTop />
+            <AppContent />
+          </Router>
+        </QuickViewProvider>
       </ProductDetailProvider>
     </ProductProvider>
   );

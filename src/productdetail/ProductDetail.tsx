@@ -1,4 +1,3 @@
-// ProductDetail.tsx
 import { type JSX, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -46,7 +45,21 @@ export default function ProductDetail(): JSX.Element {
     } = useProduct();
 
     const [isInitializing, setIsInitializing] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
     const itemsPerPage = 8;
+
+    // Detect mobile screen size
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         const initialize = async () => {
@@ -86,6 +99,9 @@ export default function ProductDetail(): JSX.Element {
 
     const handleCategoryClick = (category: any) => {
         setSelectedCategory(category);
+        if (isMobile) {
+            setShowFilters(false);
+        }
     };
 
     const handleMinSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +170,20 @@ export default function ProductDetail(): JSX.Element {
         setCurrentPage(1);
     };
 
+    // Add mobile filter toggle handler
+    const handleFilterToggle = () => {
+        setShowFilters(!showFilters);
+    };
+
+    // Close filters when clicking on a product on mobile
+    const handleProductClick = (product: any) => {
+        setSelectedProduct(product);
+        navigate(`/product/${product.id}`);
+        if (isMobile) {
+            setShowFilters(false);
+        }
+    };
+
     const renderStars = (rating: number = 0) => {
         const stars = [];
         const fullStars = Math.floor(rating);
@@ -216,7 +246,24 @@ export default function ProductDetail(): JSX.Element {
             </div>
 
             <div className={styles.container}>
-                <div className={styles.categoriesSidebar}>
+                {/* Sidebar - Hidden on mobile unless toggled */}
+                <div className={`${styles.categoriesSidebar} ${isMobile ? (showFilters ? styles.mobileSidebarActive : styles.mobileSidebarHidden) : ''}`}>
+                    {/* Mobile Sidebar Header */}
+                    {isMobile && (
+                        <div className={styles.mobileSidebarHeader}>
+                            <h3>Filters</h3>
+                            <button 
+                                className={styles.closeSidebarButton}
+                                onClick={() => setShowFilters(false)}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+
                     <h3 className={styles.sidebarTitle}>Categories</h3>
                     <div className={styles.categoriesList}>
                         {categories.map((category) => (
@@ -462,6 +509,14 @@ export default function ProductDetail(): JSX.Element {
                     </div>
                 </div>
 
+                {/* Overlay for mobile when filters are open */}
+                {isMobile && showFilters && (
+                    <div 
+                        className={styles.mobileOverlay}
+                        onClick={() => setShowFilters(false)}
+                    />
+                )}
+
                 <div className={styles.productSection}>
                     {selectedCategory && (
                         <div className={styles.categoryHeader}>
@@ -476,6 +531,26 @@ export default function ProductDetail(): JSX.Element {
                     </div>
 
                     <div className={styles.controlsContainer}>
+                         {isMobile && (
+    <div className={styles.filterTextButton} onClick={handleFilterToggle}>
+      <div className={styles.filterIconText}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+        <span>Filters</span>
+      </div>
+      <div className={styles.verticalBar}></div>
+    </div>
+  )}
+
                         <div className={styles.viewControls}>
                             <button
                                 className={`${styles.viewButton} ${viewMode === 'grid' ? styles.active : ''}`}
@@ -530,10 +605,7 @@ export default function ProductDetail(): JSX.Element {
                                             : product.price;
 
                                         return (
-                                            <div key={product.id} className={styles.productCard} onClick={() => {
-                            setSelectedProduct(product);
-                            navigate(`/product/${product.id}`);
-                          }}>
+                                            <div key={product.id} className={styles.productCard} onClick={() => handleProductClick(product)}>
                                                 <div className={styles.productCardImageContainer}>
                                                     <img
                                                         src={product.image_url}
@@ -602,10 +674,7 @@ export default function ProductDetail(): JSX.Element {
                                             : product.price;
 
                                         return (
-                                            <div key={product.id} className={styles.productListItem} onClick={() => {
-                            setSelectedProduct(product);
-                            navigate(`/product/${product.id}`);
-                          }}>
+                                            <div key={product.id} className={styles.productListItem} onClick={() => handleProductClick(product)}>
                                                 <div className={styles.listItemImageContainer}>
                                                     <img
                                                         src={product.image_url}

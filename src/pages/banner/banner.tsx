@@ -54,13 +54,15 @@ export default function BannerSection(): JSX.Element {
 
     return () => clearInterval(timer);
   }, [currentOffer]);
- const handleBannershopnow = () => {
+  
+  const handleBannershopnow = () => {
     navigate('/products', {
       state: {
         selectedCategory: 'all-products'
       }
     });
   };
+  
   const fetchActiveOffer = async () => {
     try {
       setLoading(true);
@@ -97,13 +99,14 @@ export default function BannerSection(): JSX.Element {
       </section>
     );
   }
- if (!currentOffer) {
+  
+  if (!currentOffer) {
     return (
       <section className={styles.bannerSection}>
         <div className={styles.bannerContent}>
           <div className={styles.noOffer}>
             <p>No offer today</p>
-              <p>We will Let you know very soon, Thank You!</p>
+            <p>We will Let you know very soon, Thank You!</p>
           </div>
         </div>
       </section>
@@ -143,8 +146,9 @@ export default function BannerSection(): JSX.Element {
             </div>
           </div>
           
-          <button className={styles.shopNowButton} onClick={() => handleBannershopnow ()}
-                  >Shop Now</button>
+          <button className={styles.shopNowButton} onClick={() => handleBannershopnow()}>
+            Shop Now
+          </button>
         </div>
       </div>
     </section>

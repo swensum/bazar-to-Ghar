@@ -232,6 +232,7 @@
   margin: 0;
   font-style: italic;
 }
+
 .terms1 {
   font-size: 13px;
   opacity: 0.7;
@@ -240,63 +241,92 @@
   font-style: italic;
 }
 
-// Responsive Design
+// Tablet Responsive Design
 @media (max-width: 768px) {
   .backgroundImage {
     height: 35vh;
+    background-position: center center;
   }
   
   .contentContainer {
     padding: 0 15px;
+    display: flex;
+    justify-content: center;
   }
   
   .textContent {
-    margin-right: 20px;
-    max-width: 300px;
+    margin: 0 auto;
+    max-width: 320px;
+    text-align: center;
   }
   
   .mainTitle {
     font-size: 18px;
+    margin-bottom: 4px;
   }
   
   .subTitle {
     font-size: 11px;
+    margin-bottom: 16px;
   }
   
   .inputGroup {
-    gap: 6px;
+    flex-direction: column;
+    gap: 8px;
   }
   
   .emailInput {
-    padding: 6px 10px;
-    font-size: 11px;
-    min-height: 28px;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 40px;
+    text-align: center;
+    
+    &::placeholder {
+      font-size: 13px;
+    }
   }
   
   .subscribeButton {
-    padding: 6px 12px;
-    font-size: 11px;
-    min-width: 70px;
-    min-height: 28px;
+    padding: 10px 16px;
+    font-size: 14px;
+    min-width: auto;
+    min-height: 40px;
+    border-radius: 6px;
   }
   
   .successTitle {
-    font-size: 14px;
+    font-size: 22px;
   }
   
   .successMessage {
-    font-size: 10px;
+    font-size: 14px;
+  }
+  
+  .terms,
+  .terms1 {
+    font-size: 12px;
+  }
+  
+  .successIcon,
+  .infoIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
   }
 }
 
+// Mobile Responsive Design
 @media (max-width: 480px) {
   .backgroundImage {
     height: 30vh;
   }
   
+  .contentContainer {
+    padding: 0 12px;
+  }
+  
   .textContent {
-    margin-right: 15px;
-    max-width: 250px;
+    max-width: 280px;
   }
   
   .mainTitle {
@@ -305,41 +335,86 @@
   
   .subTitle {
     font-size: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   
   .emailInput {
-    padding: 5px 8px;
-    font-size: 10px;
-    min-height: 26px;
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 36px;
     
     &::placeholder {
-      font-size: 10px;
+      font-size: 12px;
     }
   }
   
   .subscribeButton {
-    padding: 5px 10px;
-    font-size: 10px;
-    min-width: 60px;
-    min-height: 26px;
+    padding: 8px 16px;
+    font-size: 13px;
+    min-height: 36px;
   }
   
   .successTitle {
-    font-size: 13px;
+    font-size: 20px;
   }
   
   .successMessage {
+    font-size: 13px;
+  }
+  
+  .terms,
+  .terms1 {
+    font-size: 11px;
+  }
+  
+  .successIcon,
+  .infoIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+// Small Mobile Responsive Design
+@media (max-width: 360px) {
+  .backgroundImage {
+    height: 28vh;
+  }
+  
+  .textContent {
+    max-width: 250px;
+  }
+  
+  .mainTitle {
+    font-size: 15px;
+  }
+  
+  .subTitle {
     font-size: 9px;
   }
   
-  .terms {
-    font-size: 8px;
+  .emailInput {
+    padding: 7px 10px;
+    font-size: 12px;
+    min-height: 34px;
   }
   
-  .successIcon, .infoIcon {
-    width: 20px;
-    height: 20px;
+  .subscribeButton {
+    padding: 7px 14px;
+    font-size: 12px;
+    min-height: 34px;
+  }
+  
+  .successTitle {
+    font-size: 18px;
+  }
+  
+  .successMessage {
+    font-size: 12px;
+  }
+  
+  .terms,
+  .terms1 {
     font-size: 10px;
   }
 }

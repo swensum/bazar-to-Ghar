@@ -3,6 +3,7 @@ import { supabase } from "../../store/supabase";
 import styles from "./ProductShowcase.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
+import { useQuickView } from "../../contexts/QuickViewContext";
 
 interface Product {
   id: string;
@@ -32,7 +33,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const [currentPage, setCurrentPage] = useState(0);
   const { setSelectedProduct } = useProductDetail();
   const navigate = useNavigate();
-
+const { openQuickView } = useQuickView();
   const productsPerPage = 8;
   const trackRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -235,15 +236,16 @@ const strokeWidth = 2.5;
                           : product.price;
 
                         return (
-                          <div key={product.id} className={styles.productCard} onClick={() => {
-                            setSelectedProduct(product);
-                            navigate(`/product/${product.id}`);
-                          }}>
+                           <div key={product.id} className={styles.productCard}>
                             <div className={styles.productImageContainer}>
                               <img 
                                 src={product.image_url} 
                                 alt={product.name}
                                 className={styles.productImage}
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  navigate(`/product/${product.id}`);
+                                }}
                               />
                               {!product.in_stock ? (
                                 <div className={styles.outOfStock}>Out of Stock</div>
@@ -269,7 +271,14 @@ const strokeWidth = 2.5;
                                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                     </svg>
                                   </button>
-                                  <button className={styles.iconBtn} aria-label="Add to cart">
+                                 <button 
+                                    className={styles.iconBtn} 
+                                    aria-label="Add to cart"
+                                    onClick={(e) => {
+                                      e.stopPropagation(); 
+                                      openQuickView(product);
+                                    }}
+                                  >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                       <circle cx="9" cy="21" r="1"/>
                                       <circle cx="20" cy="21" r="1"/>

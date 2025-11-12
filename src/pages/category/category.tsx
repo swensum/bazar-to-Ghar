@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect, useRef } from "react";
 import { supabase } from "../../store/supabase";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import type { CategoryWithCount } from "../../types/category";
 import styles from "./CategoryPage.module.scss";
 
@@ -12,10 +12,11 @@ export default function CategoryPage(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [showArrows, setShowArrows] = useState(false);
   const [autoSlide, setAutoSlide] = useState(true);
+  const [, setIsMobile] = useState(window.innerWidth <= 768);
   
   const autoSlideRef = useRef(autoSlide);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const navigate = useNavigate(); // Add this hook
+  const navigate = useNavigate();
 
   const { visibleCount, itemWidth, gap } = config;
   const step = itemWidth + gap;
@@ -35,7 +36,9 @@ export default function CategoryPage(): JSX.Element {
 
   useEffect(() => {
     const handleResize = () => {
-      const newConfig = getItemConfig(window.innerWidth);
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      const newConfig = getItemConfig(width);
       setConfig(newConfig);
       setCurrentIndex(0);
     };
@@ -138,18 +141,18 @@ export default function CategoryPage(): JSX.Element {
   };
 
   const handleCategoryClick = (category: CategoryWithCount) => {
-  // Navigate to products page with category data
-  navigate(`/products`, { 
-    state: { 
-      selectedCategory: category 
-    } 
-  });
-};
+    // Navigate to products page with category data
+    navigate(`/products`, { 
+      state: { 
+        selectedCategory: category 
+      } 
+    });
+  };
+
   const handleNext = () => {
     setCurrentIndex((prev) => {
       const next = prev + 1;
       
-   
       if (next >= categories.length * 2) {
         setIsTransitioning(false);
         const newIndex = next - categories.length;
@@ -216,15 +219,15 @@ export default function CategoryPage(): JSX.Element {
 
   function getItemConfig(width: number) {
     if (width < 361) {
-      return { visibleCount: 2, itemWidth: 90, gap: 30 };
+      return { visibleCount: 2, itemWidth: 80, gap: 20, circleSize: 70 }; // Smaller for very small screens
     } else if (width < 481) {
-      return { visibleCount: 2, itemWidth: 100, gap: 40 };
+      return { visibleCount: 2, itemWidth: 90, gap: 25, circleSize: 80 }; // Smaller for small mobile
     } else if (width < 769) {
-      return { visibleCount: 3, itemWidth: 110, gap: 50 };
+      return { visibleCount: 3, itemWidth: 100, gap: 30, circleSize: 90 }; // Smaller for tablets
     } else if (width < 1201) {
-      return { visibleCount: 4, itemWidth: 130, gap: 60 };
+      return { visibleCount: 4, itemWidth: 130, gap: 60, circleSize: 120 }; // Normal for desktop
     } else {
-      return { visibleCount: 6, itemWidth: 150, gap: 70 };
+      return { visibleCount: 6, itemWidth: 150, gap: 70, circleSize: 120 }; // Large for big screens
     }
   }
 
@@ -266,7 +269,11 @@ export default function CategoryPage(): JSX.Element {
                 <div 
                   key={`${category.id}-${index}`} 
                   className={styles.categoryItem}
-                  style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
+                  style={{ 
+                    flex: `0 0 ${itemWidth}px`, 
+                    width: `${itemWidth}px`,
+                    '--circle-size': `${config.circleSize}px` // CSS custom property for circle size
+                  } as React.CSSProperties}
                   onClick={() => handleCategoryClick(category)}
                 >
                   <div className={styles.categoryCircle}>

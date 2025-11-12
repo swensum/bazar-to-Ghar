@@ -523,65 +523,555 @@
   }
 }
 
+// Mobile Menu Toggle Button
+.mobileMenuToggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+  padding: 8px;
+  z-index: 1001;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.mobileMenuIcon {
+  font-size: 24px;
+  color: #333;
+
+        &:hover {
+          color: #f5ab1e;
+        }
+}
+
+// Mobile Side Menu
+.mobileSideMenu {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 320px;
+  height: 100vh;
+  background: white;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  
+  &.mobileSideMenuOpen {
+    left: 0;
+  }
+}
+
+.mobileMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Mobile Menu Header
+.mobileMenuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: #f9f9f9;
+  min-height: 50px;
+}
+
+.mobileBackButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .backIcon {
+    font-size: 18px;
+    color: #333;
+    transition: color 0.2s ease;
+  }
+  
+  &:hover .backIcon {
+    color: #f5ab1e;
+  }
+}
+
+.mobileMenuTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mobileCloseButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .closeIcon {
+    font-size: 20px;
+    color: #666;
+    transition: color 0.2s ease;
+  }
+  
+  &:hover .closeIcon {
+    color: #f5ab1e;
+  }
+}
+
+.mobileMenuContent {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.mobileMainMenu {
+  padding: 10px 0;
+}
+
+.mobileMenuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #f8f8f8;
+  }
+  
+  &:active {
+    background: #f0f0f0;
+  }
+}
+
+.mobileMenuText {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mobileMenuArrow {
+  font-size: 14px;
+  color: #999;
+}
+
+.mobileSubMenu {
+  padding: 10px 0;
+}
+
+.mobileCategorySection {
+  margin-bottom: 5px;
+}
+
+.mobileCategoryHeading {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  padding: 12px 20px 8px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif;
+  background: #fafafa;
+}
+
+.mobileCategoryItems {
+  background: white;
+}
+
+.mobileSubMenuItem {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #f8f8f8;
+  }
+  
+  &:active {
+    background: #f0f0f0;
+  }
+}
+
+.mobileSubMenuText {
+  font-size: 15px;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mobileHotline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px 20px;
+  border-top: 1px solid #eee;
+  background: #f9f9f9;
+  gap: 12px;
+  
+  .mobileHotlineIcon {
+    color: #f5ab1e;
+    font-size: 22px;
+  }
+  
+  .mobileHotlineTextContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .mobileHotlineText {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .mobileHotlineNumber {
+      font-size: 14px;
+      color: #555;
+      font-family: 'Poppins', sans-serif;
+      margin-top: 2px;
+    }
+  }
+}
+
 // Responsive styles
-@media (max-width: 768px) {
-  .navMenu {
-    margin: 0 20px;
-    flex-wrap: wrap;
-
-    .navItem {
-      padding: 5px 10px;
-
-      .dropdown {
-        min-width: 300px;
+@media (max-width: 986px) {
+  .mainBar {
+    padding-left: 30px;
+    padding-right: 30px;
+    
+    .logo img {
+      height: 140px;
+    }
+    
+    .searchBar {
+      max-width: 320px;
+    }
+    
+    .rightSection {
+      .accountText {
+        margin-right: 10px;
         
+        .accountLabel {
+          font-size: 14px;
+        }
+        
+        .accountLinks {
+          font-size: 10px;
+        }
+      }
+      
+      .icon {
+        font-size: 28px;
+        
+        &:not(:first-child) {
+          margin-left: 25px;
+        }
+      }
+    }
+  }
+  
+  .horizontalBar {
+    margin: 0 30px;
+  }
+  
+  .navMenu {
+    margin: 0 30px;
+    
+    .navItem {
+      padding: 0 12px;
+      font-size: 14px;
+      
+      .dropdown {
         &.shopDropdown {
-          .shopContent {
-            flex-direction: column;
-            gap: 20px;
+          min-width: 500px;
+          max-width: 600px;
+        }
+        
+        &.collectionDropdown {
+          min-width: 700px;
+          max-width: 800px;
+          
+          .collectionContent {
+            gap: 15px;
+            
+            .overlayLine2 {
+              font-size: 16px;
+            }
+            
+            .overlayLine3 {
+              font-size: 10px;
+            }
           }
         }
+      }
+    }
+    
+    .hotline {
+      .hotlineTextContainer {
+        .hotlineText {
+          font-size: 13px;
+        }
+        
+        .hotlineNumber {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+  
+  .mainNavSticky .mainBar {
+    .logo img {
+      height: 100px;
+    }
+    
+    .searchBar {
+      max-width: 300px;
+    }
+  }
+}
+
+// For 768px and below - MOBILE VERSION
+@media (max-width: 768px) {
+  .topBar {
+    height: 35px;
+    font-size: 13px;
+  }
+  
+  .mainBar {
+    padding: 10px 20px;
+    height: 70px;
+    flex-wrap: nowrap;
+    gap: 10px;
+    
+    .logo {
+      order: 1;
+      flex: 0 0 auto;
+      
+      img {
+        height: 80px;
+      }
+    }
+    
+    .centerSection {
+      order: 2;
+      flex: 1;
+      justify-content: flex-end;
+      display: flex;
+      
+      .searchBar {
+        max-width: 180px;
+        min-width: 150px;
+        margin-right: 10px;
+        
+        .searchInput {
+          font-size: 13px;
+          padding: 1px 8px;
+        }
+        
+        .searchButton {
+          width: 32px;
+          height: 32px;
+          
+          .searchIcon {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+    
+    .rightSection {
+      order: 3;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: 0;
+      
+      .accountBox {
+        display: flex;
+        align-items: center;
+        
+        .accountText {
+          display: none;
+        }
+        
+        .accountIcon {
+          font-size: 22px;
+          margin: 0;
+        }
+      }
+      
+      .icon {
+        font-size: 22px;
+        margin: 0 !important;
+      }
+      
+      .mobileMenuToggle {
+        display: flex;
+        margin: 0;
+        padding: 6px;
+        
+        .mobileMenuIcon {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+  
+  .horizontalBar {
+    margin: 0 20px;
+    display: none;
+  }
+  
+  // Hide desktop navigation on mobile
+  .navMenu {
+    display: none;
+  }
+  
+  .mainNavSticky .mainBar {
+    height: 60px;
+    
+    .logo img {
+      height: 50px;
+    }
+    
+    .centerSection .searchBar {
+      max-width: 160px;
+    }
+    
+    .rightSection {
+      .accountBox .accountIcon {
+        font-size: 20px;
+      }
+      
+      .icon {
+        font-size: 20px;
       }
     }
   }
 }
 
-@media (max-width: 768px) {
+// For mobile devices (480px and below)
+@media (max-width: 480px) {
   .mainBar {
-    padding: 10px 20px;
-    flex-direction: column;
-    height: auto;
-    gap: 15px;
-
+    padding: 8px 15px;
+    height: 65px;
+    
     .logo img {
-      height: 100px;
+      height: 66px;
     }
-
-    .centerSection {
-      justify-content: center;
-      width: 100%;
+    
+    .centerSection .searchBar {
+      max-width: 140px;
+      
+      .searchInput {
+        font-size: 12px;
+        padding: 1px 6px;
+      }
+      
+      .searchButton {
+        width: 28px;
+        height: 28px;
+        
+        .searchIcon {
+          font-size: 11px;
+        }
+      }
     }
-
-    .searchBar {
-      width: 100%;
-      min-width: auto;
-    }
-
-    .accountBox {
-      flex-direction: column;
-      align-items: center;
+    
+    .rightSection {
+      gap: 10px;
+      
+      .accountBox .accountIcon {
+        font-size: 20px;
+      }
+      
+      .icon {
+        font-size: 20px;
+      }
+      
+      .mobileMenuToggle {
+        padding: 5px;
+        
+        .mobileMenuIcon {
+          font-size: 18px;
+        }
+      }
     }
   }
-
-  .horizontalBar {
-    margin: 0 20px;
+  
+  .mobileSideMenu {
+    width: 280px;
+    left: -280px;
+  }
+  
+  .mobileMenuHeader {
+    padding: 15px;
+    min-height: 60px;
+  }
+  
+  .mobileMenuItem {
+    padding: 14px 15px;
+  }
+  
+  .mobileCategoryHeading {
+    padding: 10px 15px 6px;
+  }
+  
+  .mobileSubMenuItem {
+    padding: 12px 15px;
+  }
+  
+  .mobileHotline {
+    padding: 20px 15px;
   }
   
   .mainNavSticky .mainBar {
-    height: auto;
+    height: 55px;
     
     .logo img {
-      height: 80px;
+      height: 45px;
+    }
+    
+    .rightSection {
+      .accountBox .accountIcon {
+        font-size: 18px;
+      }
+      
+      .icon {
+        font-size: 18px;
+      }
     }
   }
 }

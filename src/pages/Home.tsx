@@ -86,17 +86,29 @@ export default function Home(): JSX.Element {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categories, setCategories] = useState(baseCategories);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const sliderRef = useRef<Slider>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    // Check if mobile on component mount and on resize
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     // Trigger entrance animations after component mounts
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 100);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   useEffect(() => {
@@ -171,7 +183,7 @@ export default function Home(): JSX.Element {
 
   const sliderSettings = {
     dots: false,
-    arrows: true,
+    arrows: !isMobile, // Hide arrows on mobile
     infinite: true,
     speed: 600,
     slidesToShow: 1,
@@ -181,8 +193,8 @@ export default function Home(): JSX.Element {
     pauseOnHover: true,
     adaptiveHeight: true,
     cssEase: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
+    nextArrow: isMobile ? <></> : <NextArrow />, // Empty fragment on mobile
+    prevArrow: isMobile ? <></> : <PrevArrow />, // Empty fragment on mobile
     beforeChange: (_current: number, next: number) => {
       setCurrentSlide(next);
     }
@@ -350,7 +362,7 @@ export default function Home(): JSX.Element {
   );
 }
 
-// Arrow components remain the same
+// Arrow components - will be hidden on mobile
 const NextArrow = (props: any) => {
   const { onClick } = props;
   return (
