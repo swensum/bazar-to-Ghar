@@ -10,7 +10,8 @@ import ScrollToTop from "./ScrollToTop";
 import { ProductDetailProvider } from "./contexts/ProductDetailContext";
 import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
 import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
-
+import { CartProvider, useCart } from "./contexts/CartContext";
+import CartSidebar from "./cart/CartSidebar";
 
 import "./App.css";
 import LoadingScreen from "./loading/LoadingScreen";
@@ -19,28 +20,58 @@ import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
 // Create a separate component that uses the QuickView hook
 function AppContent() {
   const { quickViewProduct, isQuickViewOpen, closeQuickView } = useQuickView();
+  const { 
+    cartItems, 
+    isCartOpen, 
+    addToCart, 
+    updateQuantity, 
+    removeFromCart, 
+    openCart, 
+    closeCart, 
+    getCartItemsCount,
+    getCartTotal 
+  } = useCart();
 
   const handleAddToCart = (product: any, quantity: number, selectedPackage?: string) => {
-    console.log('Added to cart from popup:', {
-      product,
-      quantity,
-      selectedPackage
-    });
+    // Add item to cart
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: product.images?.[0] || product.image_url,
+      selectedPackage: selectedPackage,
+      discount_percentage: product.discount_percentage
+    };
 
+    addToCart(newItem);
+    
+    // Open cart sidebar
+    openCart();
+    console.log('Added to cart:', newItem);
   };
-const handleBuyNow = (product: any, quantity: number, selectedPackage?: string) => {
-  console.log('Buy now from popup:', {
-    product,
-    quantity,
-    selectedPackage
-  });
-  // Add your buy now logic here (redirect to checkout, etc.)
-  closeQuickView();
-};
+
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    updateQuantity(id, quantity);
+  };
+
+  const handleRemoveItem = (id: string) => {
+    removeFromCart(id);
+  };
+
+  const handleBuyNow = (product: any, quantity: number, selectedPackage?: string) => {
+    handleAddToCart(product, quantity, selectedPackage);
+    // You can add additional buy now logic here
+    closeQuickView();
+  };
+
   return (
     <>
       <div className="app-content">
-        <Navbar />
+        <Navbar 
+          cartItemsCount={getCartItemsCount()} 
+          onCartClick={openCart} 
+        />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductDetail />} />
@@ -49,13 +80,24 @@ const handleBuyNow = (product: any, quantity: number, selectedPackage?: string) 
         <Footer />
       </div>
       
-     <ProductQuickViewPopup
-  product={quickViewProduct}
-  isOpen={isQuickViewOpen}
-  onClose={closeQuickView}
-  onAddToCart={handleAddToCart}
-  onBuyNow={handleBuyNow}
-/>
+      {/* Quick View Popup */}
+      <ProductQuickViewPopup
+        product={quickViewProduct}
+        isOpen={isQuickViewOpen}
+        onClose={closeQuickView}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+      />
+
+      {/* Cart Sidebar */}
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={closeCart}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+        cartTotal={getCartTotal()}
+      />
     </>
   );
 }
@@ -81,10 +123,12 @@ function App() {
     <ProductProvider>
       <ProductDetailProvider>
         <QuickViewProvider>
-          <Router>
-            <ScrollToTop />
-            <AppContent />
-          </Router>
+          <CartProvider>
+            <Router>
+              <ScrollToTop />
+              <AppContent />
+            </Router>
+          </CartProvider>
         </QuickViewProvider>
       </ProductDetailProvider>
     </ProductProvider>

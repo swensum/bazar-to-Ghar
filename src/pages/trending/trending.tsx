@@ -313,10 +313,7 @@ const renderStars = (rating: number = 0) => {
                         alt={product.name}
                         className={styles.productImage}
                          style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
-                    onClick={() => {
-                            setSelectedProduct(product);
-                            navigate(`/product/${product.id}`);
-                          }}
+                    
                       />
                     
                       {!product.in_stock ? (

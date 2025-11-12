@@ -6,16 +6,17 @@ import itembanner from "../assets/dealbanner.webp";
 import esewaLogo from "../assets/esewa.png";
 import khaltiLogo from "../assets/khalti.png";
 import visaLogo from "../assets/visa.png";
+import { useCart } from "../contexts/CartContext";
 
 export default function ProductItemDetailPage(): JSX.Element {
     const { productId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
+const { addToCart, openCart } = useCart();
     
-    // Add local state for wishlist and active tab
     const [isFavorite, setIsFavorite] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
     const [showThankYou, setShowThankYou] = useState(false);
-    
+
     const {
         // State
         selectedProduct,
@@ -34,7 +35,7 @@ export default function ProductItemDetailPage(): JSX.Element {
         reviewText,
         reviewerName,
         reviewerEmail,
-        
+
         // Actions
         setCurrentImageIndex,
         setSelectedPackage,
@@ -47,7 +48,7 @@ export default function ProductItemDetailPage(): JSX.Element {
         setReviewerName,
         setReviewerEmail,
         setSubmitSuccess,
-        
+
         // Functions
         fetchProductDetail,
         fetchReviews,
@@ -79,14 +80,10 @@ export default function ProductItemDetailPage(): JSX.Element {
             fetchRelatedProducts();
             fetchRandomProducts();
             fetchReviews();
-            
-            // Check if product is in wishlist (you can implement this with localStorage or context)
             const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
             setIsFavorite(favorites.includes(selectedProduct.id));
         }
     }, [selectedProduct]);
-
-    // Show thank you message when submitSuccess becomes true
     useEffect(() => {
         if (submitSuccess) {
             setShowThankYou(true);
@@ -100,10 +97,10 @@ export default function ProductItemDetailPage(): JSX.Element {
 
     const toggleFavorite = () => {
         if (!selectedProduct) return;
-        
+
         const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
         let newFavorites;
-        
+
         if (isFavorite) {
             // Remove from favorites
             newFavorites = favorites.filter((id: string) => id !== selectedProduct.id);
@@ -111,19 +108,34 @@ export default function ProductItemDetailPage(): JSX.Element {
             // Add to favorites
             newFavorites = [...favorites, selectedProduct.id];
         }
-        
+
         localStorage.setItem('favorites', JSON.stringify(newFavorites));
         setIsFavorite(!isFavorite);
     };
 
-    const handleAddToCart = () => {
+        const handleAddToCart = () => {
         if (!selectedProduct) return;
-        console.log('Added to cart:', {
-            product: selectedProduct,
-            package: selectedPackage,
-            quantity: quantity
-        });
+        
+        // Create cart item
+        const cartItem = {
+            id: selectedProduct.id,
+            name: selectedProduct.name,
+            price: selectedProduct.price,
+            quantity: quantity,
+            image: selectedProduct.images?.[0] || selectedProduct.image_url,
+            selectedPackage: selectedPackage || undefined,
+            discount_percentage: selectedProduct.discount_percentage > 0 ? selectedProduct.discount_percentage : undefined
+        };
+
+        // Add to cart using context
+        addToCart(cartItem);
+        
+        // Open cart sidebar
+        openCart();
+        
+        console.log('Added to cart:', cartItem);
     };
+
 
     const handleBuyNow = () => {
         if (!selectedProduct) return;
@@ -411,13 +423,13 @@ export default function ProductItemDetailPage(): JSX.Element {
                 {/* Description and Reviews Tabs Section */}
                 <div className={styles.tabsSection}>
                     <div className={styles.tabsContainer}>
-                        <button 
+                        <button
                             className={`${styles.tabButton} ${activeTab === 'description' ? styles.active : ''}`}
                             onClick={() => setActiveTab('description')}
                         >
                             DESCRIPTION
                         </button>
-                        <button 
+                        <button
                             className={`${styles.tabButton} ${activeTab === 'reviews' ? styles.active : ''}`}
                             onClick={() => setActiveTab('reviews')}
                         >
@@ -519,11 +531,11 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                             )}
 
                                                             <div className={styles.relatedProductReviews}>
-    <div className={styles.relatedStars}>
-        {renderStars(product.averageRating || 0)} 
-    </div>
-    <span className={styles.relatedReviewCount}>({product.reviewCount || 0})</span> 
-</div>
+                                                                <div className={styles.relatedStars}>
+                                                                    {renderStars(product.averageRating || 0)}
+                                                                </div>
+                                                                <span className={styles.relatedReviewCount}>({product.reviewCount || 0})</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 );
@@ -534,7 +546,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                             </div>
                         )}
 
-                      
+
                         {activeTab === 'reviews' && (
                             <div className={styles.reviewsContent}>
                                 <h3 className={styles.reviewsTitle}>Customer Reviews</h3>
@@ -563,7 +575,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                         </div>
                                     </div>
                                 ) : (
-                                   
+
                                     <div className={styles.reviewEmptyState}>
                                         <div className={styles.reviewLeftSection}>
                                             <div className={styles.emptyStars}>
@@ -572,7 +584,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                             <span className={styles.beFirstText}>Be the first to write a review</span>
                                         </div>
                                         <div className={styles.verticalDivider}></div>
-                                        <button 
+                                        <button
                                             className={styles.writeReviewBtn}
                                             onClick={() => setIsWritingReview(!isWritingReview)}
                                         >
@@ -657,7 +669,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                 </div>
                                             </div>
 
-                                            <button 
+                                            <button
                                                 className={styles.submitReviewBtn}
                                                 onClick={handleSubmitReview}
                                                 disabled={isSubmitting}

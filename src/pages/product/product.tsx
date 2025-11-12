@@ -236,16 +236,16 @@ const strokeWidth = 2.5;
                           : product.price;
 
                         return (
-                           <div key={product.id} className={styles.productCard}>
+                           <div key={product.id} className={styles.productCard}  onClick={() => {
+                                  setSelectedProduct(product);
+                                  navigate(`/product/${product.id}`);
+                                }}>
                             <div className={styles.productImageContainer}>
                               <img 
                                 src={product.image_url} 
                                 alt={product.name}
                                 className={styles.productImage}
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  navigate(`/product/${product.id}`);
-                                }}
+                               
                               />
                               {!product.in_stock ? (
                                 <div className={styles.outOfStock}>Out of Stock</div>

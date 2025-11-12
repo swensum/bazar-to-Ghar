@@ -13,7 +13,12 @@ import winterCollection from "../assets/juice.jpg";
 import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function Navbar(): JSX.Element {
+interface NavbarProps {
+  cartItemsCount: number;
+  onCartClick: () => void;
+}
+
+export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JSX.Element {
   const [isScrolled, setIsScrolled] = useState(false);
   const [collectionDiscounts, setCollectionDiscounts] = useState<{[key: string]: number}>({});
   const mainNavRef = useRef<HTMLDivElement>(null);
@@ -389,7 +394,18 @@ export default function Navbar(): JSX.Element {
             </div>
 
             <FontAwesomeIcon icon={faHeart} className={styles.icon} />
-            <FiShoppingBag className={styles.icon} />
+            
+            {/* Updated Cart Icon with Count */}
+            <div className={styles.cartIconContainer}>
+              <FiShoppingBag 
+                className={styles.icon} 
+                onClick={onCartClick}
+                style={{ cursor: 'pointer' }}
+              />
+              {cartItemsCount > 0 && (
+                <span className={styles.cartCount}>{cartItemsCount}</span>
+              )}
+            </div>
             
             <button 
               className={styles.mobileMenuToggle}
