@@ -32,7 +32,6 @@ export default function ProductQuickViewPopup({
     setCurrentImageIndex,
     setSelectedPackage,
     setQuantity,
-    resetProductDetail,
     
     // Functions
     renderStars
@@ -53,8 +52,9 @@ export default function ProductQuickViewPopup({
 
   useEffect(() => {
     if (!isOpen) {
-      // Reset product detail state when popup closes
-      resetProductDetail();
+       setCurrentImageIndex(0);
+    setSelectedPackage(null);
+    setQuantity(1);
     }
   }, [isOpen]);
 
@@ -76,13 +76,14 @@ export default function ProductQuickViewPopup({
 
   const handleAddToCart = () => {
     onAddToCart(product, quantity, selectedPackage || '');
+    onClose();
   };
 
   const handleBuyNow = () => {
     if (onBuyNow) {
       onBuyNow(product, quantity, selectedPackage || '');
     } else {
-      // Default behavior if onBuyNow is not provided
+      
       console.log('Buy now:', {
         product,
         quantity,

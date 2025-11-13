@@ -7,11 +7,13 @@ import dealbanner from "../assets/dealbanner.webp";
 import productImage from "../assets/collection-banner.jpg";
 import { useProduct } from "../contexts/ProductContext";
 import { useProductDetail } from "../contexts/ProductDetailContext";
+import { useQuickView } from "../contexts/QuickViewContext";
 
 export default function ProductDetail(): JSX.Element {
     const location = useLocation();
     const navigate = useNavigate()
     const { setSelectedProduct } = useProductDetail();
+    const { openQuickView } = useQuickView();
     const {
         categories,
         selectedCategory,
@@ -54,10 +56,10 @@ export default function ProductDetail(): JSX.Element {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 768);
         };
-        
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
-        
+
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
@@ -252,7 +254,7 @@ export default function ProductDetail(): JSX.Element {
                     {isMobile && (
                         <div className={styles.mobileSidebarHeader}>
                             <h3>Filters</h3>
-                            <button 
+                            <button
                                 className={styles.closeSidebarButton}
                                 onClick={() => setShowFilters(false)}
                             >
@@ -511,7 +513,7 @@ export default function ProductDetail(): JSX.Element {
 
                 {/* Overlay for mobile when filters are open */}
                 {isMobile && showFilters && (
-                    <div 
+                    <div
                         className={styles.mobileOverlay}
                         onClick={() => setShowFilters(false)}
                     />
@@ -531,25 +533,25 @@ export default function ProductDetail(): JSX.Element {
                     </div>
 
                     <div className={styles.controlsContainer}>
-                         {isMobile && (
-    <div className={styles.filterTextButton} onClick={handleFilterToggle}>
-      <div className={styles.filterIconText}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="4" y1="21" x2="4" y2="14"></line>
-          <line x1="4" y1="10" x2="4" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12" y2="3"></line>
-          <line x1="20" y1="21" x2="20" y2="16"></line>
-          <line x1="20" y1="12" x2="20" y2="3"></line>
-          <line x1="1" y1="14" x2="7" y2="14"></line>
-          <line x1="9" y1="8" x2="15" y2="8"></line>
-          <line x1="17" y1="16" x2="23" y2="16"></line>
-        </svg>
-        <span>Filters</span>
-      </div>
-      <div className={styles.verticalBar}></div>
-    </div>
-  )}
+                        {isMobile && (
+                            <div className={styles.filterTextButton} onClick={handleFilterToggle}>
+                                <div className={styles.filterIconText}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="4" y1="21" x2="4" y2="14"></line>
+                                        <line x1="4" y1="10" x2="4" y2="3"></line>
+                                        <line x1="12" y1="21" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12" y2="3"></line>
+                                        <line x1="20" y1="21" x2="20" y2="16"></line>
+                                        <line x1="20" y1="12" x2="20" y2="3"></line>
+                                        <line x1="1" y1="14" x2="7" y2="14"></line>
+                                        <line x1="9" y1="8" x2="15" y2="8"></line>
+                                        <line x1="17" y1="16" x2="23" y2="16"></line>
+                                    </svg>
+                                    <span>Filters</span>
+                                </div>
+                                <div className={styles.verticalBar}></div>
+                            </div>
+                        )}
 
                         <div className={styles.viewControls}>
                             <button
@@ -625,7 +627,14 @@ export default function ProductDetail(): JSX.Element {
                                                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                                 </svg>
                                                             </button>
-                                                            <button className={styles.iconBtn} aria-label="Add to cart">
+                                                            <button
+                                                                className={styles.iconBtn}
+                                                                aria-label="Add to cart"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openQuickView(product);
+                                                                }}
+                                                            >
                                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                     <circle cx="9" cy="21" r="1" />
                                                                     <circle cx="20" cy="21" r="1" />
@@ -723,7 +732,14 @@ export default function ProductDetail(): JSX.Element {
                                                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                             </svg>
                                                         </button>
-                                                        <button className={styles.listIconBtn} aria-label="Add to cart">
+                                                        <button className={styles.listIconBtn} aria-label="Add to cart"
+
+
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openQuickView(product);
+                                                            }}
+                                                        >
                                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                 <circle cx="9" cy="21" r="1" />
                                                                 <circle cx="20" cy="21" r="1" />

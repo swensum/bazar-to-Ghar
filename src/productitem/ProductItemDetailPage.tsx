@@ -7,6 +7,7 @@ import esewaLogo from "../assets/esewa.png";
 import khaltiLogo from "../assets/khalti.png";
 import visaLogo from "../assets/visa.png";
 import { useCart } from "../contexts/CartContext";
+import { useQuickView } from "../contexts/QuickViewContext";
 
 export default function ProductItemDetailPage(): JSX.Element {
     const { productId } = useParams<{ productId: string }>();
@@ -16,7 +17,7 @@ const { addToCart, openCart } = useCart();
     const [isFavorite, setIsFavorite] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
     const [showThankYou, setShowThankYou] = useState(false);
-
+   const { openQuickView } = useQuickView();
     const {
         // State
         selectedProduct,
@@ -501,7 +502,12 @@ const { addToCart, openCart } = useCart();
                                                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                                         </svg>
                                                                     </button>
-                                                                    <button className={styles.relatedIconBtn} aria-label="Add to cart">
+                                                                    <button className={styles.relatedIconBtn} aria-label="Add to cart" 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openQuickView(product);
+                                                            }}
+                                                        >
                                                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                             <circle cx="9" cy="21" r="1" />
                                                                             <circle cx="20" cy="21" r="1" />
