@@ -21,6 +21,10 @@ export default function CheckoutPage(): JSX.Element {
     const [khaltiMpin, setKhaltiMpin] = useState("");
     const [discountCode, setDiscountCode] = useState("");
     const [isDiscountApplied, setIsDiscountApplied] = useState(false);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [couponMessage, setCouponMessage] = useState("");
+    const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
     // Get the product from location state (passed during navigation)
     const product = location.state?.product;
     const quantity = location.state?.quantity || 1;
@@ -39,13 +43,45 @@ export default function CheckoutPage(): JSX.Element {
         console.log("Pay now clicked");
         // Handle payment logic here
     };
-    const handleApplyDiscount = () => {
-        if (discountCode.trim()) {
-            console.log("Applying discount code:", discountCode);
-            setIsDiscountApplied(true);
-            // Add your discount logic here
+
+    const handleApplyDiscount = async () => {
+        if (!discountCode.trim()) return;
+        
+        setIsValidatingCoupon(true);
+        setCouponMessage("");
+
+        try {
+            // Import the validateCoupon function
+            const { validateCoupon } = await import("../utils/couponValidation");
+            
+            const result = await validateCoupon(discountCode, email);
+            
+            if (result.valid) {
+                setIsDiscountApplied(true);
+                setCouponMessage(result.message);
+                
+                // Calculate discount amount based on discount type
+                if (result.discountType === "percentage") {
+                    const discountValue = (totalPrice * result.discount) / 100;
+                    setDiscountAmount(discountValue);
+                } else {
+                    setDiscountAmount(result.discount || 0);
+                }
+            } else {
+                setIsDiscountApplied(false);
+                setDiscountAmount(0);
+                setCouponMessage(result.message);
+            }
+        } catch (error) {
+            console.error("Error applying coupon:", error);
+            setCouponMessage("Error applying coupon. Please try again.");
+            setIsDiscountApplied(false);
+            setDiscountAmount(0);
+        } finally {
+            setIsValidatingCoupon(false);
         }
     };
+
     const handlePaymentMethodChange = (method: string) => {
         setPaymentMethod(method);
     };
@@ -71,6 +107,10 @@ export default function CheckoutPage(): JSX.Element {
         : product.price;
 
     const totalPrice = discountedPrice * quantity;
+    const subtotal = totalPrice;
+    const shippingCharge: number = 5; // Fixed shipping charge
+    const discount = discountAmount;
+    const grandTotal = subtotal + shippingCharge - discount;
 
     // Determine button text based on payment method
     const payButtonText = paymentMethod === 'cod' ? 'Proceed' : 'Pay Now';
@@ -397,73 +437,106 @@ export default function CheckoutPage(): JSX.Element {
                     <div className={styles.verticalSeparator}></div>
 
                     {/* Right Section - Product Display */}
-                   <div className={styles.rightSection}>
-  <div className={styles.productDisplay}>
-    <div className={styles.productItem}>
-      <div className={styles.imageContainer}>
-        <img 
-          src={product.images?.[0] || product.image_url} 
-          alt={product.name}
-          className={styles.productImage}
-        />
-        <div className={styles.quantityBadge}>
-          {quantity}
-        </div>
-      </div>
-      <div className={styles.productDetails}>
-        <div className={styles.productHeader}>
-          <h3 className={styles.productName}>{product.name}</h3>
-          <span className={styles.productPrice}>
-            ${totalPrice.toFixed(2)}
-          </span>
-        </div>
-        <div className={styles.productSpecs}>
-          <span className={styles.sizeText}>
-            {selectedPackage || 'Standard'}
-          </span>
-          <span className={styles.separator}>/</span>
-          <span className={styles.materialText}>
-            {product.material || product.material_type || 'Cotton'}
-          </span>
-        </div>
-      </div>
-    </div>
+                    <div className={styles.rightSection}>
+                        <div className={styles.productDisplay}>
+                            <div className={styles.productItem}>
+                                <div className={styles.imageContainer}>
+                                    <img 
+                                        src={product.images?.[0] || product.image_url} 
+                                        alt={product.name}
+                                        className={styles.productImage}
+                                    />
+                                    <div className={styles.quantityBadge}>
+                                        {quantity}
+                                    </div>
+                                </div>
+                                <div className={styles.productDetails}>
+                                    <div className={styles.productHeader}>
+                                        <h3 className={styles.productName}>{product.name}</h3>
+                                        <span className={styles.productPrice}>
+                                            ${totalPrice.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className={styles.productSpecs}>
+                                        <span className={styles.sizeText}>
+                                            {selectedPackage || 'Standard'}
+                                        </span>
+                                        <span className={styles.separator}>/</span>
+                                        <span className={styles.materialText}>
+                                            {product.material || product.material_type || 'Cotton'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
-    {/* Discount Code Section */}
-    <div className={styles.discountSection}>
-      <div className={styles.discountRow}>
-        <div className={styles.discountFieldWrapper}>
-          <div className={`${styles.discountInputContainer} ${hasValue(discountCode) ? styles.hasValue : ''}`}>
-            <input
-              type="text"
-              value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value)}
-              className={styles.discountInput}
-              placeholder=" "
-            />
-            <label className={styles.discountLabel}>
-              <span className={styles.discountLabelText}>
-                Discount code
-              </span>
-            </label>
-          </div>
-        </div>
-        <button 
-          className={`${styles.applyButton} ${discountCode.trim() ? styles.applyButtonActive : ''}`}
-          onClick={handleApplyDiscount}
-          disabled={!discountCode.trim()}
-        >
-          Apply
-        </button>
-      </div>
-      {isDiscountApplied && (
-        <div className={styles.discountAppliedMessage}>
-          Discount code applied successfully!
-        </div>
-      )}
-    </div>
-  </div>
-</div>
+                            {/* Discount Code Section */}
+                            <div className={styles.discountSection}>
+                                <div className={styles.discountRow}>
+                                    <div className={styles.discountFieldWrapper}>
+                                        <div className={`${styles.discountInputContainer} ${hasValue(discountCode) ? styles.hasValue : ''}`}>
+                                            <input
+                                                type="text"
+                                                value={discountCode}
+                                                onChange={(e) => setDiscountCode(e.target.value)}
+                                                className={styles.discountInput}
+                                                placeholder=" "
+                                            />
+                                            <label className={styles.discountLabel}>
+                                                <span className={styles.discountLabelText}>
+                                                    Discount code
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        className={`${styles.applyButton} ${discountCode.trim() && !isValidatingCoupon ? styles.applyButtonActive : ''}`}
+                                        onClick={handleApplyDiscount}
+                                        disabled={!discountCode.trim() || isValidatingCoupon}
+                                    >
+                                        {isValidatingCoupon ? (
+                                            <span className={styles.loadingText}>Applying...</span>
+                                        ) : (
+                                            "Apply"
+                                        )}
+                                    </button>
+                                </div>
+                                
+                                {/* Coupon Message */}
+                                {couponMessage && (
+                                    <div className={`${styles.couponMessage} ${isDiscountApplied ? styles.couponSuccess : styles.couponError}`}>
+                                        {couponMessage}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Order Summary - Plain Text */}
+                            <div className={styles.orderSummary}>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Subtotal:</span>
+                                    <span className={styles.summaryValue}>${subtotal.toFixed(2)}</span>
+                                </div>
+                                
+                                {discount > 0 && (
+                                    <div className={styles.summaryRow}>
+                                        <span className={styles.summaryLabel}>Discount:</span>
+                                        <span className={styles.discountValue}>-${discount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Shipping:</span>
+                                    <span className={styles.summaryValue}>
+                                        {shippingCharge === 0 ? 'Free' : `$${shippingCharge.toFixed(2)}`}
+                                    </span>
+                                </div>
+                                
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Grand Total:</span>
+                                    <span className={styles.grandTotal}>${grandTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

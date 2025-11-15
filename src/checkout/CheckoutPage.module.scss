@@ -877,7 +877,111 @@
     min-width: 60px;
   }
 }
+// Order Summary Styles
+.orderSummary {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e5e5;
+}
 
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-family: 'Poppins', sans-serif;
+  
+  &:last-child {
+    margin-bottom: 0;
+    padding-top: 12px;
+    border-top: 1px solid #e5e5e5;
+  }
+}
+
+.summaryLabel {
+  font-size: 16px;
+  color: #666;
+  font-weight: 400;
+}
+
+.summaryValue {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.discountValue {
+  font-size: 16px;
+  color: #10b981;
+  font-weight: 500;
+}
+
+.grandTotal {
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+// Coupon Message Styles
+.couponMessage {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  text-align: center;
+}
+
+.couponSuccess {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.couponError {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.loadingText {
+  display: inline-block;
+}
+
+// Responsive design for order summary
+@media (max-width: 768px) {
+  .summaryLabel,
+  .summaryValue,
+  .discountValue {
+    font-size: 14px;
+  }
+  
+  .grandTotal {
+    font-size: 16px;
+  }
+  
+  .summaryRow {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .orderSummary {
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+  
+  .summaryLabel,
+  .summaryValue,
+  .discountValue {
+    font-size: 13px;
+  }
+  
+  .grandTotal {
+    font-size: 15px;
+  }
+}
 // Responsive design
 @media (max-width: 768px) {
     .checkoutHeader {
