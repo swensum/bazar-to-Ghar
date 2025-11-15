@@ -21,6 +21,8 @@ export default function ProductQuickViewPopup({
   onBuyNow
 }: ProductQuickViewPopupProps): JSX.Element {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
   
   const {
     // State
@@ -52,9 +54,11 @@ export default function ProductQuickViewPopup({
 
   useEffect(() => {
     if (!isOpen) {
-       setCurrentImageIndex(0);
-    setSelectedPackage(null);
-    setQuantity(1);
+      setCurrentImageIndex(0);
+      setSelectedPackage(null);
+      setQuantity(1);
+      setIsAddingToCart(false);
+      setIsBuyingNow(false);
     }
   }, [isOpen]);
 
@@ -74,22 +78,42 @@ export default function ProductQuickViewPopup({
     setIsFavorite(!isFavorite);
   };
 
-  const handleAddToCart = () => {
-    onAddToCart(product, quantity, selectedPackage || '');
-    onClose();
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true);
+    
+    try {
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onAddToCart(product, quantity, selectedPackage || '');
+      onClose();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
-  const handleBuyNow = () => {
-    if (onBuyNow) {
-      onBuyNow(product, quantity, selectedPackage || '');
-    } else {
+  const handleBuyNow = async () => {
+    setIsBuyingNow(true);
+    
+    try {
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('Buy now:', {
-        product,
-        quantity,
-        selectedPackage
-      });
-      onClose();
+      if (onBuyNow) {
+        onBuyNow(product, quantity, selectedPackage || '');
+      } else {
+        console.log('Buy now:', {
+          product,
+          quantity,
+          selectedPackage
+        });
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error in buy now:', error);
+    } finally {
+      setIsBuyingNow(false);
     }
   };
 
@@ -222,16 +246,24 @@ export default function ProductQuickViewPopup({
               <button
                 className={styles.addToCartBtn}
                 onClick={handleAddToCart}
-                disabled={!product.in_stock}
+                disabled={!product.in_stock || isAddingToCart}
               >
-                Add to Cart
+                {isAddingToCart ? (
+                  <div className={styles.spinner}></div>
+                ) : (
+                  'Add to Cart'
+                )}
               </button>
               <button
                 className={styles.buyNowBtn}
                 onClick={handleBuyNow}
-                disabled={!product.in_stock}
+                disabled={!product.in_stock || isBuyingNow}
               >
-                Buy Now
+                {isBuyingNow ? (
+                  <div className={styles.spinner}></div>
+                ) : (
+                  'Buy Now'
+                )}
               </button>
             </div>
 

@@ -1,0 +1,1132 @@
+// CheckoutPage.module.scss
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.checkoutPage {
+    min-height: 100vh;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+.checkoutHeader {
+    padding: 20px 40px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+
+    .logoContainer {
+        max-width: 1200px;
+        margin: 0 auto;
+
+        .logo {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: -40px;
+            margin-top: -20px;
+            margin-left: -30px;
+
+            .logoImage {
+                height: 150px;
+                width: auto;
+                object-fit: contain;
+                display: block;
+            }
+        }
+    }
+}
+
+.horizontalBar {
+    width: 100%;
+    height: 1px;
+    background-color: #e5e5e5;
+    margin: 0;
+}
+
+.checkoutContainer {
+    flex: 1;
+    display: flex;
+}
+
+.checkoutContent {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    min-height: calc(100vh - 141px);
+
+    @media (min-width: 768px) {
+        grid-template-columns: 1fr 1px 1fr;
+    }
+}
+
+.leftSection {
+    background: #fff;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.rightSection {
+    background: #f8f9fa;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.verticalSeparator {
+    display: none;
+    background-color: #e5e5e5;
+
+    @media (min-width: 768px) {
+        display: block;
+        width: 1px;
+        height: 100%;
+    }
+}
+
+.contactSection {
+    margin-bottom: 30px;
+    padding: 40px 40px 40px 0; 
+    max-width: 450px;
+    width: 100%;
+}
+
+.productDisplay {
+    padding: 50px 0 40px 40px; 
+    max-width: 450px;
+    width: 100%;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .sectionTitle {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .signInButton {
+        background: none;
+        border: none;
+        color: #f5ab1e;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+
+        &:hover {
+            color: #c27e00;
+        }
+    }
+}
+
+// Shopify Style Field Wrapper
+.fieldWrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+// Input Container
+.inputContainer {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+        border-color: #f5ab1e;
+    }
+    
+    &:focus-within {
+        border-color: #f5ab1e;
+        border-width: 2px;
+        box-shadow: 0 0 0 1px #f5ab1e;
+    }
+    
+    // When field has value - ANIMATION TRIGGER
+    &.hasValue {
+        .shopifyLabel {
+            .labelText {
+                transform: translateY(-12px) scale(0.85);
+                color: #666;
+                font-size: 12px;
+            }
+        }
+        
+        .shopifyInput,
+        .shopifySelect {
+            transform: translateY(8px);
+        }
+    }
+}
+
+// Shopify Style Input
+.shopifyInput {
+    width: 100%;
+    height: 100%;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    background: transparent;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    line-height: 1.5;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:focus {
+        outline: none;
+    }
+}
+
+// Shopify Style Select
+.shopifySelect {
+    width: 100%;
+    height: 100%;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    background: transparent;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:focus {
+        outline: none;
+    }
+}
+
+// Shopify Style Label
+.shopifyLabel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    .labelText {
+        font-size: 16px;
+        color: #6b7280;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 400;
+        line-height: 1.5;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: left center;
+    }
+}
+
+// Newsletter Checkbox Styles
+.newsletterSection {
+    margin-bottom: 30px;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: #333;
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: #555;
+    }
+}
+
+.checkboxInput {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #b4b2b2;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background-color: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:hover {
+        border-color: #f5ab1e;
+    }
+
+    &:checked {
+        background-color: #f5ab1e;
+        border-color: #f5ab1e;
+        
+        &::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.checkboxText {
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+// Delivery Section Styles
+.deliverySection {
+    margin-top: 30px;
+}
+
+.deliveryTitle {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nameFields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+// Delivery Note Styles
+.deliveryNote {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+    border-left: 4px solid #f5ab1e;
+
+    p {
+        margin: 4px 0;
+        font-size: 13px;
+        color: #666;
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.4;
+
+        &:first-child {
+            margin-top: 0;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Product Display Styles
+.productItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 0;
+
+    .imageContainer {
+        position: relative;
+        flex-shrink: 0;
+
+        .productImage {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .quantityBadge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #333;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            border-radius: 30%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    }
+
+    .productDetails {
+        flex: 1;
+
+        .productHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 4px;
+
+            .productName {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: 'Poppins', sans-serif;
+                color: #333;
+                line-height: 1.3;
+                flex: 1;
+                margin-right: 12px;
+            }
+
+            .productPrice {
+                font-size: 14px;
+                font-weight: 500;
+                font-family: 'Poppins', sans-serif;
+                color: #333;
+                white-space: nowrap;
+                margin: 0;
+            }
+        }
+
+        .productSpecs {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            color: #666;
+
+            .sizeText {
+                font-weight: 400;
+            }
+
+            .separator {
+                color: #999;
+            }
+
+            .materialText {
+                color: #666;
+                font-weight: 400;
+            }
+        }
+    }
+}
+
+// Payment Section Styles
+.paymentSection {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.paymentTitle {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+}
+
+.paymentContainer {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0;
+    border: 1px solid #e5e5e5;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+// Payment Options Section with different background
+.paymentOptionsSection {
+    background: #fff5ed;
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+// Text-only Payment Options
+.paymentOptionsText {
+    display: flex;
+    gap: 30px;
+    padding: 0 10px;
+}
+
+.paymentOptionText {
+    display: flex;
+    align-items: center;
+}
+
+.paymentText {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    position: relative;
+    
+    &:hover {
+        color: #f5ab1e;
+    }
+    
+    &.active {
+        color: #f5ab1e;
+        font-weight: 600;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #f5ab1e;
+        }
+    }
+}
+
+// Horizontal Bar Below Payment Options
+.paymentHorizontalBar {
+    width: 100%;
+    height: 1px;
+    background-color: #e5e5e5;
+    margin: 0;
+}
+
+.paymentLogin {
+    background: white;
+    border-radius: 0 0 8px 8px;
+    padding: 24px;
+    border: none;
+}
+
+// Payment Login Fields - Same as other fields
+.paymentLogin .fieldWrapper {
+    margin-bottom: 20px;
+}
+
+.paymentLogin .inputContainer {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+        border-color: #f5ab1e;
+    }
+    
+    &:focus-within {
+        border-color: #f5ab1e;
+        border-width: 2px;
+        box-shadow: 0 0 0 1px #f5ab1e;
+        
+        .shopifyLabel .labelText {
+            color: #f5ab1e;
+        }
+    }
+    
+    // When field has value - ANIMATION TRIGGER
+    &.hasValue {
+        .shopifyLabel {
+            .labelText {
+                transform: translateY(-12px) scale(0.85);
+                color: #666;
+                font-size: 12px;
+            }
+        }
+        
+        .shopifyInput {
+            transform: translateY(8px);
+        }
+    }
+}
+
+.paymentLogin .shopifyInput {
+    width: 100%;
+    height: 100%;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    background: transparent;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    line-height: 1.5;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:focus {
+        outline: none;
+    }
+}
+
+.paymentLogin .shopifyLabel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    .labelText {
+        font-size: 16px;
+        color: #6b7280;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 400;
+        line-height: 1.5;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: left center;
+    }
+}
+
+.codNote {
+    background: white;
+    border-radius: 0 0 8px 8px;
+    padding: 24px;
+    border: none;
+    text-align: center;
+
+    p {
+        margin: 8px 0;
+        font-size: 14px;
+        color: #666;
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.4;
+
+        &:first-child {
+            margin-top: 0;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Pay Now Button Styles
+.payNowButton {
+    width: 100%;
+    background: #f5ab1e;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+ 
+    
+    &:hover {
+        background: #e59a0e;
+        transform: translateY(-2px);
+     
+    }
+    
+    
+}
+
+.errorMessage {
+    text-align: center;
+    padding: 100px 20px;
+
+    p {
+        margin-bottom: 20px;
+        font-size: 18px;
+        color: #666;
+    }
+
+    button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+
+        &:hover {
+            background: #0056b3;
+        }
+    }
+}
+
+// Discount Section Styles
+.discountSection {
+  margin-top: 20px;
+ 
+ 
+}
+
+.discountRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.discountFieldWrapper {
+  flex: 1;
+  position: relative;
+}
+
+.discountInputContainer {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    border-color: #f5ab1e;
+  }
+  
+  &:focus-within {
+    border-color: #f5ab1e;
+    border-width: 2px;
+    box-shadow: 0 0 0 1px #f5ab1e;
+  }
+  
+  // When field has value - ANIMATION TRIGGER
+  &.hasValue {
+    .discountLabel {
+      .discountLabelText {
+        transform: translateY(-12px) scale(0.85);
+        color: #666;
+        font-size: 12px;
+      }
+    }
+    
+    .discountInput {
+      transform: translateY(8px);
+    }
+  }
+}
+
+.discountInput {
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+.discountLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  .discountLabelText {
+    font-size: 16px;
+    color: #6b7280;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left center;
+  }
+}
+
+.applyButton {
+  background: #e5e5e5;
+  color: #999;
+  border: none;
+  border-radius: 8px;
+  padding: 0 20px;
+  height: 56px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 80px;
+  
+  &.applyButtonActive {
+    background: #f5ab1e;
+    color: black;
+    cursor: pointer;
+    
+    &:hover {
+      background: #e59a0e;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.discountAppliedMessage {
+  color: #10b981;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  margin-top: 8px;
+  text-align: center;
+}
+
+// Responsive design for discount section
+@media (max-width: 768px) {
+  .discountInputContainer {
+    height: 52px;
+  }
+  
+  .discountInput {
+    font-size: 14px;
+  }
+  
+  .discountLabel .discountLabelText {
+    font-size: 14px;
+  }
+  
+  .applyButton {
+    height: 52px;
+    padding: 0 16px;
+    font-size: 14px;
+    min-width: 70px;
+  }
+  
+  .discountInputContainer.hasValue {
+    .discountLabel .discountLabelText {
+      font-size: 11px;
+      transform: translateY(-10px) scale(0.85);
+    }
+    
+    .discountInput {
+      transform: translateY(6px);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .discountSection {
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+  
+  .discountRow {
+    gap: 8px;
+  }
+  
+  .discountInputContainer {
+    height: 48px;
+  }
+  
+  .discountInput {
+    font-size: 14px;
+  }
+  
+  .applyButton {
+    height: 48px;
+    padding: 0 12px;
+    font-size: 13px;
+    min-width: 60px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .checkoutHeader {
+        padding: 15px 20px;
+
+        .logoContainer .logo {
+            margin-bottom: -20px;
+            margin-top: -10px;
+            margin-left: -15px;
+
+            .logoImage {
+                height: 100px;
+            }
+        }
+    }
+
+    .checkoutContent {
+        min-height: calc(100vh - 101px);
+    }
+
+    .leftSection,
+    .rightSection {
+        justify-content: center;
+    }
+
+    .contactSection {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+
+    .productDisplay {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+
+    .rightSection {
+        background: #f8f9fa;
+    }
+
+    .sectionHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+
+        .signInButton {
+            align-self: flex-end;
+        }
+    }
+
+    .checkboxLabel {
+        font-size: 13px;
+    }
+
+    .nameFields {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .inputContainer {
+        height: 52px;
+    }
+
+    .shopifyInput,
+    .shopifySelect {
+        font-size: 14px;
+    }
+
+    .shopifyLabel .labelText {
+        font-size: 14px;
+    }
+
+    .inputContainer.hasValue {
+        .shopifyLabel .labelText {
+            font-size: 11px;
+            transform: translateY(-10px) scale(0.85);
+        }
+        
+        .shopifyInput,
+        .shopifySelect {
+            transform: translateY(6px);
+        }
+    }
+
+    .deliveryNote {
+        padding: 12px;
+        
+        p {
+            font-size: 12px;
+        }
+    }
+
+    // Payment Section Responsive
+    .paymentSection {
+        margin-top: 30px;
+        padding-top: 20px;
+    }
+
+    .paymentTitle {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .paymentOptionsSection {
+        padding: 20px;
+    }
+
+    .paymentOptionsText {
+        gap: 20px;
+        padding: 0 5px;
+    }
+
+    .paymentText {
+        font-size: 14px;
+        padding: 6px 0;
+    }
+
+    .paymentLogin {
+        padding: 20px;
+    }
+
+    .paymentLogin .inputContainer {
+        height: 52px;
+    }
+
+    .paymentLogin .shopifyInput {
+        font-size: 14px;
+    }
+
+    .paymentLogin .shopifyLabel .labelText {
+        font-size: 14px;
+    }
+
+    .paymentLogin .inputContainer.hasValue {
+        .shopifyLabel .labelText {
+            font-size: 11px;
+            transform: translateY(-10px) scale(0.85);
+        }
+        
+        .shopifyInput {
+            transform: translateY(6px);
+        }
+    }
+
+    .codNote {
+        padding: 20px;
+        
+        p {
+            font-size: 13px;
+        }
+    }
+
+    // Pay Now Button Responsive
+    .payNowButton {
+        padding: 16px 20px;
+        font-size: 16px;
+        border-radius: 10px;
+    }
+
+    .productItem {
+        .imageContainer .productImage {
+            width: 60px;
+            height: 60px;
+        }
+
+        .productDetails {
+            .productHeader {
+                .productName {
+                    font-size: 14px;
+                }
+
+                .productPrice {
+                    font-size: 14px;
+                }
+            }
+
+            .productSpecs {
+                font-size: 13px;
+            }
+        }
+    }
+}
+
+// Extra small devices
+@media (max-width: 480px) {
+    .checkoutHeader {
+        padding: 10px 15px;
+
+        .logoContainer .logo {
+            margin-bottom: -15px;
+            margin-top: -5px;
+            margin-left: -10px;
+
+            .logoImage {
+                height: 80px;
+            }
+        }
+    }
+
+    .contactSection {
+        padding: 20px 15px;
+    }
+
+    .productDisplay {
+        padding: 20px 15px;
+    }
+
+    .sectionTitle,
+    .deliveryTitle {
+        font-size: 18px;
+    }
+
+    .deliveryNote {
+        margin-top: 15px;
+        
+        p {
+            font-size: 11px;
+        }
+    }
+
+    // Payment Section Extra Small
+    .paymentOptionsSection {
+        padding: 16px;
+    }
+
+    .paymentOptionsText {
+        gap: 15px;
+    }
+
+    .paymentText {
+        font-size: 13px;
+        padding: 4px 0;
+    }
+
+    .paymentLogin {
+        padding: 16px;
+    }
+
+    .codNote {
+        padding: 16px;
+        
+        p {
+            font-size: 12px;
+        }
+    }
+
+    // Pay Now Button Extra Small
+    .payNowButton {
+        padding: 14px 16px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+}

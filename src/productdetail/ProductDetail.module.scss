@@ -1049,15 +1049,39 @@
     svg {
       color: white;
     }
+    
   }
   
   svg {
     color: #333;
     transition: color 0.3s ease;
   }
+   &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
-// Product Info - UPDATED for mobile grid
+.iconloadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 1s linear infinite;
+
+  svg {
+    color: black;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .productInfo {
   padding: 15px 0 0 0;
   

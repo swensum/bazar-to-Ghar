@@ -562,6 +562,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Poppins', sans-serif;
+  position: relative;
+  height: 42px; // Fixed height
 
   &:disabled {
     opacity: 0.6;
@@ -571,6 +573,7 @@
   @media (max-width: 480px) {
     padding: 14px 20px;
     font-size: 16px;
+    height: 48px; 
   }
 }
 
@@ -592,6 +595,25 @@
   &:hover:not(:disabled) {
     background: #f5ab1e;
   }
+}
+
+// 75% complete circle spinner
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+  border-bottom: 3px solid transparent;
+  border-left: 3px solid transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .wishlistSection {
@@ -1108,6 +1130,35 @@
   }
 }
 
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 2s linear infinite;
+
+  svg {
+    color: black;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Update the related icon button to handle loading state
+.relatedIconBtn {
+  // Your existing styles...
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
 .relatedProductInfo {
   .relatedProductName {
     font-size: 16px;

@@ -31,7 +31,9 @@ export default function TrendingProducts(): JSX.Element {
   const [autoSlide, setAutoSlide] = useState(true);
   const { setSelectedProduct } = useProductDetail();
   const autoSlideRef = useRef(autoSlide);
-  const { openQuickView } = useQuickView();
+  const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
+const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 const navigate = useNavigate()
   const { visibleCount, itemWidth, gap } = config;
@@ -83,7 +85,26 @@ const navigate = useNavigate()
       }
     };
   }, [products.length, visibleCount]);
-
+const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+  e.stopPropagation();
+  
+  // Set loading state for this specific product
+  setLoadingProductId(product.id);
+  setQuickViewLoading(true);
+  
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Open the quick view
+    openQuickView(product);
+  } catch (error) {
+    console.error('Error opening quick view:', error);
+  } finally {
+    // Reset loading states
+    setLoadingProductId(null);
+    setQuickViewLoading(false);
+  }
+};
   const fetchTrendingProducts = async () => {
     try {
       setLoading(true);
@@ -185,8 +206,8 @@ const renderStars = (rating: number = 0) => {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 !== 0;
 
-  // Define stroke width - increase this value for thicker borders
-  const strokeWidth = 2.5; // You can adjust this value (1.5, 2, 2.5, 3, etc.)
+  
+  const strokeWidth = 2.5;
 
   for (let i = 0; i < fullStars; i++) {
     stars.push(
@@ -332,17 +353,25 @@ const renderStars = (rating: number = 0) => {
                           <button 
                                     className={styles.iconBtn} 
                                     aria-label="Add to cart"
-                                    onClick={(e) => {
-                                      e.stopPropagation(); 
-                                      openQuickView(product);
-                                    }}
-                                  >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <circle cx="9" cy="21" r="1"/>
-                                      <circle cx="20" cy="21" r="1"/>
-                                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                                    </svg>
-                                  </button>
+  onClick={(e) => handleQuickViewClick(product, e)}
+  disabled={isQuickViewLoading && loadingProductId === product.id}
+>
+  {isQuickViewLoading && loadingProductId === product.id ? (
+    // Loading spinner
+    <div className={styles.loadingSpinner}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+    </div>
+  ) : (
+    // Cart icon
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+  )}
+</button>
                         </div>
                       </div>
                     </div>

@@ -12,10 +12,10 @@ import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
 import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
 import { CartProvider, useCart } from "./contexts/CartContext";
 import CartSidebar from "./cart/CartSidebar";
-
 import "./App.css";
 import LoadingScreen from "./loading/LoadingScreen";
 import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
+import CheckoutPage from "./checkout/CheckoutPage";
 
 // Create a separate component that uses the QuickView hook
 function AppContent() {
@@ -68,16 +68,29 @@ function AppContent() {
   return (
     <>
       <div className="app-content">
-        <Navbar 
-          cartItemsCount={getCartItemsCount()} 
-          onCartClick={openCart} 
-        />
+        {/* Conditionally render Navbar - don't show on checkout page */}
+        <Routes>
+          <Route path="/checkout" element={null} />
+          <Route path="*" element={
+            <Navbar 
+              cartItemsCount={getCartItemsCount()} 
+              onCartClick={openCart} 
+            />
+          } />
+        </Routes>
+        
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductDetail />} />
           <Route path="/product/:productId" element={<ProductItemDetailPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
         </Routes>
-        <Footer />
+        
+        {/* Conditionally render Footer - don't show on checkout page */}
+        <Routes>
+          <Route path="/checkout" element={null} />
+          <Route path="*" element={<Footer />} />
+        </Routes>
       </div>
       
       {/* Quick View Popup */}
