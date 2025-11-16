@@ -1,4 +1,3 @@
-// CheckoutPage.module.scss
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 .checkoutPage {
@@ -22,11 +21,11 @@
             display: flex;
             align-items: center;
             margin-bottom: -40px;
-            margin-top: -20px;
-            margin-left: -30px;
-
+            margin-top: -50px;
+            padding-left: 70px;
+            
             .logoImage {
-                height: 150px;
+                height: 180px;
                 width: auto;
                 object-fit: contain;
                 display: block;
@@ -62,12 +61,22 @@
     background: #fff;
     display: flex;
     justify-content: flex-end;
+
+    @media (max-width: 768px) {
+        justify-content: center;
+    }
 }
 
 .rightSection {
     background: #f8f9fa;
     display: flex;
     justify-content: flex-start;
+
+    @media (max-width: 768px) {
+        justify-content: center;
+        order: 3;
+        background: #fff;
+    }
 }
 
 .verticalSeparator {
@@ -86,12 +95,125 @@
     padding: 40px 40px 40px 0; 
     max-width: 450px;
     width: 100%;
+
+    @media (max-width: 768px) {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
 }
 
 .productDisplay {
     padding: 50px 0 40px 40px; 
     max-width: 450px;
     width: 100%;
+
+    @media (max-width: 768px) {
+        padding: 30px 20px;
+        max-width: 100%;
+        order: 2;
+        background: #f8f9fa;
+        border-top: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e5e5e5;
+    }
+}
+
+// Mobile layout rearrangement
+@media (max-width: 768px) {
+    .checkoutContent {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .leftSection {
+        order: 1;
+    }
+
+    .rightSection {
+        order: 3;
+    }
+
+    .productDisplay {
+        order: 2;
+    }
+
+    // Hide desktop elements on mobile
+    .paymentSection {
+        .payNowButton {
+            display: none;
+        }
+        
+        .footerSection {
+            display: none;
+        }
+    }
+
+    // Show mobile elements
+    .productDisplay {
+        .mobilePayNowButton {
+            display: block;
+            width: 100%;
+            background: #f5ab1e;
+            color: black;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+
+            &:hover {
+                background: #e59a0e;
+                transform: translateY(-2px);
+            }
+        }
+
+        .mobileFooterSection {
+            display: block;
+            margin-top: 30px;
+            padding-top: 20px;
+
+            .footerHorizontalBar {
+                width: 100%;
+                height: 1px;
+                background-color: #e5e5e5;
+                margin-bottom: 10px;
+            }
+
+            .copyrightText {
+                text-align: center;
+                font-family: 'Poppins', sans-serif;
+                font-size: 12px;
+                color: #666;
+                font-weight: 400;
+            }
+        }
+    }
+}
+
+// Desktop: Show desktop elements
+@media (min-width: 769px) {
+    .paymentSection {
+        .payNowButton {
+            display: block;
+        }
+        
+        .footerSection {
+            display: block;
+        }
+    }
+
+    .productDisplay {
+        .mobilePayNowButton {
+            display: none;
+        }
+
+        .mobileFooterSection {
+            display: none;
+        }
+    }
 }
 
 .sectionHeader {
@@ -120,6 +242,18 @@
 
         &:hover {
             color: #c27e00;
+        }
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: row; // Keep them in the same line on mobile
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+
+        .signInButton {
+            align-self: auto; // Remove the align-self from previous styles
+            font-size: 14px;
         }
     }
 }
@@ -456,7 +590,7 @@
     background: #f8f9fa;
     border-radius: 12px;
     padding: 0;
-    border: 1px solid #e5e5e5;
+    border: 1px solid #d5d5d5;
     overflow: hidden;
     margin-bottom: 20px;
 }
@@ -464,8 +598,8 @@
 // Payment Options Section with different background
 .paymentOptionsSection {
     background: #fff5ed;
-    padding: 20px;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 10px;
+    border-bottom: 1px solid #f5ab1e;
 }
 
 // Text-only Payment Options
@@ -510,16 +644,8 @@
     }
 }
 
-// Horizontal Bar Below Payment Options
-.paymentHorizontalBar {
-    width: 100%;
-    height: 1px;
-    background-color: #e5e5e5;
-    margin: 0;
-}
-
 .paymentLogin {
-    background: white;
+    background: #0000000B;
     border-radius: 0 0 8px 8px;
     padding: 24px;
     border: none;
@@ -648,15 +774,11 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
- 
-    
+
     &:hover {
         background: #e59a0e;
         transform: translateY(-2px);
-     
     }
-    
-    
 }
 
 .errorMessage {
@@ -683,11 +805,35 @@
     }
 }
 
+// Footer Section Styles
+.footerSection {
+    margin-top: 30px;
+    padding-top: 20px;
+}
+
+.footerHorizontalBar {
+    width: 100%;
+    height: 1px;
+    background-color: #e5e5e5;
+    margin-bottom: 10px;
+}
+
+.copyrightText {
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: #666;
+    font-weight: 400;
+    
+    @media (max-width: 768px) {
+        text-align: center;
+        font-size: 12px;
+    }
+}
+
 // Discount Section Styles
 .discountSection {
   margin-top: 20px;
- 
- 
 }
 
 .discountRow {
@@ -819,6 +965,42 @@
   text-align: center;
 }
 
+// Validation Styles
+.inputError {
+  border-color: #ef4444 !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 0 1px #ef4444 !important;
+
+  &:hover {
+    border-color: #ef4444 !important;
+  }
+
+  &:focus-within {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 1px #ef4444 !important;
+  }
+
+  .shopifyLabel .labelText {
+    color: #ef4444 !important;
+  }
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  margin-top: 4px;
+  display: block;
+}
+
+// Responsive validation styles
+@media (max-width: 768px) {
+  .errorText {
+    font-size: 11px;
+  }
+}
+
 // Responsive design for discount section
 @media (max-width: 768px) {
   .discountInputContainer {
@@ -877,6 +1059,7 @@
     min-width: 60px;
   }
 }
+
 // Order Summary Styles
 .orderSummary {
   margin-top: 30px;
@@ -982,6 +1165,7 @@
     font-size: 15px;
   }
 }
+
 // Responsive design
 @media (max-width: 768px) {
     .checkoutHeader {
@@ -990,10 +1174,10 @@
         .logoContainer .logo {
             margin-bottom: -20px;
             margin-top: -10px;
-            margin-left: -15px;
+            margin-left: -95px;
 
             .logoImage {
-                height: 100px;
+                height: 110px;
             }
         }
     }
@@ -1002,32 +1186,15 @@
         min-height: calc(100vh - 101px);
     }
 
-    .leftSection,
-    .rightSection {
-        justify-content: center;
-    }
-
-    .contactSection {
-        padding: 30px 20px;
-        max-width: 100%;
-    }
-
-    .productDisplay {
-        padding: 30px 20px;
-        max-width: 100%;
-    }
-
-    .rightSection {
-        background: #f8f9fa;
-    }
-
     .sectionHeader {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row; // Keep Contact and Sign In on same line
+        justify-content: space-between;
+        align-items: center;
         gap: 10px;
 
         .signInButton {
-            align-self: flex-end;
+            align-self: auto; // Remove previous align-self
+            font-size: 14px;
         }
     }
 
@@ -1181,10 +1348,6 @@
     }
 
     .contactSection {
-        padding: 20px 15px;
-    }
-
-    .productDisplay {
         padding: 20px 15px;
     }
 
