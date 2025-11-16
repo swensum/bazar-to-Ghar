@@ -29,13 +29,13 @@ export default function TrendingProducts(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [showArrows, setShowArrows] = useState(false);
   const [autoSlide, setAutoSlide] = useState(true);
-  const { setSelectedProduct } = useProductDetail();
+  const { setSelectedProduct, processProductData } = useProductDetail();
   const autoSlideRef = useRef(autoSlide);
   const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
-const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-const navigate = useNavigate()
+  const navigate = useNavigate()
   const { visibleCount, itemWidth, gap } = config;
   const step = itemWidth + gap;
   const viewportWidth = visibleCount * itemWidth + (visibleCount - 1) * gap;
@@ -85,26 +85,31 @@ const navigate = useNavigate()
       }
     };
   }, [products.length, visibleCount]);
-const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
-  e.stopPropagation();
-  
-  // Set loading state for this specific product
-  setLoadingProductId(product.id);
-  setQuickViewLoading(true);
-  
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+  const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+    e.stopPropagation();
     
-    // Open the quick view
-    openQuickView(product);
-  } catch (error) {
-    console.error('Error opening quick view:', error);
-  } finally {
-    // Reset loading states
-    setLoadingProductId(null);
-    setQuickViewLoading(false);
-  }
-};
+    // Set loading state for this specific product
+    setLoadingProductId(product.id);
+    setQuickViewLoading(true);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Process the product to include packageOptions before opening quick view
+      const processedProduct = processProductData(product);
+      
+      // Open the quick view with processed product
+      openQuickView(processedProduct);
+    } catch (error) {
+      console.error('Error opening quick view:', error);
+    } finally {
+      // Reset loading states
+      setLoadingProductId(null);
+      setQuickViewLoading(false);
+    }
+  };
+
   const fetchTrendingProducts = async () => {
     try {
       setLoading(true);
@@ -201,71 +206,72 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
       }, 1000);
     }
   };
-const renderStars = (rating: number = 0) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 !== 0;
 
-  
-  const strokeWidth = 2.5;
+  const renderStars = (rating: number = 0) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
 
-  for (let i = 0; i < fullStars; i++) {
-    stars.push(
-      <svg 
-        key={`full-${i}`} 
-        width="16" 
-        height="16" 
-        viewBox="0 0 24 24" 
-        fill="#F5BE05" 
-        stroke="#F5BE05"
-        strokeWidth={strokeWidth} // Add this line
-      >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-    );
-  }
+    
+    const strokeWidth = 2.5;
 
-  if (hasHalfStar) {
-    stars.push(
-      <svg 
-        key="half" 
-        width="16" 
-        height="16" 
-        viewBox="0 0 24 24" 
-        fill="#F5BE05" 
-        stroke="#F5BE05"
-        strokeWidth={strokeWidth} // Add this line
-      >
-        <defs>
-          <linearGradient id="half">
-            <stop offset="50%" stopColor="#F5BE05" />
-            <stop offset="50%" stopColor="transparent" />
-          </linearGradient>
-        </defs>
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)"/>
-      </svg>
-    );
-  }
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <svg 
+          key={`full-${i}`} 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="#F5BE05" 
+          stroke="#F5BE05"
+          strokeWidth={strokeWidth} // Add this line
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      );
+    }
 
-  const emptyStars = 5 - stars.length;
-  for (let i = 0; i < emptyStars; i++) {
-    stars.push(
-      <svg 
-        key={`empty-${i}`} 
-        width="16" 
-        height="16" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="#F5BE05"
-        strokeWidth={strokeWidth} 
-      >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-    );
-  }
+    if (hasHalfStar) {
+      stars.push(
+        <svg 
+          key="half" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="#F5BE05" 
+          stroke="#F5BE05"
+          strokeWidth={strokeWidth} // Add this line
+        >
+          <defs>
+            <linearGradient id="half">
+              <stop offset="50%" stopColor="#F5BE05" />
+              <stop offset="50%" stopColor="transparent" />
+            </linearGradient>
+          </defs>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)"/>
+        </svg>
+      );
+    }
 
-  return stars;
-};
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <svg 
+          key={`empty-${i}`} 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="#F5BE05"
+          strokeWidth={strokeWidth} 
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      );
+    }
+
+    return stars;
+  };
 
   function getItemConfig(width: number) {
     // Always show 4 items, adjust width based on screen size
@@ -324,9 +330,10 @@ const renderStars = (rating: number = 0) => {
                     className={styles.productCard}
                     style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
                     onClick={() => {
-                            setSelectedProduct(product);
-                            navigate(`/product/${product.id}`);
-                          }}
+                      const processedProduct = processProductData(product);
+                      setSelectedProduct(processedProduct);
+                      navigate(`/product/${product.id}`);
+                    }}
                   >
                     <div className={styles.productImageContainer}>
                       <img 
@@ -351,27 +358,27 @@ const renderStars = (rating: number = 0) => {
                             </svg>
                           </button>
                           <button 
-                                    className={styles.iconBtn} 
-                                    aria-label="Add to cart"
-  onClick={(e) => handleQuickViewClick(product, e)}
-  disabled={isQuickViewLoading && loadingProductId === product.id}
->
-  {isQuickViewLoading && loadingProductId === product.id ? (
-    // Loading spinner
-    <div className={styles.loadingSpinner}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-    </div>
-  ) : (
-    // Cart icon
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  )}
-</button>
+                            className={styles.iconBtn} 
+                            aria-label="Add to cart"
+                            onClick={(e) => handleQuickViewClick(product, e)}
+                            disabled={isQuickViewLoading && loadingProductId === product.id}
+                          >
+                            {isQuickViewLoading && loadingProductId === product.id ? (
+                              // Loading spinner
+                              <div className={styles.loadingSpinner}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                </svg>
+                              </div>
+                            ) : (
+                              // Cart icon
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="9" cy="21" r="1" />
+                                <circle cx="20" cy="21" r="1" />
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                              </svg>
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>

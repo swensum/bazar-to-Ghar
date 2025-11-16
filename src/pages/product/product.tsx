@@ -31,10 +31,10 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const [selectedType, setSelectedType] = useState<ProductType>(initialFilter || 'Best Seller');
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(0);
-  const { setSelectedProduct } = useProductDetail();
+  const { setSelectedProduct, processProductData } = useProductDetail();
   const navigate = useNavigate();
-const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
-const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+  const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const productsPerPage = 8;
   const trackRef = useRef<HTMLDivElement>(null);
@@ -68,27 +68,32 @@ const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   useEffect(() => {
     setCurrentPage(0); 
   }, [filteredProducts]);
-const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
-  e.stopPropagation();
-  
-  // Set loading state for this specific product
-  setLoadingProductId(product.id);
-  setQuickViewLoading(true);
-  
-  try {
-    // Simulate a small delay for better UX (optional)
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+  const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+    e.stopPropagation();
     
-    // Open the quick view
-    openQuickView(product);
-  } catch (error) {
-    console.error('Error opening quick view:', error);
-  } finally {
-    // Reset loading states
-    setLoadingProductId(null);
-    setQuickViewLoading(false);
-  }
-};
+    // Set loading state for this specific product
+    setLoadingProductId(product.id);
+    setQuickViewLoading(true);
+    
+    try {
+      // Simulate a small delay for better UX (optional)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Process the product to include packageOptions before opening quick view
+      const processedProduct = processProductData(product);
+      
+      // Open the quick view with processed product
+      openQuickView(processedProduct);
+    } catch (error) {
+      console.error('Error opening quick view:', error);
+    } finally {
+      // Reset loading states
+      setLoadingProductId(null);
+      setQuickViewLoading(false);
+    }
+  };
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -125,15 +130,14 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
 
   const filterProductsByType = () => {
     if (selectedType === 'New Product') {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60); 
       
       const newProducts = products.filter(product => 
-        new Date(product.created_at) > thirtyDaysAgo
+        new Date(product.created_at) > sixtyDaysAgo
       );
       setFilteredProducts(newProducts);
     } else {
-      
       const filtered = products.filter(product => 
         Array.isArray(product.product_types) && 
         product.product_types.includes(selectedType)
@@ -164,10 +168,11 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-const strokeWidth = 2.5;
+    const strokeWidth = 2.5;
+    
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05"   strokeWidth={strokeWidth}>
+        <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05" strokeWidth={strokeWidth}>
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       );
@@ -236,7 +241,6 @@ const strokeWidth = 2.5;
         <div className={styles.productsContainer}>
           {filteredProducts.length > 0 ? (
             <>
-
               {/* Products Carousel */}
               <div className={styles.carouselContainer}>
                 <button 
@@ -258,16 +262,16 @@ const strokeWidth = 2.5;
                           : product.price;
 
                         return (
-                           <div key={product.id} className={styles.productCard}  onClick={() => {
-                                  setSelectedProduct(product);
-                                  navigate(`/product/${product.id}`);
-                                }}>
+                          <div key={product.id} className={styles.productCard} onClick={() => {
+                            const processedProduct = processProductData(product);
+                            setSelectedProduct(processedProduct);
+                            navigate(`/product/${product.id}`);
+                          }}>
                             <div className={styles.productImageContainer}>
                               <img 
                                 src={product.image_url} 
                                 alt={product.name}
                                 className={styles.productImage}
-                               
                               />
                               {!product.in_stock ? (
                                 <div className={styles.outOfStock}>Out of Stock</div>
@@ -293,28 +297,28 @@ const strokeWidth = 2.5;
                                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                     </svg>
                                   </button>
-                                 <button 
+                                  <button 
                                     className={styles.iconBtn} 
-                                     aria-label="Add to cart"
-  onClick={(e) => handleQuickViewClick(product, e)}
-  disabled={isQuickViewLoading && loadingProductId === product.id}
->
-  {isQuickViewLoading && loadingProductId === product.id ? (
-    // Loading spinner
-    <div className={styles.loadingSpinner}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-    </div>
-  ) : (
-    // Cart icon
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  )}
-</button>
+                                    aria-label="Add to cart"
+                                    onClick={(e) => handleQuickViewClick(product, e)}
+                                    disabled={isQuickViewLoading && loadingProductId === product.id}
+                                  >
+                                    {isQuickViewLoading && loadingProductId === product.id ? (
+                                      // Loading spinner
+                                      <div className={styles.loadingSpinner}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                        </svg>
+                                      </div>
+                                    ) : (
+                                      // Cart icon
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="9" cy="21" r="1" />
+                                        <circle cx="20" cy="21" r="1" />
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                      </svg>
+                                    )}
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -361,8 +365,6 @@ const strokeWidth = 2.5;
                   </svg>
                 </button>
               </div>
-
-            
             </>
           ) : (
             <div className={styles.noProducts}>

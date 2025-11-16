@@ -33,24 +33,24 @@ function AppContent() {
   } = useCart();
 
   const handleAddToCart = (product: any, quantity: number, selectedPackage?: string) => {
-    // Add item to cart
-    const newItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: quantity,
-      image: product.images?.[0] || product.image_url,
-      selectedPackage: selectedPackage,
-      discount_percentage: product.discount_percentage
-    };
-
-    addToCart(newItem);
-    
-    // Open cart sidebar
-    openCart();
-    console.log('Added to cart:', newItem);
+  // Add item to cart
+  const newItem = {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    quantity: quantity,
+    image: product.images?.[0] || product.image_url,
+    selectedPackage: selectedPackage,
+    discount_percentage: product.discount_percentage,
+    material: product.material // Add this line
   };
 
+  addToCart(newItem);
+  
+  // Open cart sidebar
+  openCart();
+  console.log('Added to cart:', newItem);
+};
   const handleUpdateQuantity = (id: string, quantity: number) => {
     updateQuantity(id, quantity);
   };

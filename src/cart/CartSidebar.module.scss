@@ -200,7 +200,12 @@
   color: #666;
   margin: 0;
 }
-
+.itemMaterial {
+  font-size: 12px;
+  color: #666;
+  margin: 2px 0;
+  font-weight: 400;
+}
 .priceSection {
   .discountPrice {
     display: flex;

@@ -1,4 +1,5 @@
 import { type JSX, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProductDetail } from "../contexts/ProductDetailContext";
 import styles from "./ProductQuickViewPopup.module.scss";
 import esewaLogo from "../assets/esewa.png";
@@ -10,19 +11,18 @@ interface ProductQuickViewPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: any, quantity: number, selectedPackage?: string) => void;
-  onBuyNow?: (product: any, quantity: number, selectedPackage?: string) => void;
 }
 
 export default function ProductQuickViewPopup({
   product,
   isOpen,
   onClose,
-  onAddToCart,
-  onBuyNow
+  onAddToCart
 }: ProductQuickViewPopupProps): JSX.Element {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const navigate = useNavigate();
   
   const {
     // State
@@ -100,16 +100,31 @@ export default function ProductQuickViewPopup({
       // Simulate processing delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (onBuyNow) {
-        onBuyNow(product, quantity, selectedPackage || '');
-      } else {
-        console.log('Buy now:', {
-          product,
-          quantity,
-          selectedPackage
-        });
-        onClose();
-      }
+      // Always navigate to checkout with product data
+      const checkoutProduct = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        image: product.images?.[0] || product.image_url,
+        images: product.images,
+        image_url: product.image_url,
+        selectedPackage: selectedPackage || undefined,
+        discount_percentage: product.discount_percentage > 0 ? product.discount_percentage : undefined,
+        material: product.material,
+        material_type: product.material_type
+      };
+      
+      // Navigate to checkout page with product data
+      navigate('/checkout', {
+        state: {
+          product: checkoutProduct
+        }
+      });
+      
+      // Close the quick view popup
+      onClose();
+      
     } catch (error) {
       console.error('Error in buy now:', error);
     } finally {
@@ -217,6 +232,16 @@ export default function ProductQuickViewPopup({
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Material Section - Added below Package Options */}
+            {product.material && (
+              <div className={styles.materialSection}>
+                <h3 className={styles.sectionTitle}>Material :</h3>
+                <span className={styles.materialText}>
+                  {product.material}
+                </span>
               </div>
             )}
 

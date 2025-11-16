@@ -6,6 +6,7 @@ export interface CartItem {
   image: string;
   selectedPackage?: string;
   discount_percentage?: number;
+  material?: string;
 }
 
 export interface CartState {

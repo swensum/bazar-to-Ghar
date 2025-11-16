@@ -139,7 +139,7 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
         setIsFavorite(!isFavorite);
     };
 
-        const handleAddToCart = async () => {
+       const handleAddToCart = async () => {
     if (!selectedProduct) return;
     
     setIsAddingToCart(true);
@@ -148,7 +148,7 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
         // Simulate API call or processing delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Create cart item
+        // Create cart item with ALL necessary information
         const cartItem = {
             id: selectedProduct.id,
             name: selectedProduct.name,
@@ -156,7 +156,8 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
             quantity: quantity,
             image: selectedProduct.images?.[0] || selectedProduct.image_url,
             selectedPackage: selectedPackage || undefined,
-            discount_percentage: selectedProduct.discount_percentage > 0 ? selectedProduct.discount_percentage : undefined
+            discount_percentage: selectedProduct.discount_percentage > 0 ? selectedProduct.discount_percentage : undefined,
+            material: selectedProduct.material || undefined // Add this line
         };
 
         // Add to cart using context
@@ -181,12 +182,17 @@ const handleBuyNow = async () => {
         // Simulate processing delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
+        // Create a complete product object with all necessary data
+        const productData = {
+            ...selectedProduct, // Spread all product properties
+            quantity: quantity, // Include the selected quantity
+            selectedPackage: selectedPackage || undefined, // Include the selected package
+        };
+        
         // Navigate to checkout page with product data
         navigate('/checkout', {
             state: {
-                product: selectedProduct,
-                quantity: quantity,
-                selectedPackage: selectedPackage
+                product: productData // Pass the complete product object
             }
         });
         
@@ -374,8 +380,7 @@ const handleBuyNow = async () => {
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        {/* Action Buttons */}
+                      
 <div className={styles.actionButtons}>
     <button
         className={styles.addToCartBtn}
@@ -480,7 +485,7 @@ const handleBuyNow = async () => {
                     </div>
                 </div>
 
-                {/* Description and Reviews Tabs Section */}
+                
                 <div className={styles.tabsSection}>
                     <div className={styles.tabsContainer}>
                         <button

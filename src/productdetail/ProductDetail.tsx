@@ -12,8 +12,8 @@ import { useQuickView } from "../contexts/QuickViewContext";
 export default function ProductDetail(): JSX.Element {
     const location = useLocation();
     const navigate = useNavigate()
-    const { setSelectedProduct } = useProductDetail();
-   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+    const { setSelectedProduct, processProductData } = useProductDetail();
+    const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
     const {
         categories,
@@ -99,27 +99,32 @@ export default function ProductDetail(): JSX.Element {
             }, 100);
         }
     }, [selectedCategory, isInitializing]);
-const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
-  e.stopPropagation();
-  
-  // Set loading state for this specific product
-  setLoadingProductId(product.id);
-  setQuickViewLoading(true);
-  
-  try {
-    // Simulate a small delay for better UX (optional)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Open the quick view
-    openQuickView(product);
-  } catch (error) {
-    console.error('Error opening quick view:', error);
-  } finally {
-    // Reset loading states
-    setLoadingProductId(null);
-    setQuickViewLoading(false);
-  }
-};
+
+    const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        
+        // Set loading state for this specific product
+        setLoadingProductId(product.id);
+        setQuickViewLoading(true);
+        
+        try {
+            // Simulate a small delay for better UX (optional)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Process the product to include packageOptions before opening quick view
+            const processedProduct = processProductData(product);
+            
+            // Open the quick view with processed product
+            openQuickView(processedProduct);
+        } catch (error) {
+            console.error('Error opening quick view:', error);
+        } finally {
+            // Reset loading states
+            setLoadingProductId(null);
+            setQuickViewLoading(false);
+        }
+    };
+
     const handleCategoryClick = (category: any) => {
         setSelectedCategory(category);
         if (isMobile) {
@@ -200,7 +205,8 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
 
     // Close filters when clicking on a product on mobile
     const handleProductClick = (product: any) => {
-        setSelectedProduct(product);
+        const processedProduct = processProductData(product);
+        setSelectedProduct(processedProduct);
         navigate(`/product/${product.id}`);
         if (isMobile) {
             setShowFilters(false);
@@ -652,24 +658,24 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
                                                                 className={styles.iconBtn}
                                                                 aria-label="Add to cart"
                                                                 onClick={(e) => handleQuickViewClick(product, e)}
-  disabled={isQuickViewLoading && loadingProductId === product.id}
->
-  {isQuickViewLoading && loadingProductId === product.id ? (
-    // Loading spinner
-    <div className={styles.iconloadingSpinner}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-    </div>
-  ) : (
-    // Cart icon
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  )}
-</button>
+                                                                disabled={isQuickViewLoading && loadingProductId === product.id}
+                                                            >
+                                                                {isQuickViewLoading && loadingProductId === product.id ? (
+                                                                    // Loading spinner
+                                                                    <div className={styles.iconloadingSpinner}>
+                                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                                                        </svg>
+                                                                    </div>
+                                                                ) : (
+                                                                    // Cart icon
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                        <circle cx="9" cy="21" r="1" />
+                                                                        <circle cx="20" cy="21" r="1" />
+                                                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                                    </svg>
+                                                                )}
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -763,24 +769,24 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
                                                         </button>
                                                         <button className={styles.listIconBtn}  aria-label="Add to cart"
                                                                 onClick={(e) => handleQuickViewClick(product, e)}
-  disabled={isQuickViewLoading && loadingProductId === product.id}
->
-  {isQuickViewLoading && loadingProductId === product.id ? (
-    // Loading spinner
-    <div className={styles.iconloadingSpinner}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-    </div>
-  ) : (
-    // Cart icon
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  )}
-</button>
+                                                                disabled={isQuickViewLoading && loadingProductId === product.id}
+                                                        >
+                                                            {isQuickViewLoading && loadingProductId === product.id ? (
+                                                                // Loading spinner
+                                                                <div className={styles.iconloadingSpinner}>
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                                                    </svg>
+                                                                </div>
+                                                            ) : (
+                                                                // Cart icon
+                                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                    <circle cx="9" cy="21" r="1" />
+                                                                    <circle cx="20" cy="21" r="1" />
+                                                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                                </svg>
+                                                            )}
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>

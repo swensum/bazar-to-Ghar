@@ -4,6 +4,21 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./CheckoutPage.module.scss";
 import appLogo from "../assets/logo.png";
 
+// Add these type definitions
+interface CheckoutProduct {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  images?: string[];
+  image_url?: string;
+  selectedPackage?: string;
+  discount_percentage?: number;
+  material?: string;
+  material_type?: string;
+}
+
 export default function CheckoutPage(): JSX.Element {
     const navigate = useNavigate();
     const location = useLocation();
@@ -33,17 +48,50 @@ export default function CheckoutPage(): JSX.Element {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-    // Get the product from location state
-    const product = location.state?.product;
-    const quantity = location.state?.quantity || 1;
-    const selectedPackage = location.state?.selectedPackage;
+    // Get the checkout data from location state
+    const product = location.state?.product as CheckoutProduct | undefined; // From buy now
+    const cartItems = location.state?.cartItems as CheckoutProduct[] || []; // From cart
+    const cartTotal = location.state?.cartTotal || 0;
+
+    // Determine checkout type and items
+    const isCartCheckout = cartItems.length > 0;
+    const checkoutItems = isCartCheckout ? cartItems : (product ? [product] : []);
 
     // Set first payment option as default when page loads or reloads
     useEffect(() => {
         setPaymentMethod("esewa");
     }, []);
 
-    // Validation rules
+    // Calculate prices - works for both single product and cart
+    const calculateItemPrice = (item: CheckoutProduct) => {
+        // Handle single product from buy now (may have discount_percentage)
+        const discountedPrice = item.discount_percentage && item.discount_percentage > 0
+            ? item.price * (1 - item.discount_percentage / 100)
+            : item.price;
+        return discountedPrice * (item.quantity || 1);
+    };
+
+    // Calculate subtotal based on checkout type
+    const calculateSubtotal = () => {
+        if (isCartCheckout) {
+            // For cart checkout, use the provided cartTotal
+            return cartTotal;
+        } else if (product) {
+            // For single product, calculate manually
+            const discountedPrice = product.discount_percentage && product.discount_percentage > 0
+                ? product.price * (1 - product.discount_percentage / 100)
+                : product.price;
+            return discountedPrice * (product.quantity || 1);
+        }
+        return 0;
+    };
+
+    const subtotal = calculateSubtotal();
+    const shippingCharge: number = 5;
+    const discount = discountAmount;
+    const grandTotal = subtotal + shippingCharge - discount;
+
+    // Rest of your validation and functions remain the same...
     const validateField = (name: string, value: string): string => {
         switch (name) {
             case 'email':
@@ -156,6 +204,8 @@ export default function CheckoutPage(): JSX.Element {
         
         if (validateForm()) {
             console.log("Form submitted successfully!");
+            console.log("Checkout items:", checkoutItems);
+            console.log("Total amount:", grandTotal);
             // Handle payment logic here
         } else {
             console.log("Form has errors, please fix them");
@@ -183,7 +233,7 @@ export default function CheckoutPage(): JSX.Element {
                 setCouponMessage(result.message);
                 
                 if (result.discountType === "percentage") {
-                    const discountValue = (totalPrice * result.discount) / 100;
+                    const discountValue = (subtotal * result.discount) / 100;
                     setDiscountAmount(discountValue);
                 } else {
                     setDiscountAmount(result.discount || 0);
@@ -220,27 +270,16 @@ export default function CheckoutPage(): JSX.Element {
         return touched[fieldName] ? errors[fieldName] || "" : "";
     };
 
-    if (!product) {
+    if (checkoutItems.length === 0) {
         return (
             <div className={styles.checkoutPage}>
                 <div className={styles.errorMessage}>
-                    <p>No product found. Please go back and try again.</p>
+                    <p>No items found. Please go back and try again.</p>
                     <button onClick={() => navigate('/')}>Return to Home</button>
                 </div>
             </div>
         );
     }
-
-    // Calculate prices
-    const discountedPrice = product.discount_percentage > 0
-        ? product.price * (1 - product.discount_percentage / 100)
-        : product.price;
-
-    const totalPrice = discountedPrice * quantity;
-    const subtotal = totalPrice;
-    const shippingCharge: number = 5;
-    const discount = discountAmount;
-    const grandTotal = subtotal + shippingCharge - discount;
 
     // Determine button text based on payment method
     const payButtonText = paymentMethod === 'cod' ? 'Proceed' : 'Pay Now';
@@ -261,6 +300,7 @@ export default function CheckoutPage(): JSX.Element {
                 <div className={styles.checkoutContent}>
                     {/* Left Section - Contact Information */}
                     <div className={styles.leftSection}>
+                        {/* ... (your existing contact form code remains exactly the same) ... */}
                         <div className={styles.contactSection}>
                             <div className={styles.sectionHeader}>
                                 <h2 className={styles.sectionTitle}>Contact</h2>
@@ -533,27 +573,34 @@ export default function CheckoutPage(): JSX.Element {
                     {/* Right Section - Product Display */}
                     <div className={styles.rightSection}>
                         <div className={styles.productDisplay}>
-                            <div className={styles.productItem}>
-                                <div className={styles.imageContainer}>
-                                    <img 
-                                        src={product.images?.[0] || product.image_url} 
-                                        alt={product.name}
-                                        className={styles.productImage}
-                                    />
-                                    <div className={styles.quantityBadge}>{quantity}</div>
-                                </div>
-                                <div className={styles.productDetails}>
-                                    <div className={styles.productHeader}>
-                                        <h3 className={styles.productName}>{product.name}</h3>
-                                        <span className={styles.productPrice}>${totalPrice.toFixed(2)}</span>
+                            {/* Product Items - Works for both single and multiple products */}
+                            {checkoutItems.map((item: CheckoutProduct, index: number) => {
+                                const itemPrice = calculateItemPrice(item);
+                                
+                                return (
+                                    <div key={`${item.id}-${index}`} className={styles.productItem}>
+                                        <div className={styles.imageContainer}>
+                                            <img 
+                                                src={item.images?.[0] || item.image_url || item.image} 
+                                                alt={item.name}
+                                                className={styles.productImage}
+                                            />
+                                            <div className={styles.quantityBadge}>{item.quantity || 1}</div>
+                                        </div>
+                                        <div className={styles.productDetails}>
+                                            <div className={styles.productHeader}>
+                                                <h3 className={styles.productName}>{item.name}</h3>
+                                                <span className={styles.productPrice}>${itemPrice.toFixed(2)}</span>
+                                            </div>
+                                            <div className={styles.productSpecs}>
+                                                <span className={styles.sizeText}>{item.selectedPackage || 'Standard'}</span>
+                                                <span className={styles.separator}>/</span>
+                                                <span className={styles.materialText}>{item.material || item.material_type || 'Cotton'}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className={styles.productSpecs}>
-                                        <span className={styles.sizeText}>{selectedPackage || 'Standard'}</span>
-                                        <span className={styles.separator}>/</span>
-                                        <span className={styles.materialText}>{product.material || product.material_type || 'Cotton'}</span>
-                                    </div>
-                                </div>
-                            </div>
+                                );
+                            })}
 
                             {/* Discount Code Section */}
                             <div className={styles.discountSection}>

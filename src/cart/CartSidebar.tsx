@@ -1,4 +1,5 @@
 import { type JSX, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import type { CartItem } from "../types/Cart";
 import styles from "./CartSidebar.module.scss";
 
@@ -20,6 +21,7 @@ export default function CartSidebar({
   cartTotal
 }: CartSidebarProps): JSX.Element {
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
   const freeShippingThreshold = 50;
 
   // Calculate progress for free shipping
@@ -38,6 +40,21 @@ export default function CartSidebar({
     return item.discount_percentage 
       ? item.price * (1 - item.discount_percentage / 100)
       : item.price;
+  };
+
+  const handleProceedToCheckout = () => {
+    if (cartItems.length === 0) return;
+    
+    // Close the cart sidebar
+    onClose();
+    
+    // Navigate to checkout with all cart items
+    navigate('/checkout', {
+      state: {
+        cartItems: cartItems,
+        cartTotal: cartTotal
+      }
+    });
   };
 
   return (
@@ -110,6 +127,12 @@ export default function CartSidebar({
                       
                       <div className={styles.itemDetails}>
                         <h4 className={styles.itemName}>{item.name}</h4>
+                        
+                        {/* Material Information */}
+                        {item.material && (
+                          <p className={styles.itemMaterial}>Material: {item.material}</p>
+                        )}
+                        
                         {item.selectedPackage && (
                           <p className={styles.itemPackage}>Package: {item.selectedPackage}</p>
                         )}
@@ -178,7 +201,11 @@ export default function CartSidebar({
                   <span>${(cartTotal + (amountNeeded > 0 ? 10 : 0) + (cartTotal * 0.1)).toFixed(2)}</span>
                 </div>
                 
-                <button className={styles.checkoutBtn}>
+                <button 
+                  className={styles.checkoutBtn}
+                  onClick={handleProceedToCheckout}
+                  disabled={cartItems.length === 0}
+                >
                   Proceed to Checkout
                 </button>
               </div>
