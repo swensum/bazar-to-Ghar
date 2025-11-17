@@ -59,16 +59,11 @@ function AppContent() {
     removeFromCart(id);
   };
 
-  const handleBuyNow = (product: any, quantity: number, selectedPackage?: string) => {
-    handleAddToCart(product, quantity, selectedPackage);
-    // You can add additional buy now logic here
-    closeQuickView();
-  };
 
   return (
     <>
       <div className="app-content">
-        {/* Conditionally render Navbar - don't show on checkout page */}
+      
         <Routes>
           <Route path="/checkout" element={null} />
           <Route path="*" element={
@@ -99,7 +94,7 @@ function AppContent() {
         isOpen={isQuickViewOpen}
         onClose={closeQuickView}
         onAddToCart={handleAddToCart}
-        onBuyNow={handleBuyNow}
+       
       />
 
       {/* Cart Sidebar */}
