@@ -52,6 +52,21 @@ export default function CheckoutPage(): JSX.Element {
     const product = location.state?.product as CheckoutProduct | undefined; // From buy now
     const cartItems = location.state?.cartItems as CheckoutProduct[] || []; // From cart
     const cartTotal = location.state?.cartTotal || 0;
+    const cartShippingCharge = location.state?.shippingCharge ?? 5; // Use nullish coalescing
+    const hasFreeShipping = location.state?.hasFreeShipping || false;
+
+    // DEBUG LOGS - Add this to see what's being passed
+    useEffect(() => {
+        console.log('=== CHECKOUT DEBUG INFO ===');
+        console.log('Location State:', location.state);
+        console.log('Product from buy now:', product);
+        console.log('Cart Items:', cartItems);
+        console.log('Cart Total:', cartTotal);
+        console.log('Cart Shipping Charge:', cartShippingCharge);
+        console.log('Has Free Shipping:', hasFreeShipping);
+        console.log('Is Cart Checkout:', cartItems.length > 0);
+        console.log('========================');
+    }, [location.state]);
 
     // Determine checkout type and items
     const isCartCheckout = cartItems.length > 0;
@@ -87,11 +102,16 @@ export default function CheckoutPage(): JSX.Element {
     };
 
     const subtotal = calculateSubtotal();
-    const shippingCharge: number = 5;
+
+    // FIXED: Determine shipping charge based on source
+    const shippingCharge = isCartCheckout 
+        ? (hasFreeShipping ? 0 : cartShippingCharge)  // Use 0 if free shipping, otherwise use cart shipping
+        : 5;  // Default shipping for single product buy now
+
     const discount = discountAmount;
     const grandTotal = subtotal + shippingCharge - discount;
 
-    // Rest of your validation and functions remain the same...
+    // Validation rules
     const validateField = (name: string, value: string): string => {
         switch (name) {
             case 'email':
@@ -300,7 +320,6 @@ export default function CheckoutPage(): JSX.Element {
                 <div className={styles.checkoutContent}>
                     {/* Left Section - Contact Information */}
                     <div className={styles.leftSection}>
-                        {/* ... (your existing contact form code remains exactly the same) ... */}
                         <div className={styles.contactSection}>
                             <div className={styles.sectionHeader}>
                                 <h2 className={styles.sectionTitle}>Contact</h2>
@@ -649,7 +668,7 @@ export default function CheckoutPage(): JSX.Element {
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Shipping:</span>
                                     <span className={styles.summaryValue}>
-                                        {shippingCharge > 0 ? `$${shippingCharge.toFixed(2)}` : 'Free'}
+                                        {shippingCharge > 0 ? `$${shippingCharge.toFixed(2)}` : 'FREE'}
                                     </span>
                                 </div>
                                 <div className={styles.summaryRow}>

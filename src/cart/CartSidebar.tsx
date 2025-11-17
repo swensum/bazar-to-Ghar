@@ -26,6 +26,7 @@ export default function CartSidebar({
 
   // Calculate progress for free shipping
   const amountNeeded = Math.max(0, freeShippingThreshold - cartTotal);
+  const hasFreeShipping = cartTotal >= freeShippingThreshold; // Add this line
 
   useEffect(() => {
     const progressPercentage = Math.min((cartTotal / freeShippingThreshold) * 100, 100);
@@ -41,21 +42,32 @@ export default function CartSidebar({
       ? item.price * (1 - item.discount_percentage / 100)
       : item.price;
   };
-
-  const handleProceedToCheckout = () => {
+// In CartSidebar.tsx - update the handleProceedToCheckout function
+const handleProceedToCheckout = () => {
     if (cartItems.length === 0) return;
     
-    // Close the cart sidebar
+    const shippingCharge = hasFreeShipping ? 0 : 10; 
+    
+    // DEBUG LOGS
+    console.log('=== CART SIDEBAR DEBUG ===');
+    console.log('Cart Total:', cartTotal);
+    console.log('Free Shipping Threshold:', freeShippingThreshold);
+    console.log('Has Free Shipping:', hasFreeShipping);
+    console.log('Shipping Charge to pass:', shippingCharge);
+    console.log('Cart Items:', cartItems);
+    console.log('========================');
+    
     onClose();
     
-    // Navigate to checkout with all cart items
     navigate('/checkout', {
-      state: {
-        cartItems: cartItems,
-        cartTotal: cartTotal
-      }
+        state: {
+            cartItems: cartItems,
+            cartTotal: cartTotal,
+            hasFreeShipping: hasFreeShipping,
+            shippingCharge: shippingCharge
+        }
     });
-  };
+};
 
   return (
     <>
@@ -190,7 +202,7 @@ export default function CartSidebar({
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Shipping:</span>
-                  <span>{amountNeeded > 0 ? '$10.00' : 'FREE'}</span>
+                  <span>{hasFreeShipping ? 'FREE' : '$10.00'}</span> {/* Fixed this line */}
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Tax:</span>
@@ -198,7 +210,7 @@ export default function CartSidebar({
                 </div>
                 <div className={styles.summaryTotal}>
                   <span>Total:</span>
-                  <span>${(cartTotal + (amountNeeded > 0 ? 10 : 0) + (cartTotal * 0.1)).toFixed(2)}</span>
+                  <span>${(cartTotal + (hasFreeShipping ? 0 : 10) + (cartTotal * 0.1)).toFixed(2)}</span> {/* Fixed this line */}
                 </div>
                 
                 <button 
