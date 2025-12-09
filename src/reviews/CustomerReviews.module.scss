@@ -1,6 +1,6 @@
 .page {
   min-height: 60vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  background: #f7f7f7;
   padding: 80px 20px;
   position: relative;
 }
@@ -17,11 +17,11 @@
 
 .headerSection {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
  
   .mainHeading {
-    font-size: 42px;
-    font-weight: 700;
+    font-size: 34px;
+    font-weight: 600;
     margin: 0 0 15px 0;
     color: #333;
     font-family: 'Poppins', sans-serif;
@@ -51,7 +51,7 @@
 .carouselViewport {
   overflow: hidden;
   width: 100%;
-  min-height: 400px;
+  min-height: 300px;
   position: relative;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .reviewCard {
-  background: white;
+  background:#f7f7f7;
   border-radius: 5px;
   padding: 60px 40px 40px;
   position: relative;
