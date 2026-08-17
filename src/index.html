@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Phone Tracking Map - Nepal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+        #map { height: 100vh; width: 100%; }
+        .interface { position: absolute; top: 10px; left: 10px; background: white; padding: 20px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 300px; }
+        .interface h3 { margin-top: 0; color: #333; }
+        .interface input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .interface button { width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .interface button:hover { background: #0056b3; }
+        .interface button:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { display: none; color: #007bff; font-style: italic; }
+        .error { color: red; font-size: 0.9em; }
+        @media (max-width: 600px) { .interface { width: 90%; left: 5%; } }
+    </style>
+</head>
+<body>
+    <div class="interface">
+        <h3>Track Phone Number Location</h3>
+        <p>Enter a Nepal phone number in international format (e.g., +9779841234567).</p>
+        <form id="trackForm">
+            <input type="text" id="phoneInput" placeholder="+9779841234567" required>
+            <button type="submit" id="trackBtn">Track Location</button>
+        </form>
+        <div class="loading" id="loading">Tracking... Please wait.</div>
+        <p class="error" id="errorMsg"></p>
+        <p><small>Demo using NumVerify API. Get consent for real use. API key required.</small></p>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Nepal
+        const map = L.map('map').setView([28.3949, 84.1240], 7);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Variable to hold the current marker
+        let currentMarker = null;
+
+        // Function to get approximate coordinates from city name (Nepal cities)
+        function getCoordsFromCity(city) {
+            const cityCoords = {
+                'Kathmandu': [27.7172, 85.3240],
+                'Pokhara': [28.2096, 83.9856],
+                'Biratnagar': [26.4499, 87.2718],
+                'Lalitpur': [27.6667, 85.3167],
+                'Bhaktapur': [27.6722, 85.4278],
+                'Nepalgunj': [28.0500, 81.6167],
+                'Janakpur': [26.7288, 85.9263],
+                // Add more as needed
+            };
+            return cityCoords[city] || [28.3949, 84.1240]; // Default to Nepal center
+        }
+
+        // Validate phone number (basic Nepal format check)
+        function validatePhone(phone) {
+            const regex = /^\+977\d{7,10}$/; // Starts with +977, followed by 7-10 digits
+            return regex.test(phone);
+        }
+
+        // Handle form submission
+        document.getElementById('trackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phoneInput').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const loading = document.getElementById('loading');
+            const trackBtn = document.getElementById('trackBtn');
+
+            // Clear previous errors
+            errorMsg.textContent = '';
+            loading.style.display = 'none';
+
+            // Validate input
+            if (!validatePhone(phone)) {
+                errorMsg.textContent = 'Invalid format. Use +977 followed by 7-10 digits (e.g., +9779841234567).';
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+            trackBtn.disabled = true;
+
+            // API call (your key is now set)
+            const apiKey = '8d5e122d282fc6d03ebaad142f95cb77'; // Your API key
+            const apiUrl = `http://apilayer.net/api/validate?access_key=${apiKey}&number=${phone}&country_code=NP&format=1`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                console.log('API Response:', data); // For debugging
+
+                if (data.valid && data.location) {
+                    const coords = getCoordsFromCity(data.location);
+
+                    // Remove previous marker
+                    if (currentMarker) map.removeLayer(currentMarker);
+
+                    // Add new marker
+                    currentMarker = L.marker(coords)
+                        .addTo(map)
+                        .bindPopup(`<b>Phone: ${phone}</b><br>Country: ${data.country_name || 'Nepal'}<br>City: ${data.location}<br>Carrier: ${data.carrier || 'Unknown'}<br>Approx. Location: (${coords[0]}, ${coords[1]})`)
+                        .openPopup();
+
+                    // Zoom to marker
+                    map.setView(coords, 12);
+                    errorMsg.textContent = `Success! Approx. city: ${data.location}`;
+                } else {
+                    errorMsg.textContent = 'Phone number is invalid or location data not available.';
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                errorMsg.textContent = 'Error: Check internet or API key. Try again.';
+            } finally {
+                loading.style.display = 'none';
+                trackBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

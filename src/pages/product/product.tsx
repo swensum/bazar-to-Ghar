@@ -1,0 +1,386 @@
+import { type JSX, useState, useEffect, useRef } from "react";
+import { db } from "../../store/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import styles from "./ProductShowcase.module.scss";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useProductDetail } from "../../contexts/ProductDetailContext";
+import { useQuickView } from "../../contexts/QuickViewContext";
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  category_id: string;
+  in_stock: boolean;
+  created_at: string;
+  discount_percentage: number;
+  product_types: string[];
+  material: string | null;
+  reviewCount?: number;
+  averageRating?: number;
+}
+
+type ProductType = 'Best Seller' | 'Special Product' | 'New Product';
+interface ProductShowcaseProps {
+  initialFilter?: ProductType;
+}
+export default function ProductShowcase({ initialFilter }: ProductShowcaseProps): JSX.Element {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedType, setSelectedType] = useState<ProductType>(initialFilter || 'Best Seller');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const { setSelectedProduct, processProductData } = useProductDetail();
+  const navigate = useNavigate();
+  const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+
+  const productsPerPage = 8;
+  const trackRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  const productTypes: ProductType[] = ['Best Seller', 'Special Product', 'New Product'];
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (location.state?.filterType) {
+      setSelectedType(location.state.filterType);
+    }
+    
+    if (location.state?.scrollToProducts) {
+      setTimeout(() => {
+        const element = document.getElementById('product-showcase');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    filterProductsByType();
+  }, [products, selectedType]);
+
+  useEffect(() => {
+    setCurrentPage(0); 
+  }, [filteredProducts]);
+
+  const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Set loading state for this specific product
+    setLoadingProductId(product.id);
+    setQuickViewLoading(true);
+    
+    try {
+      // Simulate a small delay for better UX (optional)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Process the product to include packageOptions before opening quick view
+      const processedProduct = processProductData(product);
+      
+      // Open the quick view with processed product
+      openQuickView(processedProduct);
+    } catch (error) {
+      console.error('Error opening quick view:', error);
+    } finally {
+      // Reset loading states
+      setLoadingProductId(null);
+      setQuickViewLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+
+      const productsRef = collection(db, "products");
+      const q = query(productsRef, orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+
+      // Map Firestore's camelCase fields back to the snake_case shape
+      // the rest of this component expects, so nothing else has to change.
+      // customer_reviews doesn't exist yet in Firestore, so review data
+      // defaults to 0 for now - wire this back in once that collection exists.
+      const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          image_url: data.imageUrl,
+          category_id: data.categoryId || "",
+          in_stock: data.inStock,
+          created_at: data.createdAt?.toDate
+            ? data.createdAt.toDate().toISOString()
+            : data.createdAt,
+          discount_percentage: data.discountPercentage || 0,
+          product_types: Array.isArray(data.productTypes) ? data.productTypes : [],
+          material: data.material ?? null,
+          reviewCount: 0,
+          averageRating: 0,
+        };
+      });
+
+      setProducts(productsWithReviews);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterProductsByType = () => {
+    if (selectedType === 'New Product') {
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60); 
+      
+      const newProducts = products.filter(product => 
+        new Date(product.created_at) > sixtyDaysAgo
+      );
+      setFilteredProducts(newProducts);
+    } else {
+      const filtered = products.filter(product => 
+        Array.isArray(product.product_types) && 
+        product.product_types.includes(selectedType)
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const currentProducts = filteredProducts.slice(
+    currentPage * productsPerPage,
+    (currentPage + 1) * productsPerPage
+  );
+
+  const nextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const renderStars = (rating: number = 0) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const strokeWidth = 2.5;
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05" strokeWidth={strokeWidth}>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <svg key="half" width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05" strokeWidth={strokeWidth}>
+          <defs>
+            <linearGradient id="half">
+              <stop offset="50%" stopColor="#F5BE05" />
+              <stop offset="50%" stopColor="transparent" />
+            </linearGradient>
+          </defs>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)"/>
+        </svg>
+      );
+    }
+
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <svg key={`empty-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5BE05" strokeWidth={strokeWidth}>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      );
+    }
+
+    return stars;
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.loading}>Loading products...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div id="product-showcase" className={styles.page}>
+      <section className={styles.headerSection}>
+        <h1 className={styles.mainHeading}>Our Products</h1>
+        <p className={styles.subHeading}>Discover our amazing collection</p>
+      </section>
+
+      {/* Filter Options */}
+      <section className={styles.filterSection}>
+        <div className={styles.filterContainer}>
+          {productTypes.map((type) => (
+            <button
+              key={type}
+              className={`${styles.filterButton} ${
+                selectedType === type ? styles.active : ''
+              }`}
+              onClick={() => setSelectedType(type)}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Products Carousel */}
+      <section className={styles.productsSection}>
+        <div className={styles.productsContainer}>
+          {filteredProducts.length > 0 ? (
+            <>
+              {/* Products Carousel */}
+              <div className={styles.carouselContainer}>
+                <button 
+                  className={`${styles.carouselArrow} ${styles.arrowLeft} ${currentPage === 0 ? styles.disabled : ''}`}
+                  onClick={prevPage}
+                  disabled={currentPage === 0}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                </button>
+
+                <div className={styles.carouselViewport}>
+                  <div className={styles.carouselTrack} ref={trackRef}>
+                    <div className={styles.productsGrid}>
+                      {currentProducts.map((product) => {
+                        const discountedPrice = product.discount_percentage > 0 
+                          ? product.price * (1 - product.discount_percentage / 100)
+                          : product.price;
+
+                        return (
+                          <div key={product.id} className={styles.productCard} onClick={() => {
+                            const processedProduct = processProductData(product);
+                            setSelectedProduct(processedProduct);
+                            navigate(`/product/${product.id}`);
+                          }}>
+                            <div className={styles.productImageContainer}>
+                              <img 
+                                src={product.image_url} 
+                                alt={product.name}
+                                className={styles.productImage}
+                              />
+                              {!product.in_stock ? (
+                                <div className={styles.outOfStock}>Out of Stock</div>
+                              ) : product.discount_percentage > 0 ? (
+                                <div className={styles.discountBadge}>-{product.discount_percentage}%</div>
+                              ) : null}
+                              
+                              {/* Display product type badges */}
+                              {Array.isArray(product.product_types) && product.product_types.length > 0 && (
+                                <div className={styles.productTypeBadges}>
+                                  {product.product_types.map((type, index) => (
+                                    <span key={index} className={styles.productTypeBadge}>
+                                      {type}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <div className={styles.productOverlay}>
+                                <div className={styles.actionIcons}>
+                                  <button className={styles.iconBtn} aria-label="Add to favorites">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                  </button>
+                                  <button 
+                                    className={styles.iconBtn} 
+                                    aria-label="Add to cart"
+                                    onClick={(e) => handleQuickViewClick(product, e)}
+                                    disabled={isQuickViewLoading && loadingProductId === product.id}
+                                  >
+                                    {isQuickViewLoading && loadingProductId === product.id ? (
+                                      // Loading spinner
+                                      <div className={styles.loadingSpinner}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                        </svg>
+                                      </div>
+                                    ) : (
+                                      // Cart icon
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="9" cy="21" r="1" />
+                                        <circle cx="20" cy="21" r="1" />
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className={styles.productInfo}>
+                              <h3 className={styles.productName}>{product.name}</h3>
+                              
+                              {product.in_stock ? (
+                                <div className={styles.priceContainer}>
+                                  {product.discount_percentage > 0 ? (
+                                    <div className={styles.discountPriceRow}>
+                                      <span className={styles.discountedPrice}>${discountedPrice.toFixed(2)}</span>
+                                      <span className={styles.originalPrice}>${product.price.toFixed(2)}</span>
+                                    </div>
+                                  ) : (
+                                    <span className={styles.normalPrice}>${product.price.toFixed(2)}</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className={styles.outOfStockText}>Currently Unavailable</div>
+                              )}
+                              
+                              <div className={styles.productReviews}>
+                                <div className={styles.stars}>
+                                  {renderStars(product.averageRating || 0)}
+                                </div>
+                                <span className={styles.reviewCount}>({product.reviewCount || 0})</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  className={`${styles.carouselArrow} ${styles.arrowRight} ${currentPage === totalPages - 1 ? styles.disabled : ''}`}
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className={styles.noProducts}>
+              <p>No {selectedType.toLowerCase()} products found</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
