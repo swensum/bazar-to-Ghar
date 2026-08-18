@@ -1,4 +1,14 @@
-import { supabase } from "../store/supabase";
+import { db } from "../store/firebase";
+import {
+  collection,
+  query,
+  where,
+  limit,
+  getDocs,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
 export const validateCoupon = async (couponCode: string, userEmail: string) => {
   try {
@@ -7,34 +17,32 @@ export const validateCoupon = async (couponCode: string, userEmail: string) => {
       return { valid: false, message: "Please enter a valid email address to use coupon" };
     }
 
-    const { data, error } = await supabase
-      .from('subscribers')
-      .select('*')
-      .eq('email', userEmail)
-      .eq('coupon_code', couponCode)
-      .single();
+    const subscribersRef = collection(db, "subscribers");
+    const q = query(
+      subscribersRef,
+      where("email", "==", userEmail),
+      where("coupon_code", "==", couponCode),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
 
-    if (error) throw error;
-
-    if (!data) {
+    if (snapshot.empty) {
       return { valid: false, message: "Invalid coupon code or email" };
     }
+
+    const docSnap = snapshot.docs[0];
+    const data = docSnap.data();
 
     if (data.coupon_used) {
       return { valid: false, message: "This coupon has already been used" };
     }
 
     // Mark coupon as used
-    const { error: updateError } = await supabase
-      .from('subscribers')
-      .update({ 
-        coupon_used: true,
-        coupon_used_at: new Date().toISOString()
-      })
-      .eq('email', userEmail)
-      .eq('coupon_code', couponCode);
-
-    if (updateError) throw updateError;
+    const subscriberRef = doc(db, "subscribers", docSnap.id);
+    await updateDoc(subscriberRef, {
+      coupon_used: true,
+      coupon_used_at: serverTimestamp(),
+    });
 
     return { 
       valid: true, 
