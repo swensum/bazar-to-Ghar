@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { db } from "../../store/firebase";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { dbLite } from "../../store/firebaselite";
+import { collection, getDocs, orderBy, query } from "firebase/firestore/lite";
 import styles from "./ProductShowcase.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
@@ -99,14 +99,9 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
     try {
       setLoading(true);
 
-      const productsRef = collection(db, "products");
+      const productsRef = collection(dbLite, "products");
       const q = query(productsRef, orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-
-      // Map Firestore's camelCase fields back to the snake_case shape
-      // the rest of this component expects, so nothing else has to change.
-      // customer_reviews doesn't exist yet in Firestore, so review data
-      // defaults to 0 for now - wire this back in once that collection exists.
       const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {

@@ -1,6 +1,6 @@
 import { useState, useEffect, type JSX } from "react";
-import { db } from "../../store/firebase";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { dbLite } from "../../store/firebaselite";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
 import styles from "./banner.module.scss";
 import { useNavigate } from "react-router-dom";
 
@@ -67,11 +67,7 @@ export default function BannerSection(): JSX.Element {
   const fetchActiveOffer = async () => {
     try {
       setLoading(true);
-
-      // Firestore can't combine a where() on isActive, a range filter on
-      // endDate, AND an orderBy on a third field without a composite index,
-      // so we filter on isActive here and check expiry in code instead.
-      const offersRef = collection(db, "offers");
+      const offersRef = collection(dbLite, "offers");
       const q = query(
         offersRef,
         where("isActive", "==", true),

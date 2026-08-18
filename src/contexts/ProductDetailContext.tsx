@@ -1,16 +1,7 @@
 import React, { createContext, useContext, useState, type JSX, type ReactNode } from 'react';
-import { db } from '../store/firebase';
-import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    addDoc,
-    serverTimestamp,
-} from 'firebase/firestore';
+import { dbLite } from '../store/firebaselite';
+import { collection, doc, getDoc, getDocs, query, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore/lite';
+
 import { categoryDetails } from '../data/categoryDetails';
 
 interface ProductDetail {
@@ -114,10 +105,6 @@ interface ProductDetailContextType {
 }
 
 const ProductDetailContext = createContext<ProductDetailContextType | undefined>(undefined);
-
-// Maps a raw Firestore product doc (camelCase fields, e.g. imageUrl,
-// categoryId, discountPercentage, productTypes) into the snake_case shape
-// this file already expects.
 function mapFirestoreProduct(id: string, data: any) {
     return {
         id,
@@ -179,7 +166,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
 
     const fetchProductDetail = async (id: string) => {
         try {
-            const productRef = doc(db, 'products', id);
+            const productRef = doc(dbLite, 'products', id);
             const productSnap = await getDoc(productRef);
 
             if (!productSnap.exists()) {
@@ -199,7 +186,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         if (!selectedProduct) return;
 
         try {
-            const reviewsRef = collection(db, 'customer_reviews');
+            const reviewsRef = collection(dbLite, 'customer_reviews');
             const reviewsQuery = query(
                 reviewsRef,
                 where('product_id', '==', selectedProduct.id),
@@ -240,10 +227,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         try {
             setLoadingRelated(true);
 
-            // Firestore doesn't support Supabase-style embedded joins
-            // (`select('*, customer_reviews(...)')`), so pull all products
-            // and filter/attach review data client-side.
-            const productsRef = collection(db, 'products');
+            const productsRef = collection(dbLite, 'products');
             const snapshot = await getDocs(productsRef);
 
             const allProducts = snapshot.docs
@@ -259,12 +243,6 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
                     )
             );
 
-            // reviewCount/averageRating default to 0 here - these are used
-            // for the small badges on related-product cards, not the main
-            // product's own review list (which now comes from fetchReviews
-            // above). Computing per-card counts would mean one Firestore
-            // query per related product, which isn't worth it at this
-            // scale - revisit if you want accurate mini-ratings here later.
             const productsWithReviews = filteredRelated.map((product) => ({
                 ...processProductData(product),
                 reviewCount: 0,
@@ -286,7 +264,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         try {
             setLoadingRandom(true);
 
-            const productsRef = collection(db, 'products');
+            const productsRef = collection(dbLite, 'products');
             const snapshot = await getDocs(productsRef);
 
             const allProducts = snapshot.docs
@@ -319,7 +297,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         try {
             setIsSubmitting(true);
 
-            const reviewsRef = collection(db, 'customer_reviews');
+            const reviewsRef = collection(dbLite, 'customer_reviews');
             await addDoc(reviewsRef, {
                 product_id: selectedProduct.id,
                 customer_name: reviewerName,

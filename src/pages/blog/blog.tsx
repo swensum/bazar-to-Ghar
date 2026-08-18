@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect } from "react";
-import { db } from "../../store/firebase";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { dbLite } from "../../store/firebaselite";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
 import styles from "./Blog.module.scss";
 
 interface BlogPost {
@@ -30,7 +30,7 @@ export default function Blog(): JSX.Element {
             setLoading(true);
             setError(null);
 
-            const postsRef = collection(db, "blog_posts");
+            const postsRef = collection(dbLite, "blog_posts");
             const q = query(
                 postsRef,
                 where("isPublished", "==", true),
@@ -38,9 +38,6 @@ export default function Blog(): JSX.Element {
                 limit(6)
             );
             const snapshot = await getDocs(q);
-
-            // Map Firestore's camelCase fields back to the snake_case shape
-            // the rest of this component expects, so nothing else has to change.
             const postsData: BlogPost[] = snapshot.docs.map((docSnap) => {
                 const data = docSnap.data();
                 return {

@@ -1,15 +1,5 @@
-import { db } from "../store/firebase";
-import {
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-  doc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-
+import { dbLite } from "../store/firebaselite";
+import { collection, query, where, limit, getDocs, doc, updateDoc, serverTimestamp } from "firebase/firestore/lite";
 export const validateCoupon = async (couponCode: string, userEmail: string) => {
   try {
     // Check if user provided email
@@ -17,7 +7,7 @@ export const validateCoupon = async (couponCode: string, userEmail: string) => {
       return { valid: false, message: "Please enter a valid email address to use coupon" };
     }
 
-    const subscribersRef = collection(db, "subscribers");
+    const subscribersRef = collection(dbLite, "subscribers");
     const q = query(
       subscribersRef,
       where("email", "==", userEmail),
@@ -38,7 +28,7 @@ export const validateCoupon = async (couponCode: string, userEmail: string) => {
     }
 
     // Mark coupon as used
-    const subscriberRef = doc(db, "subscribers", docSnap.id);
+    const subscriberRef = doc(dbLite, "subscribers", docSnap.id);
     await updateDoc(subscriberRef, {
       coupon_used: true,
       coupon_used_at: serverTimestamp(),

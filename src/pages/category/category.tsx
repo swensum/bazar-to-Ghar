@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { db } from "../../store/firebase";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { dbLite } from "../../store/firebaselite";
+import { collection, getDocs, orderBy, query } from "firebase/firestore/lite";
 import { useNavigate } from "react-router-dom";
 import type { CategoryWithCount } from "../../types/category";
 import styles from "./CategoryPage.module.scss";
@@ -79,7 +79,7 @@ export default function CategoryPage(): JSX.Element {
       console.log('Starting to fetch categories...');
 
       // Fetch categories from Firestore
-      const categoriesRef = collection(db, "categories");
+      const categoriesRef = collection(dbLite, "categories");
       const categoriesQuery = query(categoriesRef, orderBy("name"));
       const categoriesSnapshot = await getDocs(categoriesQuery);
 
@@ -108,7 +108,7 @@ export default function CategoryPage(): JSX.Element {
       }
 
       // Fetch all products once to avoid multiple requests
-      const productsRef = collection(db, "products");
+      const productsRef = collection(dbLite, "products");
       const productsSnapshot = await getDocs(productsRef);
       const productsData = productsSnapshot.docs.map((docSnap) => {
         const data = docSnap.data();

@@ -1,5 +1,5 @@
 import { useState, useEffect, type JSX } from "react";
-import { db } from "../store/firebase";
+import { dbLite } from "../store/firebaselite";
 import {
   collection,
   query,
@@ -7,7 +7,7 @@ import {
   getDocs,
   addDoc,
   serverTimestamp,
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import styles from "./SubscribePage.module.scss";
 import backgroundImage from "../assets/banner3.jpg";
 
@@ -32,7 +32,7 @@ export default function SubscribePage(): JSX.Element {
       const storedEmail = localStorage.getItem("subscriberEmail");
       if (storedEmail) {
         try {
-          const subscribersRef = collection(db, "subscribers");
+          const subscribersRef = collection(dbLite, "subscribers");
           const q = query(subscribersRef, where("email", "==", storedEmail));
           const snapshot = await getDocs(q);
 
@@ -68,7 +68,7 @@ export default function SubscribePage(): JSX.Element {
     setMessage("");
 
     try {
-      const subscribersRef = collection(db, "subscribers");
+      const subscribersRef = collection(dbLite, "subscribers");
 
      
       const existingQuery = query(subscribersRef, where("email", "==", email));

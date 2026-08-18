@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { db } from "../store/firebase";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { dbLite } from "../store/firebaselite";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
 import styles from "./CustomerReviews.module.scss";
 
 interface Review {
@@ -64,7 +64,7 @@ export default function CustomerReviews(): JSX.Element {
     try {
       setLoading(true);
 
-      const reviewsRef = collection(db, "customer_reviews");
+      const reviewsRef = collection(dbLite, "customer_reviews");
       const q = query(
         reviewsRef,
         where("is_active", "==", true),
@@ -72,11 +72,6 @@ export default function CustomerReviews(): JSX.Element {
         limit(10)
       );
       const snapshot = await getDocs(q);
-
-      // These docs are already snake_case (written by
-      // ProductDetailContext's handleSubmitReview), so map them through
-      // mostly as-is. customer_image isn't collected by the review form,
-      // so it'll be empty/undefined until that's added somewhere.
       const reviewsData: Review[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {

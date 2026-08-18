@@ -5,8 +5,8 @@ import { faChevronDown, faBars, faTimes, faChevronLeft, faChevronRight, faMagnif
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
 import { FiShoppingBag } from "react-icons/fi";
 import { FaHeadphonesAlt } from "react-icons/fa";
-import { db } from "../store/firebase";
-import { collection as fsCollection, getDocs, query, where, limit } from "firebase/firestore";
+import { dbLite } from "../store/firebaselite";
+import { collection as fsCollection, getDocs, query, where, limit } from "firebase/firestore/lite";
 import styles from "./Navbar.module.scss";
 import logoImg from "../assets/logo.png";
 import summerCollection from "../assets/kiwi.jpg";
@@ -108,10 +108,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
         const discounts: { [key: string]: number } = {};
 
-        // Fetch all products once, then filter/compute per collection in
-        // code - Firestore can't combine a not-null check and a > filter
-        // on two different fields in one query the way Supabase could.
-        const productsRef = fsCollection(db, "products");
+        const productsRef = fsCollection(dbLite, "products");
         const snapshot = await getDocs(productsRef);
         const allProducts = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
@@ -150,7 +147,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const handleShopItemClick = async (item: { name: string; type: string }) => {
     if (item.type === 'category') {
       try {
-        const categoriesRef = fsCollection(db, "categories");
+        const categoriesRef = fsCollection(dbLite, "categories");
         const q = query(categoriesRef, where("name", "==", item.name), limit(1));
         const snapshot = await getDocs(q);
 
@@ -184,7 +181,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
       try {
         // Firestore has no partial-text-match equivalent to Supabase's
         // ilike, so fetch products and match client-side instead.
-        const productsRef = fsCollection(db, "products");
+        const productsRef = fsCollection(dbLite, "products");
         const snapshot = await getDocs(productsRef);
         const match = snapshot.docs.find((docSnap) => {
           const name = docSnap.data().name as string;
@@ -217,7 +214,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
   const handleCollectionClick = async (collection: any) => {
     try {
-      const categoriesRef = fsCollection(db, "categories");
+      const categoriesRef = fsCollection(dbLite, "categories");
       const q = query(categoriesRef, where("name", "==", collection.category), limit(1));
       const snapshot = await getDocs(q);
 

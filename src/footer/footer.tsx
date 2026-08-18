@@ -5,8 +5,8 @@ import { FiPhone } from "react-icons/fi";
 import { FaFacebookF, FaInstagram, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { SiGmail } from "react-icons/si";
 import { useNavigate } from "react-router-dom";
-import { db } from "../store/firebase";
-import { collection, getDocs, query, where, limit } from "firebase/firestore";
+import { dbLite } from "../store/firebaselite";
+import { collection, getDocs, query, where, limit } from "firebase/firestore/lite";
 import logo from "../assets/logo.png";
 
 export default function Footer(): JSX.Element {
@@ -15,7 +15,7 @@ export default function Footer(): JSX.Element {
     const handleCategoryClick = async (categoryName: string) => {
         try {
             // Fetch the full category data
-            const categoriesRef = collection(db, "categories");
+            const categoriesRef = collection(dbLite, "categories");
             const q = query(categoriesRef, where("name", "==", categoryName), limit(1));
             const snapshot = await getDocs(q);
 

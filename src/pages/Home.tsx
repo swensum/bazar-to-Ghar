@@ -1,7 +1,7 @@
 import { type JSX, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../store/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { dbLite } from "../store/firebaselite";
+import { collection, getDocs } from "firebase/firestore/lite";
 import Slider from "react-slick";
 import styles from "./Home.module.scss";
 import heroImg1 from "../assets/slider1.webp";
@@ -115,13 +115,8 @@ export default function Home(): JSX.Element {
   useEffect(() => {
     const fetchCategoryDiscounts = async () => {
       try {
-        const productsRef = collection(db, "products");
+        const productsRef = collection(dbLite, "products");
         const snapshot = await getDocs(productsRef);
-
-        // Map Firestore's camelCase fields back to the snake_case shape
-        // this function was already written against, and only keep products
-        // that actually have a categories array (mirrors the Supabase
-        // .not('categories', 'is', null) filter).
         const products = snapshot.docs
           .map((docSnap) => {
             const data = docSnap.data();

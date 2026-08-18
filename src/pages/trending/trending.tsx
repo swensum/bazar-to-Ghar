@@ -1,6 +1,6 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { db } from "../../store/firebase";
-import { collection, getDocs, orderBy, query, limit } from "firebase/firestore";
+import { dbLite } from "../../store/firebaselite";
+import { collection, getDocs, orderBy, query, limit } from "firebase/firestore/lite";
 import styles from "./trending.module.scss";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
 import { useNavigate } from "react-router-dom";
@@ -115,14 +115,9 @@ export default function TrendingProducts(): JSX.Element {
     try {
       setLoading(true);
 
-      const productsRef = collection(db, "products");
+      const productsRef = collection(dbLite, "products");
       const q = query(productsRef, orderBy("createdAt", "desc"), limit(12));
       const snapshot = await getDocs(q);
-
-      // Map Firestore's camelCase fields back to the snake_case shape
-      // the rest of this component expects, so nothing else has to change.
-      // customer_reviews doesn't exist yet in Firestore, so review data
-      // defaults to 0 for now - wire this back in once that collection exists.
       const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {

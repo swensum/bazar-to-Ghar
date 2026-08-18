@@ -1,8 +1,7 @@
 // contexts/ProductContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { db } from '../store/firebase';
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
-
+import { dbLite } from '../store/firebaselite';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore/lite';
 interface Category {
     id: string;
     name: string;
@@ -219,7 +218,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         try {
             setLoading(true);
 
-            const categoriesRef = collection(db, 'categories');
+            const categoriesRef = collection(dbLite, 'categories');
             const categoriesQuery = query(categoriesRef, orderBy('name'));
             const categoriesSnapshot = await getDocs(categoriesQuery);
 
@@ -239,7 +238,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 };
             });
 
-            const productsRef = collection(db, 'products');
+            const productsRef = collection(dbLite, 'products');
             const productsSnapshot = await getDocs(productsRef);
             const productsData = productsSnapshot.docs.map((docSnap) => {
                 const data = docSnap.data();
@@ -293,7 +292,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 // Fetch all products for "All Products" category.
                 // customer_reviews doesn't exist in Firestore yet, so
                 // reviewCount/averageRating default to 0 for now.
-                const productsRef = collection(db, 'products');
+                const productsRef = collection(dbLite, 'products');
                 const snapshot = await getDocs(productsRef);
 
                 productsList = snapshot.docs.map((docSnap) =>
@@ -303,7 +302,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 // Fetch products for specific category.
                 // Firestore's array-contains is the direct equivalent of
                 // Supabase's .contains('categories', [...]) here.
-                const productsRef = collection(db, 'products');
+                const productsRef = collection(dbLite, 'products');
                 const q = query(productsRef, where('categories', 'array-contains', category.name));
                 const snapshot = await getDocs(q);
 
@@ -339,7 +338,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
             
             try {
                 // Fallback: fetch all products and filter manually
-                const productsRef = collection(db, 'products');
+                const productsRef = collection(dbLite, 'products');
                 const snapshot = await getDocs(productsRef);
                 const allProducts = snapshot.docs.map((docSnap) =>
                     mapProductDoc(docSnap.id, docSnap.data())
