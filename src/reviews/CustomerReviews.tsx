@@ -67,25 +67,27 @@ export default function CustomerReviews(): JSX.Element {
       const reviewsRef = collection(db, "customer_reviews");
       const q = query(
         reviewsRef,
-        where("isActive", "==", true),
-        orderBy("createdAt", "desc"),
+        where("is_active", "==", true),
+        orderBy("created_at", "desc"),
         limit(10)
       );
       const snapshot = await getDocs(q);
 
-      // Map Firestore's camelCase fields back to the snake_case shape
-      // the rest of this component expects, so nothing else has to change.
+      // These docs are already snake_case (written by
+      // ProductDetailContext's handleSubmitReview), so map them through
+      // mostly as-is. customer_image isn't collected by the review form,
+      // so it'll be empty/undefined until that's added somewhere.
       const reviewsData: Review[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {
           id: docSnap.id,
-          customer_name: data.customerName,
-          customer_image: data.customerImage,
+          customer_name: data.customer_name,
+          customer_image: data.customer_image ?? "",
           rating: data.rating,
-          review_text: data.reviewText,
-          created_at: data.createdAt?.toDate
-            ? data.createdAt.toDate().toISOString()
-            : data.createdAt,
+          review_text: data.review_text,
+          created_at: data.created_at?.toDate
+            ? data.created_at.toDate().toISOString()
+            : data.created_at,
           topic: data.topic ?? null,
         };
       });

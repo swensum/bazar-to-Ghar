@@ -5,9 +5,11 @@ import {
     doc,
     getDoc,
     getDocs,
-    // query, where, orderBy, addDoc, serverTimestamp — uncomment once
-    // a customer_reviews collection exists in Firestore (see fetchReviews /
-    // handleSubmitReview below)
+    query,
+    where,
+    orderBy,
+    addDoc,
+    serverTimestamp,
 } from 'firebase/firestore';
 import { categoryDetails } from '../data/categoryDetails';
 
@@ -193,35 +195,37 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         }
     };
 
-    // customer_reviews doesn't exist as a Firestore collection yet (only
-    // products, blog_posts, categories, and offers have been migrated), so
-    // this just clears reviews for now. Once you create that collection,
-    // swap in the commented-out query below.
     const fetchReviews = async () => {
         if (!selectedProduct) return;
 
         try {
-            // const reviewsRef = collection(db, 'customer_reviews');
-            // const reviewsQuery = query(
-            //     reviewsRef,
-            //     where('product_id', '==', selectedProduct.id),
-            //     where('is_active', '==', true),
-            //     orderBy('created_at', 'desc')
-            // );
-            // const snapshot = await getDocs(reviewsQuery);
-            // setReviews(
-            //     snapshot.docs.map((d) => {
-            //         const data = d.data();
-            //         return {
-            //             id: d.id,
-            //             ...data,
-            //             created_at: data.created_at?.toDate
-            //                 ? data.created_at.toDate().toISOString()
-            //                 : data.created_at,
-            //         } as Review;
-            //     })
-            // );
-            setReviews([]);
+            const reviewsRef = collection(db, 'customer_reviews');
+            const reviewsQuery = query(
+                reviewsRef,
+                where('product_id', '==', selectedProduct.id),
+                where('is_active', '==', true),
+                orderBy('created_at', 'desc')
+            );
+            const snapshot = await getDocs(reviewsQuery);
+            setReviews(
+                snapshot.docs.map((d) => {
+                    const data = d.data();
+                    return {
+                        id: d.id,
+                        product_id: data.product_id,
+                        customer_name: data.customer_name,
+                        customer_email: data.customer_email,
+                        review_title: data.review_title,
+                        rating: data.rating,
+                        review_text: data.review_text,
+                        topic: data.topic,
+                        is_active: data.is_active,
+                        created_at: data.created_at?.toDate
+                            ? data.created_at.toDate().toISOString()
+                            : data.created_at,
+                    } as Review;
+                })
+            );
         } catch (error) {
             console.error('Error fetching reviews:', error);
             setReviews([]);
@@ -255,8 +259,12 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
                     )
             );
 
-            // reviewCount/averageRating default to 0 until customer_reviews
-            // exists in Firestore.
+            // reviewCount/averageRating default to 0 here - these are used
+            // for the small badges on related-product cards, not the main
+            // product's own review list (which now comes from fetchReviews
+            // above). Computing per-card counts would mean one Firestore
+            // query per related product, which isn't worth it at this
+            // scale - revisit if you want accurate mini-ratings here later.
             const productsWithReviews = filteredRelated.map((product) => ({
                 ...processProductData(product),
                 reviewCount: 0,
@@ -311,22 +319,18 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
         try {
             setIsSubmitting(true);
 
-            // customer_reviews doesn't exist in Firestore yet. Once you
-            // create the collection, uncomment this to actually persist
-            // the review:
-            // const reviewsRef = collection(db, 'customer_reviews');
-            // await addDoc(reviewsRef, {
-            //     product_id: selectedProduct.id,
-            //     customer_name: reviewerName,
-            //     customer_email: reviewerEmail,
-            //     review_title: reviewTitle,
-            //     rating: reviewRating,
-            //     review_text: reviewText,
-            //     topic: 'Product Review',
-            //     is_active: true,
-            //     created_at: serverTimestamp(),
-            // });
-            console.warn('customer_reviews collection not set up in Firestore yet — review was not saved.');
+            const reviewsRef = collection(db, 'customer_reviews');
+            await addDoc(reviewsRef, {
+                product_id: selectedProduct.id,
+                customer_name: reviewerName,
+                customer_email: reviewerEmail,
+                review_title: reviewTitle,
+                rating: reviewRating,
+                review_text: reviewText,
+                topic: 'Product Review',
+                is_active: true,
+                created_at: serverTimestamp(),
+            });
 
             // Reset form and show success message
             setReviewRating(0);
