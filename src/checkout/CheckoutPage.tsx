@@ -3,6 +3,7 @@ import { type JSX, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./CheckoutPage.module.scss";
 import appLogo from "../assets/logo.png";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 // Add these type definitions
 interface CheckoutProduct {
@@ -20,6 +21,7 @@ interface CheckoutProduct {
 }
 
 export default function CheckoutPage(): JSX.Element {
+     useDocumentTitle("Checkout");
     const navigate = useNavigate();
     const location = useLocation();
     

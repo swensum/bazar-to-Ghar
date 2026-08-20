@@ -8,8 +8,15 @@ import productImage from "../assets/collection-banner.jpg";
 import { useProduct } from "../contexts/ProductContext";
 import { useProductDetail } from "../contexts/ProductDetailContext";
 import { useQuickView } from "../contexts/QuickViewContext";
+import { useSearchParams } from "react-router-dom";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+
 
 export default function ProductDetail(): JSX.Element {
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("q"); 
+
+  useDocumentTitle(query ? `Search: ${query}` : "Shop");
     const location = useLocation();
     const navigate = useNavigate()
     const { setSelectedProduct, processProductData } = useProductDetail();

@@ -8,19 +8,21 @@ import khaltiLogo from "../assets/khalti.png";
 import visaLogo from "../assets/visa.png";
 import { useCart } from "../contexts/CartContext";
 import { useQuickView } from "../contexts/QuickViewContext";
-
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 export default function ProductItemDetailPage(): JSX.Element {
+
+
     const { productId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
-const { addToCart, openCart } = useCart();
-    
+    const { addToCart, openCart } = useCart();
+
     const [isFavorite, setIsFavorite] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
     const [showThankYou, setShowThankYou] = useState(false);
-   
-   const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
-const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
-const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+    const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
+    const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isBuyingNow, setIsBuyingNow] = useState(false);
 
     const {
@@ -66,7 +68,7 @@ const [isAddingToCart, setIsAddingToCart] = useState(false);
         renderStars,
         renderReviewStars
     } = useProductDetail();
-
+ useDocumentTitle(selectedProduct?.name);
     useEffect(() => {
         if (productId) {
             fetchProductDetail(productId).catch(() => {
@@ -100,27 +102,27 @@ const [isAddingToCart, setIsAddingToCart] = useState(false);
             return () => clearTimeout(timer);
         }
     }, [submitSuccess, setSubmitSuccess]);
-const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
-  e.stopPropagation();
-  
-  // Set loading state for this specific product
-  setLoadingProductId(product.id);
-  setQuickViewLoading(true);
-  
-  try {
-   
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Open the quick view
-    openQuickView(product);
-  } catch (error) {
-    console.error('Error opening quick view:', error);
-  } finally {
-    // Reset loading states
-    setLoadingProductId(null);
-    setQuickViewLoading(false);
-  }
-};
+    const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        // Set loading state for this specific product
+        setLoadingProductId(product.id);
+        setQuickViewLoading(true);
+
+        try {
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Open the quick view
+            openQuickView(product);
+        } catch (error) {
+            console.error('Error opening quick view:', error);
+        } finally {
+            // Reset loading states
+            setLoadingProductId(null);
+            setQuickViewLoading(false);
+        }
+    };
     const toggleFavorite = () => {
         if (!selectedProduct) return;
 
@@ -139,69 +141,69 @@ const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
         setIsFavorite(!isFavorite);
     };
 
-       const handleAddToCart = async () => {
-    if (!selectedProduct) return;
-    
-    setIsAddingToCart(true);
-    
-    try {
-        // Simulate API call or processing delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create cart item with ALL necessary information
-        const cartItem = {
-            id: selectedProduct.id,
-            name: selectedProduct.name,
-            price: selectedProduct.price,
-            quantity: quantity,
-            image: selectedProduct.images?.[0] || selectedProduct.image_url,
-            selectedPackage: selectedPackage || undefined,
-            discount_percentage: selectedProduct.discount_percentage > 0 ? selectedProduct.discount_percentage : undefined,
-            material: selectedProduct.material || undefined // Add this line
-        };
+    const handleAddToCart = async () => {
+        if (!selectedProduct) return;
 
-        // Add to cart using context
-        addToCart(cartItem);
-        
-        // Open cart sidebar
-        openCart();
-        
-        console.log('Added to cart:', cartItem);
-    } catch (error) {
-        console.error('Error adding to cart:', error);
-    } finally {
-        setIsAddingToCart(false);
-    }
-};
-const handleBuyNow = async () => {
-    if (!selectedProduct) return;
-    
-    setIsBuyingNow(true);
-    
-    try {
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create a complete product object with all necessary data
-        const productData = {
-            ...selectedProduct, // Spread all product properties
-            quantity: quantity, // Include the selected quantity
-            selectedPackage: selectedPackage || undefined, // Include the selected package
-        };
-        
-        // Navigate to checkout page with product data
-        navigate('/checkout', {
-            state: {
-                product: productData // Pass the complete product object
-            }
-        });
-        
-    } catch (error) {
-        console.error('Error in buy now:', error);
-    } finally {
-        setIsBuyingNow(false);
-    }
-};
+        setIsAddingToCart(true);
+
+        try {
+            // Simulate API call or processing delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Create cart item with ALL necessary information
+            const cartItem = {
+                id: selectedProduct.id,
+                name: selectedProduct.name,
+                price: selectedProduct.price,
+                quantity: quantity,
+                image: selectedProduct.images?.[0] || selectedProduct.image_url,
+                selectedPackage: selectedPackage || undefined,
+                discount_percentage: selectedProduct.discount_percentage > 0 ? selectedProduct.discount_percentage : undefined,
+                material: selectedProduct.material || undefined // Add this line
+            };
+
+            // Add to cart using context
+            addToCart(cartItem);
+
+            // Open cart sidebar
+            openCart();
+
+            console.log('Added to cart:', cartItem);
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        } finally {
+            setIsAddingToCart(false);
+        }
+    };
+    const handleBuyNow = async () => {
+        if (!selectedProduct) return;
+
+        setIsBuyingNow(true);
+
+        try {
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Create a complete product object with all necessary data
+            const productData = {
+                ...selectedProduct, // Spread all product properties
+                quantity: quantity, // Include the selected quantity
+                selectedPackage: selectedPackage || undefined, // Include the selected package
+            };
+
+            // Navigate to checkout page with product data
+            navigate('/checkout', {
+                state: {
+                    product: productData // Pass the complete product object
+                }
+            });
+
+        } catch (error) {
+            console.error('Error in buy now:', error);
+        } finally {
+            setIsBuyingNow(false);
+        }
+    };
 
     // Calculate average rating from reviews
     const calculateAverageRating = () => {
@@ -380,31 +382,31 @@ const handleBuyNow = async () => {
                             </div>
                         </div>
 
-                      
-<div className={styles.actionButtons}>
-    <button
-        className={styles.addToCartBtn}
-        onClick={handleAddToCart}
-        disabled={!selectedProduct.in_stock || isAddingToCart}
-    >
-        {isAddingToCart ? (
-            <div className={styles.spinner}></div>
-        ) : (
-            'Add to Cart'
-        )}
-    </button>
-    <button
-        className={styles.buyNowBtn}
-        onClick={handleBuyNow}
-        disabled={!selectedProduct.in_stock || isBuyingNow}
-    >
-        {isBuyingNow ? (
-            <div className={styles.spinner}></div>
-        ) : (
-            'Buy Now'
-        )}
-    </button>
-</div>
+
+                        <div className={styles.actionButtons}>
+                            <button
+                                className={styles.addToCartBtn}
+                                onClick={handleAddToCart}
+                                disabled={!selectedProduct.in_stock || isAddingToCart}
+                            >
+                                {isAddingToCart ? (
+                                    <div className={styles.spinner}></div>
+                                ) : (
+                                    'Add to Cart'
+                                )}
+                            </button>
+                            <button
+                                className={styles.buyNowBtn}
+                                onClick={handleBuyNow}
+                                disabled={!selectedProduct.in_stock || isBuyingNow}
+                            >
+                                {isBuyingNow ? (
+                                    <div className={styles.spinner}></div>
+                                ) : (
+                                    'Buy Now'
+                                )}
+                            </button>
+                        </div>
 
                         <div className={styles.wishlistSection}>
                             <button
@@ -485,7 +487,7 @@ const handleBuyNow = async () => {
                     </div>
                 </div>
 
-                
+
                 <div className={styles.tabsSection}>
                     <div className={styles.tabsContainer}>
                         <button
@@ -566,28 +568,28 @@ const handleBuyNow = async () => {
                                                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                                         </svg>
                                                                     </button>
-                                                                    <button 
-  className={styles.relatedIconBtn} 
-  aria-label="Add to cart"
-  onClick={(e) => handleQuickViewClick(product, e)}
-  disabled={isQuickViewLoading && loadingProductId === product.id}
->
-  {isQuickViewLoading && loadingProductId === product.id ? (
-    // Loading spinner
-    <div className={styles.loadingSpinner}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-      </svg>
-    </div>
-  ) : (
-    // Cart icon
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  )}
-</button>
+                                                                    <button
+                                                                        className={styles.relatedIconBtn}
+                                                                        aria-label="Add to cart"
+                                                                        onClick={(e) => handleQuickViewClick(product, e)}
+                                                                        disabled={isQuickViewLoading && loadingProductId === product.id}
+                                                                    >
+                                                                        {isQuickViewLoading && loadingProductId === product.id ? (
+                                                                            // Loading spinner
+                                                                            <div className={styles.loadingSpinner}>
+                                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                                                                                </svg>
+                                                                            </div>
+                                                                        ) : (
+                                                                            // Cart icon
+                                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                                <circle cx="9" cy="21" r="1" />
+                                                                                <circle cx="20" cy="21" r="1" />
+                                                                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </button>
 
                                                                 </div>
                                                             </div>

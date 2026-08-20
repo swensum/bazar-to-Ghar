@@ -9,6 +9,7 @@ import heroImg2 from "../assets/slider2.webp";
 import heroImg3 from "../assets/slider3.jpg";
 import logo from "../assets/logo.png";
 import category1 from "../assets/banner1.jpg";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import category2 from "../assets/banner2.jpg";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -84,6 +85,7 @@ const baseCategories: Category[] = [
 ];
 
 export default function Home(): JSX.Element {
+  useDocumentTitle(); 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categories, setCategories] = useState(baseCategories);
   const [isVisible, setIsVisible] = useState(false);
