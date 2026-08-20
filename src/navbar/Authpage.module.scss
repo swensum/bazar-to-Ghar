@@ -1,0 +1,214 @@
+$ink: #1a1a1a;
+$muted: #6b7280;
+$border: #d1d5db;
+$border-focus: #16a34a;
+$accent: #16a34a;
+$accent-hover: #15803d;
+$bg-page: #f7f7f5;
+$bg-card: #ffffff;
+$error: #dc2626;
+$radius: 10px;
+$transition: 0.2s ease;
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: $bg-page;
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: $bg-card;
+  border: 1px solid rgba($ink, 0.08);
+  border-radius: 16px;
+  padding: 2.5rem 1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+.logoRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.2rem;
+
+  img {
+    height: 126px;
+    cursor: pointer;
+  }
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $ink;
+  text-align: center;
+  margin: 0 0 0.4rem;
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  color: $muted;
+  text-align: center;
+  margin: 0 0 1.75rem;
+}
+
+.googleButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid $border;
+  border-radius: $radius;
+  background: #fff;
+  color: $ink;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background $transition, border-color $transition;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #b5bcc7;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.5rem 0;
+  color: $muted;
+  font-size: 0.8rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.fieldWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $ink;
+}
+
+.input {
+  padding: 12px 14px;
+  border: 1px solid $border;
+  border-radius: $radius;
+  font-size: 0.95rem;
+  color: $ink;
+  background: #fff;
+  transition: border-color $transition;
+
+  &:focus {
+    outline: none;
+    border-color: $border-focus;
+  }
+
+  &.inputError {
+    border-color: $error;
+  }
+}
+
+.errorText {
+  font-size: 0.78rem;
+  color: $error;
+}
+
+.formError {
+  background: rgba($error, 0.08);
+  border: 1px solid rgba($error, 0.25);
+  color: $error;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  border-radius: $radius;
+}
+
+.submitButton {
+  margin-top: 0.25rem;
+  padding: 13px 16px;
+  border: none;
+  border-radius: $radius;
+  background: $accent;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: $accent-hover;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: default;
+  }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.footerText {
+  text-align: center;
+  margin-top: 1.75rem;
+  font-size: 0.9rem;
+  color: $muted;
+
+  a {
+    color: $accent;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

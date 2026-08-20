@@ -13,10 +13,22 @@ import summerCollection from "../assets/kiwi.jpg";
 import winterCollection from "../assets/juice.jpg";
 import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface NavbarProps {
   cartItemsCount: number;
   onCartClick: () => void;
+}
+const PRODUCT_HEADING_CATEGORY_MAP: Record<string, string[]> = {
+  "Fresh Vegis": ["Vegetables", "Vegitables"],
+  "Non Vegis": ["Meat", "Poultry", "Seafood"],
+  "Frozen Items": ["Frozen"],
+};
+
+interface ShopProductItem {
+  id: string;
+  name: string;
+  type: "product";
 }
 
 export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JSX.Element {
@@ -29,6 +41,15 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileNavStack, setMobileNavStack] = useState<Array<{ title: string, content: any }>>([]);
   const location = useLocation();
+const { user, signOut } = useAuth();
+const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+ 
+const handleSignOut = async () => {
+  await signOut();
+  setIsAccountMenuOpen(false);
+  navigate('/');
+};
+  const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -143,8 +164,43 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
     fetchCollectionDiscounts();
   }, []);
+  useEffect(() => {
+    const fetchShopProducts = async () => {
+      try {
+        const productsRef = fsCollection(dbLite, "products");
+        const snapshot = await getDocs(productsRef);
+        const allProducts = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            name: data.name as string,
+            categories: Array.isArray(data.categories) ? (data.categories as string[]) : [],
+          };
+        });
 
-  const handleShopItemClick = async (item: { name: string; type: string }) => {
+        const grouped: Record<string, ShopProductItem[]> = {};
+
+        Object.entries(PRODUCT_HEADING_CATEGORY_MAP).forEach(([heading, tags]) => {
+          const matches = allProducts.filter((p) =>
+            p.categories.some((cat) => tags.includes(cat))
+          );
+         grouped[heading] = matches.map((p) => ({
+  id: p.id,
+  name: p.name,
+  type: "product" as const,
+}));
+        });
+
+        setShopProducts(grouped);
+      } catch (error) {
+        console.error('Error fetching shop products:', error);
+      }
+    };
+
+    fetchShopProducts();
+  }, []);
+
+  const handleShopItemClick = async (item: { id?: string; name: string; type: string }) => {
     if (item.type === 'category') {
       try {
         const categoriesRef = fsCollection(dbLite, "categories");
@@ -178,33 +234,44 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         });
       }
     } else if (item.type === 'product') {
-      try {
-        // Firestore has no partial-text-match equivalent to Supabase's
-        // ilike, so fetch products and match client-side instead.
-        const productsRef = fsCollection(dbLite, "products");
-        const snapshot = await getDocs(productsRef);
-        const match = snapshot.docs.find((docSnap) => {
-          const name = docSnap.data().name as string;
-          return name?.toLowerCase().includes(item.name.toLowerCase());
-        });
-
-        if (!match) throw new Error("Product not found");
-
-        const productData = { id: match.id, ...match.data() };
-
-        navigate(`/product/${match.id}`, {
+      if (item.id) {
+        // We already have the real Firestore document id from
+        // fetchShopProducts — no name search needed, so this can never
+        // point at a nonexistent product.
+        navigate(`/product/${item.id}`, {
           state: {
-            product: productData
+            productId: item.id
           }
         });
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        navigate('/products', {
-          state: {
-            searchTerm: item.name,
-            filterType: 'product'
-          }
-        });
+      } else {
+        // Fallback path, kept for any legacy string-only product entries
+        // that don't carry an id.
+        try {
+          const productsRef = fsCollection(dbLite, "products");
+          const snapshot = await getDocs(productsRef);
+          const match = snapshot.docs.find((docSnap) => {
+            const name = docSnap.data().name as string;
+            return name?.toLowerCase().includes(item.name.toLowerCase());
+          });
+
+          if (!match) throw new Error("Product not found");
+
+          const productData = { id: match.id, ...match.data() };
+
+          navigate(`/product/${match.id}`, {
+            state: {
+              product: productData
+            }
+          });
+        } catch (error) {
+          console.error('Error fetching product:', error);
+          navigate('/products', {
+            state: {
+              searchTerm: item.name,
+              filterType: 'product'
+            }
+          });
+        }
       }
     }
     setIsMobileMenuOpen(false);
@@ -263,30 +330,15 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         },
         {
           heading: "Fresh Vegis",
-          items: [
-            { name: "Tomato", type: "product" },
-            { name: "Spinach", type: "product" },
-            { name: "Cucumber", type: "product" },
-            { name: "Broccoli", type: "product" }
-          ],
+          items: shopProducts["Fresh Vegis"] || [],
         },
         {
           heading: "Non Vegis",
-          items: [
-            { name: "Chicken", type: "product" },
-            { name: "Fish", type: "product" },
-            { name: "Mutton", type: "product" },
-            { name: "Eggs", type: "product" }
-          ],
+          items: shopProducts["Non Vegis"] || [],
         },
         {
           heading: "Frozen Items",
-          items: [
-            { name: "Frozen Pizza", type: "product" },
-            { name: "Ice Cream", type: "product" },
-            { name: "French Fries", type: "product" },
-            { name: "Peas", type: "product" }
-          ],
+          items: shopProducts["Frozen Items"] || [],
         },
       ],
     },
@@ -406,17 +458,38 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
           </div>
 
           <div className={styles.rightSection}>
-            <div className={styles.accountBox}>
-              <FontAwesomeIcon icon={faUserAlt} className={styles.accountIcon} />
-              <div className={styles.accountText}>
-                <p className={styles.accountLabel}>ACCOUNT</p>
-                <div className={styles.accountLinks}>
-                  <a href="#">Register</a>
-                  <span>|</span>
-                  <a href="#">Login</a>
-                </div>
-              </div>
-            </div>
+            
+
+<div className={styles.accountBox} onClick={() => user && setIsAccountMenuOpen((v) => !v)}>
+  <FontAwesomeIcon icon={faUserAlt} className={styles.accountIcon} />
+  <div className={styles.accountText}>
+    {user ? (
+      <>
+        <p className={styles.accountLabel}>ACCOUNT</p>
+        <span style={{ cursor: 'pointer' }}>
+          {user.displayName || user.email?.split('@')[0]}
+        </span>
+      </>
+    ) : (
+      <>
+        <p className={styles.accountLabel}>ACCOUNT</p>
+        <div className={styles.accountLinks}>
+          <a onClick={() => navigate('/signup')} style={{ cursor: 'pointer' }}>Register</a>
+          <span>|</span>
+          <a onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>Login</a>
+        </div>
+      </>
+    )}
+  </div>
+
+  {user && isAccountMenuOpen && (
+    <div className={styles.accountDropdown} onClick={(e) => e.stopPropagation()}>
+      <button onClick={handleSignOut} className={styles.signOutButton}>
+        Sign out
+      </button>
+    </div>
+  )}
+</div>
 
             <FontAwesomeIcon icon={faHeart} className={styles.icon} />
 
@@ -634,3 +707,8 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     </header>
   );
 }
+
+
+
+
+

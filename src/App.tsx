@@ -11,11 +11,14 @@ import { ProductDetailProvider } from "./contexts/ProductDetailContext";
 import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
 import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
 import { CartProvider, useCart } from "./contexts/CartContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import CartSidebar from "./cart/CartSidebar";
 import "./App.css";
 import LoadingScreen from "./loading/LoadingScreen";
 import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
 import CheckoutPage from "./checkout/CheckoutPage";
+import LoginPage from "./navbar/loginpage";
+import SignupPage from "./navbar/signuppage";
 
 // Create a separate component that uses the QuickView hook
 function AppContent() {
@@ -59,13 +62,16 @@ function AppContent() {
     removeFromCart(id);
   };
 
-
+  // Login/signup are full-screen auth pages — no navbar, cart sidebar, or
+  // footer chrome around them, same treatment as checkout.
   return (
     <>
       <div className="app-content">
       
         <Routes>
           <Route path="/checkout" element={null} />
+          <Route path="/login" element={null} />
+          <Route path="/signup" element={null} />
           <Route path="*" element={
             <Navbar 
               cartItemsCount={getCartItemsCount()} 
@@ -79,11 +85,15 @@ function AppContent() {
           <Route path="/products" element={<ProductDetail />} />
           <Route path="/product/:productId" element={<ProductItemDetailPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
         </Routes>
         
-        {/* Conditionally render Footer - don't show on checkout page */}
+        {/* Conditionally render Footer - don't show on checkout/auth pages */}
         <Routes>
           <Route path="/checkout" element={null} />
+          <Route path="/login" element={null} />
+          <Route path="/signup" element={null} />
           <Route path="*" element={<Footer />} />
         </Routes>
       </div>
@@ -128,18 +138,20 @@ function App() {
   }
 
   return (
-    <ProductProvider>
-      <ProductDetailProvider>
-        <QuickViewProvider>
-          <CartProvider>
-            <Router>
-              <ScrollToTop />
-              <AppContent />
-            </Router>
-          </CartProvider>
-        </QuickViewProvider>
-      </ProductDetailProvider>
-    </ProductProvider>
+    <AuthProvider>
+      <ProductProvider>
+        <ProductDetailProvider>
+          <QuickViewProvider>
+            <CartProvider>
+              <Router>
+                <ScrollToTop />
+                <AppContent />
+              </Router>
+            </CartProvider>
+          </QuickViewProvider>
+        </ProductDetailProvider>
+      </ProductProvider>
+    </AuthProvider>
   );
 }
 
