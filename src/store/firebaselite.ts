@@ -15,9 +15,5 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const dbLite = getFirestore(app);
 
-// --- Auth ---
-// Note: firestore/lite is the REST-based lite SDK, but Firebase Auth has
-// no separate "lite" variant — the regular getAuth() is the only option
-// and works fine alongside firestore/lite.
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();

@@ -13,12 +13,17 @@ import summerCollection from "../assets/kiwi.jpg";
 import winterCollection from "../assets/juice.jpg";
 import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 
 interface NavbarProps {
   cartItemsCount: number;
   onCartClick: () => void;
 }
+
+// Maps each product-listing heading in the Shop dropdown to the category
+// tag(s) used in Firestore's `categories` array field on each product doc.
+// Adjust these strings to match your real category values exactly — e.g.
+// if a vegetable product has categories: ["Vegetables"], make sure
+// "Vegetables" is listed here, or it will never be matched.
 const PRODUCT_HEADING_CATEGORY_MAP: Record<string, string[]> = {
   "Fresh Vegis": ["Vegetables", "Vegitables"],
   "Non Vegis": ["Meat", "Poultry", "Seafood"],
@@ -41,14 +46,10 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileNavStack, setMobileNavStack] = useState<Array<{ title: string, content: any }>>([]);
   const location = useLocation();
-const { user, signOut } = useAuth();
-const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
- 
-const handleSignOut = async () => {
-  await signOut();
-  setIsAccountMenuOpen(false);
-  navigate('/');
-};
+
+  // Real products pulled from Firestore for each Shop dropdown heading,
+  // keyed by heading — replaces the old hardcoded product name lists so a
+  // click always resolves to a real product id instead of a name guess.
   const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
 
   const toggleMobileMenu = () => {
@@ -458,38 +459,17 @@ const handleSignOut = async () => {
           </div>
 
           <div className={styles.rightSection}>
-            
-
-<div className={styles.accountBox} onClick={() => user && setIsAccountMenuOpen((v) => !v)}>
-  <FontAwesomeIcon icon={faUserAlt} className={styles.accountIcon} />
-  <div className={styles.accountText}>
-    {user ? (
-      <>
-        <p className={styles.accountLabel}>ACCOUNT</p>
-        <span style={{ cursor: 'pointer' }}>
-          {user.displayName || user.email?.split('@')[0]}
-        </span>
-      </>
-    ) : (
-      <>
-        <p className={styles.accountLabel}>ACCOUNT</p>
-        <div className={styles.accountLinks}>
-          <a onClick={() => navigate('/signup')} style={{ cursor: 'pointer' }}>Register</a>
-          <span>|</span>
-          <a onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>Login</a>
-        </div>
-      </>
-    )}
-  </div>
-
-  {user && isAccountMenuOpen && (
-    <div className={styles.accountDropdown} onClick={(e) => e.stopPropagation()}>
-      <button onClick={handleSignOut} className={styles.signOutButton}>
-        Sign out
-      </button>
-    </div>
-  )}
-</div>
+            <div className={styles.accountBox}>
+              <FontAwesomeIcon icon={faUserAlt} className={styles.accountIcon} />
+              <div className={styles.accountText}>
+                <p className={styles.accountLabel}>ACCOUNT</p>
+                <div className={styles.accountLinks}>
+                  <a href="#">Register</a>
+                  <span>|</span>
+                  <a href="#">Login</a>
+                </div>
+              </div>
+            </div>
 
             <FontAwesomeIcon icon={faHeart} className={styles.icon} />
 
@@ -707,6 +687,7 @@ const handleSignOut = async () => {
     </header>
   );
 }
+
 
 
 
