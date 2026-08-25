@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthPage from './auth/authpage';
-import VerifyEmailAction from './utils/VerifyEmailAction';
+import VerifyEmailAction from './auth/VerifyEmailAction';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {

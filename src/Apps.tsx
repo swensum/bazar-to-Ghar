@@ -19,7 +19,7 @@ import LoadingScreen from "./loading/LoadingScreen";
 import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
 import CheckoutPage from "./checkout/CheckoutPage";
 import AuthPage from "./auth/authpage";
-import VerifyEmailAction from "./utils/VerifyEmailAction";
+import VerifyEmailAction from "./auth/VerifyEmailAction";
 
 // Routes where the Navbar/Footer should be hidden (auth screens, checkout)
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth", "/verify-email"];
