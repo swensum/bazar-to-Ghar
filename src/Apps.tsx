@@ -1,4 +1,4 @@
-// App.jsx
+// App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Home from "./pages/Home";
@@ -11,47 +11,53 @@ import { ProductDetailProvider } from "./contexts/ProductDetailContext";
 import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
 import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
 import { CartProvider, useCart } from "./contexts/CartContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 import CartSidebar from "./cart/CartSidebar";
 import "./App.css";
 import LoadingScreen from "./loading/LoadingScreen";
 import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
 import CheckoutPage from "./checkout/CheckoutPage";
+import AuthPage from "./auth/authpage";
+import VerifyEmailAction from "./utils/VerifyEmailAction";
+
+// Routes where the Navbar/Footer should be hidden (auth screens, checkout)
+const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth", "/verify-email"];
 
 // Create a separate component that uses the QuickView hook
 function AppContent() {
   const { quickViewProduct, isQuickViewOpen, closeQuickView } = useQuickView();
-  const { 
-    cartItems, 
-    isCartOpen, 
-    addToCart, 
-    updateQuantity, 
-    removeFromCart, 
-    openCart, 
-    closeCart, 
+  const {
+    cartItems,
+    isCartOpen,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    openCart,
+    closeCart,
     getCartItemsCount,
-    getCartTotal 
+    getCartTotal
   } = useCart();
 
   const handleAddToCart = (product: any, quantity: number, selectedPackage?: string) => {
-  // Add item to cart
-  const newItem = {
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    quantity: quantity,
-    image: product.images?.[0] || product.image_url,
-    selectedPackage: selectedPackage,
-    discount_percentage: product.discount_percentage,
-    material: product.material // Add this line
-  };
+    // Add item to cart
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: product.images?.[0] || product.image_url,
+      selectedPackage: selectedPackage,
+      discount_percentage: product.discount_percentage,
+      material: product.material // Add this line
+    };
 
-  addToCart(newItem);
-  
-  // Open cart sidebar
-  openCart();
-  console.log('Added to cart:', newItem);
-};
+    addToCart(newItem);
+
+    // Open cart sidebar
+    openCart();
+    console.log('Added to cart:', newItem);
+  };
   const handleUpdateQuantity = (id: string, quantity: number) => {
     updateQuantity(id, quantity);
   };
@@ -63,43 +69,45 @@ function AppContent() {
   return (
     <>
       <div className="app-content">
-      
+
         <Routes>
-          <Route path="/checkout" element={null} />
-          <Route path="/login" element={null} />
-          <Route path="/signup" element={null} />
+          {CHROME_HIDDEN_PATHS.map((path) => (
+            <Route key={path} path={path} element={null} />
+          ))}
           <Route path="*" element={
-            <Navbar 
-              cartItemsCount={getCartItemsCount()} 
-              onCartClick={openCart} 
+            <Navbar
+              cartItemsCount={getCartItemsCount()}
+              onCartClick={openCart}
             />
           } />
         </Routes>
-        
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductDetail />} />
           <Route path="/product/:productId" element={<ProductItemDetailPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
-         
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/verify-email" element={<VerifyEmailAction />} />
+
         </Routes>
-        
+
         {/* Conditionally render Footer - don't show on checkout/auth pages */}
         <Routes>
-          <Route path="/checkout" element={null} />
-          <Route path="/login" element={null} />
-          <Route path="/signup" element={null} />
+          {CHROME_HIDDEN_PATHS.map((path) => (
+            <Route key={path} path={path} element={null} />
+          ))}
           <Route path="*" element={<Footer />} />
         </Routes>
       </div>
-      
+
       {/* Quick View Popup */}
       <ProductQuickViewPopup
         product={quickViewProduct}
         isOpen={isQuickViewOpen}
         onClose={closeQuickView}
         onAddToCart={handleAddToCart}
-       
+
       />
 
       {/* Cart Sidebar */}
@@ -123,7 +131,7 @@ function App() {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000); // Increased to 2 seconds for better experience
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -133,7 +141,7 @@ function App() {
   }
 
   return (
-    
+    <AuthProvider>
       <ProductProvider>
         <ProductDetailProvider>
           <QuickViewProvider>
@@ -146,7 +154,7 @@ function App() {
           </QuickViewProvider>
         </ProductDetailProvider>
       </ProductProvider>
-    
+    </AuthProvider>
   );
 }
 

@@ -13,6 +13,7 @@ import summerCollection from "../assets/kiwi.jpg";
 import winterCollection from "../assets/juice.jpg";
 import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -46,6 +47,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileNavStack, setMobileNavStack] = useState<Array<{ title: string, content: any }>>([]);
   const location = useLocation();
+  const { currentUser, signOut } = useAuth();
 
   // Real products pulled from Firestore for each Shop dropdown heading,
   // keyed by heading — replaces the old hardcoded product name lists so a
@@ -462,12 +464,49 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
             <div className={styles.accountBox}>
               <FontAwesomeIcon icon={faUserAlt} className={styles.accountIcon} />
               <div className={styles.accountText}>
-                <p className={styles.accountLabel}>ACCOUNT</p>
-                <div className={styles.accountLinks}>
-                  <a href="#">Register</a>
-                  <span>|</span>
-                  <a href="#">Login</a>
-                </div>
+                {currentUser ? (
+                  <>
+                    <p className={styles.accountLabel}>
+                      {currentUser.displayName || currentUser.email}
+                    </p>
+                    <div className={styles.accountLinks}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          signOut();
+                        }}
+                      >
+                        Logout
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className={styles.accountLabel}>ACCOUNT</p>
+                    <div className={styles.accountLinks}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/auth', { state: { mode: 'signup' } });
+                        }}
+                      >
+                        Register
+                      </a>
+                      <span>|</span>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/auth', { state: { mode: 'signin' } });
+                        }}
+                      >
+                        Login
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -687,9 +726,3 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     </header>
   );
 }
-
-
-
-
-
-

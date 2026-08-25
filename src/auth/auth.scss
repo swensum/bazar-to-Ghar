@@ -46,8 +46,8 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 .auth-container {
   position: relative;
   overflow: hidden;
-  width: 860px;
-  max-width: 100%;
+  width: 1080px;
+ max-width: 94vw;  
   min-height: 620px;
   border-radius: $radius-outer;
   border: 1px solid $line;
@@ -356,13 +356,16 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
   width: 50%;
   height: 100%;
   overflow: hidden;
-  transition: transform $transition-speed $transition-ease;
+  transition: transform $transition-speed $transition-ease, border-radius $transition-speed $transition-ease;
   z-index: 100;
+  border-radius: 30% 0 0 30% / 30% 0 0 30%;
 
 }
 
 .auth-container--active .overlay-container {
   transform: translateX(-100%);
+ 
+  border-radius: 0 30% 30% 0 / 0 30% 30% 0;
 
 }
 
@@ -387,6 +390,33 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
   width: 50%;
   transition: transform $transition-speed $transition-ease;
   overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 44px;
+}
+
+.overlay-content {
+  position: relative;
+  z-index: 2;
+
+  h2 {
+    font-family: $font-display;
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+
+  p {
+    font-size: 13.5px;
+    line-height: 1.5;
+    opacity: 0.85;
+    margin: 0 0 22px;
+  }
 }
 
 .overlay-panel--left {
@@ -524,4 +554,229 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
     }
   }
 
+}
+/* ---------- Email verification screen ---------- */
+
+.auth-container--single {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 520px;
+  height: auto !important; // overrides the JS-measured height from the form panels
+}
+
+.verify-screen {
+  width: 100%;
+  max-width: 420px;
+  padding: 56px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  &__icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: $field-bg;
+    color: $accent-bright;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: $font-display;
+    font-weight: 600;
+    font-size: 26px;
+    margin: 0 0 12px;
+  }
+
+  &__body {
+    color: $ink-soft;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 26px;
+
+    strong {
+      color: $ink;
+    }
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $accent-mid;
+    margin-bottom: 26px;
+  }
+
+  &__back {
+    margin-top: 16px;
+  }
+
+  .btn-google {
+    margin-bottom: 0;
+  }
+}
+
+.verify-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid $line;
+  border-top-color: $accent-bright;
+  animation: verify-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes verify-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verify-spinner {
+    animation: none;
+  }
+}
+/* ---------- Toast notifications (top-right) ---------- */
+
+.toast-viewport {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 14px 14px 16px;
+  border-radius: 14px;
+  background: $paper;
+  border: 1px solid $line;
+  box-shadow: 0 16px 32px -12px rgba(15, 51, 47, 0.28), 0 2px 6px rgba(15, 51, 47, 0.08);
+  animation: toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &--closing {
+    animation: toast-out 0.2s ease forwards;
+  }
+
+  &--success {
+    border-left: 3px solid #1c7a68;
+  }
+
+  &--error {
+    border-left: 3px solid $error;
+  }
+}
+
+.toast__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  margin-top: 1px;
+}
+
+.toast__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast__title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: $ink;
+  line-height: 1.35;
+}
+
+.toast__message {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: $ink-soft;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.toast__close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 3px;
+  color: $ink-soft;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: $field-bg;
+    color: $ink;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-viewport {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+.switch-text--mobile-only {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .switch-text--mobile-only {
+    display: block;
+    margin: 16px 0 0;
+    text-align: center;
+  }
 }
