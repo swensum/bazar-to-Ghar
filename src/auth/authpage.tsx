@@ -1,7 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext'; // adjust path to match your project
 import './auth.scss';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 /* ---------- Small reusable bits ---------- */
 
@@ -23,21 +24,6 @@ const GoogleIcon: React.FC = () => (
             fill="#1976D2"
             d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.5 5.4C39.9 37.2 44 31.4 44 24c0-1.3-.1-2.7-.4-3.5z"
         />
-    </svg>
-);
-
-const CheckIcon: React.FC = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" fill="#1c7a68" />
-        <path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
-
-const ErrorIcon: React.FC = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" fill="#c0392b" />
-        <path d="M12 7v6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-        <circle cx="12" cy="16.2" r="1.1" fill="#fff" />
     </svg>
 );
 
@@ -139,76 +125,6 @@ const PasswordField: React.FC<PasswordFieldProps> = ({ id, label, value, placeho
     );
 };
 
-/* ---------- Toast notification ---------- */
-
-type ToastVariant = 'success' | 'error';
-
-type ToastState = {
-    id: number;
-    variant: ToastVariant;
-    title: string;
-    message?: string;
-};
-
-type ToastProps = {
-    toast: ToastState;
-    onClose: (id: number) => void;
-};
-
-const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
-    const [closing, setClosing] = useState(false);
-
-    useEffect(() => {
-        const dismissTimer = setTimeout(() => setClosing(true), 4200);
-        return () => clearTimeout(dismissTimer);
-    }, []);
-
-    useEffect(() => {
-        if (!closing) return;
-        const removeTimer = setTimeout(() => onClose(toast.id), 220);
-        return () => clearTimeout(removeTimer);
-    }, [closing, onClose, toast.id]);
-
-    return (
-        <div
-            className={`toast toast--${toast.variant}${closing ? ' toast--closing' : ''}`}
-            role={toast.variant === 'error' ? 'alert' : 'status'}
-        >
-            <span className="toast__icon">{toast.variant === 'success' ? <CheckIcon /> : <ErrorIcon />}</span>
-            <div className="toast__body">
-                <p className="toast__title">{toast.title}</p>
-                {toast.message && <p className="toast__message">{toast.message}</p>}
-            </div>
-            <button
-                type="button"
-                className="toast__close"
-                aria-label="Dismiss notification"
-                onClick={() => setClosing(true)}
-            >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
-            </button>
-        </div>
-    );
-};
-
-type ToastViewportProps = {
-    toasts: ToastState[];
-    onClose: (id: number) => void;
-};
-
-const ToastViewport: React.FC<ToastViewportProps> = ({ toasts, onClose }) => {
-    if (toasts.length === 0) return null;
-    return (
-        <div className="toast-viewport" aria-live="polite">
-            {toasts.map((t) => (
-                <Toast key={t.id} toast={t} onClose={onClose} />
-            ))}
-        </div>
-    );
-};
-
 /* ---------- Validation helpers ---------- */
 
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -237,8 +153,6 @@ const friendlyAuthError = (err: any): string => {
             return 'Something went wrong. Please try again.';
     }
 };
-
-let toastIdCounter = 0;
 
 /* ---------- Email verification screen ---------- */
 
@@ -272,12 +186,7 @@ const VerifyEmailScreen: React.FC<VerifyScreenProps> = ({ email, checking, onRes
             )}
         </div>
 
-        <button
-            type="button"
-            className="btn-google"
-            onClick={onResend}
-            disabled={resendCooldown > 0}
-        >
+        <button type="button" className="btn-google" onClick={onResend} disabled={resendCooldown > 0}>
             {resendCooldown > 0 ? `Resend link (${resendCooldown}s)` : 'Resend verification link'}
         </button>
 
@@ -301,6 +210,9 @@ const AuthPage: React.FC = () => {
         cancelVerificationWait,
     } = useAuth();
 
+    const { pushToast } = useToast();
+
+    const navigate = useNavigate();
     const location = useLocation();
     const initialMode = (location.state as { mode?: 'signup' | 'signin' } | null)?.mode;
 
@@ -320,18 +232,28 @@ const AuthPage: React.FC = () => {
 
     const [resendCooldown, setResendCooldown] = useState(0);
 
-    // Toast queue (top-right stack)
-    const [toasts, setToasts] = useState<ToastState[]>([]);
+    /* ---------- Verify overlay mount/animate state ----------
+       verifyMounted keeps the overlay in the DOM long enough to play its
+       exit transition; verifyActive toggles the actual visual state one
+       frame after mount so the enter transition has something to animate
+       from. lastVerifyEmail keeps the email visible during the fade-out,
+       since pendingVerificationEmail itself goes null immediately. */
+    const [verifyMounted, setVerifyMounted] = useState(false);
+    const [verifyActive, setVerifyActive] = useState(false);
+    const [lastVerifyEmail, setLastVerifyEmail] = useState('');
 
-    const pushToast = (variant: ToastVariant, title: string, message?: string) => {
-        if (!title) return;
-        toastIdCounter += 1;
-        setToasts((prev) => [...prev, { id: toastIdCounter, variant, title, message }]);
-    };
-
-    const removeToast = (id: number) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
+    useEffect(() => {
+        if (pendingVerificationEmail) {
+            setLastVerifyEmail(pendingVerificationEmail);
+            setVerifyMounted(true);
+            const raf = requestAnimationFrame(() => setVerifyActive(true));
+            return () => cancelAnimationFrame(raf);
+        } else {
+            setVerifyActive(false);
+            const t = setTimeout(() => setVerifyMounted(false), 650); // matches $transition-speed
+            return () => clearTimeout(t);
+        }
+    }, [pendingVerificationEmail]);
 
     // Refs used to measure each form's natural height so the container
     // can smoothly resize instead of clipping the taller sign-up form.
@@ -354,7 +276,7 @@ const AuthPage: React.FC = () => {
         if (signUpFormRef.current) ro.observe(signUpFormRef.current);
 
         return () => ro.disconnect();
-    }, [isSignUp, pendingVerificationEmail]);
+    }, [isSignUp]);
 
     // Resend-link cooldown ticker
     useEffect(() => {
@@ -362,16 +284,18 @@ const AuthPage: React.FC = () => {
         const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
         return () => clearTimeout(t);
     }, [resendCooldown]);
-
-    // Surface success once verification completes
-    const wasCheckingRef = useRef(false);
-    useEffect(() => {
-        if (wasCheckingRef.current && !verificationChecking && !pendingVerificationEmail) {
-            pushToast('success', 'Email verified', 'Your account is now active.');
-        }
-        wasCheckingRef.current = verificationChecking;
-    }, [verificationChecking, pendingVerificationEmail]);
-
+const wasCheckingRef = useRef(false);
+useEffect(() => {
+    if (wasCheckingRef.current && !verificationChecking && !pendingVerificationEmail) {
+        pushToast('success', 'Email verified', 'Your account is now active.');
+        const t = setTimeout(() => {
+            navigate('/', { replace: true });
+        }, 1400); 
+        return () => clearTimeout(t);
+    }
+    wasCheckingRef.current = verificationChecking;
+}, [verificationChecking, pendingVerificationEmail, navigate, pushToast]);
+   
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -459,30 +383,12 @@ const AuthPage: React.FC = () => {
 
     const googleButtonLabel = googleLoading ? 'Signing in…' : 'Continue with Google';
 
-    // ---------- Verification screen takes over the whole card ----------
-    if (pendingVerificationEmail) {
-        return (
-            <div className="auth-page">
-                <ToastViewport toasts={toasts} onClose={removeToast} />
-                <div className="auth-container auth-container--single">
-                    <VerifyEmailScreen
-                        email={pendingVerificationEmail}
-                        checking={verificationChecking}
-                        onResend={handleResend}
-                        onBack={handleBackToSignIn}
-                        resendCooldown={resendCooldown}
-                    />
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="auth-page">
-            <ToastViewport toasts={toasts} onClose={removeToast} />
-
             <div
-                className={`auth-container${isSignUp ? ' auth-container--active' : ''}`}
+                className={`auth-container${isSignUp ? ' auth-container--active' : ''}${
+                    verifyMounted ? ' auth-container--verifying' : ''
+                }`}
                 style={containerHeight ? { height: `${containerHeight}px` } : undefined}
             >
                 {/* ---------- Sign in ---------- */}
@@ -491,12 +397,7 @@ const AuthPage: React.FC = () => {
                         <h1>Welcome back</h1>
                         <p className="subtitle">Sign in to keep things moving.</p>
 
-                        <button
-                            type="button"
-                            className="btn-google"
-                            onClick={handleGoogle}
-                            disabled={googleLoading}
-                        >
+                        <button type="button" className="btn-google" onClick={handleGoogle} disabled={googleLoading}>
                             <GoogleIcon />
                             <span>{googleButtonLabel}</span>
                         </button>
@@ -553,12 +454,7 @@ const AuthPage: React.FC = () => {
                         <h1>Create account</h1>
                         <p className="subtitle">Start your workspace in a minute.</p>
 
-                        <button
-                            type="button"
-                            className="btn-google"
-                            onClick={handleGoogle}
-                            disabled={googleLoading}
-                        >
+                        <button type="button" className="btn-google" onClick={handleGoogle} disabled={googleLoading}>
                             <GoogleIcon />
                             <span>{googleButtonLabel}</span>
                         </button>
@@ -612,7 +508,8 @@ const AuthPage: React.FC = () => {
                             error={signUpErrors.confirmPassword}
                             onChange={(v) => {
                                 setSignUpConfirmPassword(v);
-                                if (signUpErrors.confirmPassword) setSignUpErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                                if (signUpErrors.confirmPassword)
+                                    setSignUpErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                             }}
                         />
 
@@ -629,7 +526,7 @@ const AuthPage: React.FC = () => {
                     </form>
                 </div>
 
-                {/* ---------- Sliding color panel ---------- */}
+                {/* ---------- Sliding color panel (desktop only) ---------- */}
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-panel--left">
@@ -657,6 +554,28 @@ const AuthPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* ---------- Verification takeover ----------
+                    Independent of .overlay-container, so it isn't affected
+                    by the mobile rule that hides the sliding color panel —
+                    it shows on both desktop and mobile the same way. */}
+                {verifyMounted && (
+                    <div
+                        className={`verify-overlay${verifyActive ? ' verify-overlay--active' : ''}`}
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <span className="blob blob--a" aria-hidden="true" />
+                        <span className="blob blob--d" aria-hidden="true" />
+                        <VerifyEmailScreen
+                            email={lastVerifyEmail}
+                            checking={verificationChecking}
+                            onResend={handleResend}
+                            onBack={handleBackToSignIn}
+                            resendCooldown={resendCooldown}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, type JSX, type ReactNode } from 'react';
 import { dbLite } from '../store/firebaselite';
 import { collection, doc, getDoc, getDocs, query, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore/lite';
-
+import { useActiveOffer } from '../hooks/useActiveOffer';
 import { categoryDetails } from '../data/categoryDetails';
 
 interface ProductDetail {
@@ -105,7 +105,18 @@ interface ProductDetailContextType {
 }
 
 const ProductDetailContext = createContext<ProductDetailContextType | undefined>(undefined);
-function mapFirestoreProduct(id: string, data: any) {
+function mapFirestoreProduct(
+    id: string,
+    data: any,
+    activeOffer: { discount_percentage: number; applicable_categories: string[] } | null
+) {
+    const categories = Array.isArray(data.categories) ? data.categories : [];
+
+    const effectiveDiscount =
+        activeOffer && activeOffer.applicable_categories.some((cat) => categories.includes(cat))
+            ? activeOffer.discount_percentage
+            : 0;
+
     return {
         id,
         name: data.name,
@@ -113,19 +124,21 @@ function mapFirestoreProduct(id: string, data: any) {
         price: data.price,
         image_url: data.imageUrl,
         category_id: data.categoryId || '',
-        categories: Array.isArray(data.categories) ? data.categories : [],
+        categories,
         in_stock: data.inStock,
         created_at: data.createdAt?.toDate
             ? data.createdAt.toDate().toISOString()
             : data.createdAt,
-        discount_percentage: data.discountPercentage || 0,
+        discount_percentage: effectiveDiscount,
         material: data.material ?? null,
         product_types: Array.isArray(data.productTypes) ? data.productTypes : [],
     };
 }
 
 export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { activeOffer } = useActiveOffer();
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
+    
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
@@ -173,7 +186,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
                 throw new Error('Product not found');
             }
 
-            const product = mapFirestoreProduct(productSnap.id, productSnap.data());
+            const product = mapFirestoreProduct(productSnap.id, productSnap.data(), activeOffer);
             const productWithDetails = processProductData(product);
             setSelectedProduct(productWithDetails);
         } catch (error) {
@@ -232,7 +245,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
 
             const allProducts = snapshot.docs
                 .filter((d) => d.id !== selectedProduct.id)
-                .map((d) => mapFirestoreProduct(d.id, d.data()));
+                .map((d) => mapFirestoreProduct(d.id, d.data(), activeOffer));
 
             const filteredRelated = allProducts.filter(
                 (product) =>
@@ -269,7 +282,7 @@ export const ProductDetailProvider: React.FC<{ children: ReactNode }> = ({ child
 
             const allProducts = snapshot.docs
                 .filter((d) => d.id !== selectedProduct.id)
-                .map((d) => mapFirestoreProduct(d.id, d.data()));
+                 .map((d) => mapFirestoreProduct(d.id, d.data(), activeOffer));
 
             const shuffled = allProducts.sort(() => 0.5 - Math.random()).slice(0, 4);
 

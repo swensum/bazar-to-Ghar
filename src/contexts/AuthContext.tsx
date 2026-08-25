@@ -50,11 +50,20 @@ export const useAuth = (): AuthContextValue => {
 
 const POLL_INTERVAL_MS = 3000;
 
-// Where Firebase redirects the user after they click the verification
-// link in their email, instead of Firebase's default firebaseapp.com page.
-// Must be added to Firebase Console -> Authentication -> Settings -> Authorized domains.
+// No custom domain is registered yet, so Firebase always sends the actual
+// verification-link click to its own hosted page
+// (bazar-to-ghar.firebaseapp.com/__/auth/action), regardless of this URL —
+// there's no way around that without a verified custom Action URL in
+// Firebase Console -> Authentication -> Templates -> Email address
+// verification -> Customize action URL.
+//
+// This `url` only controls the "Continue" link on THAT hosted page, so it
+// just needs to be a real, existing route in this app. Point it at the
+// root rather than a dedicated /verify-email page, since we're relying on
+// Firebase's own default "email verified" messaging instead of a custom
+// in-app verification screen.
 const actionCodeSettings: ActionCodeSettings = {
-    url: typeof window !== 'undefined' ? `${window.location.origin}/verify-email` : '/verify-email',
+    url: typeof window !== 'undefined' ? window.location.origin : '/',
     handleCodeInApp: true,
 };
 

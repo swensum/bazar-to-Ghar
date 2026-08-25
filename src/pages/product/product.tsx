@@ -4,6 +4,7 @@ import { collection, getDocs, orderBy, query } from "firebase/firestore/lite";
 import styles from "./ProductShowcase.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
+import { useActiveOffer } from "../../hooks/useActiveOffer";
 import { useQuickView } from "../../contexts/QuickViewContext";
 
 interface Product {
@@ -12,7 +13,7 @@ interface Product {
   description: string;
   price: number;
   image_url: string;
-  category_id: string;
+  categories: string[];
   in_stock: boolean;
   created_at: string;
   discount_percentage: number;
@@ -21,7 +22,6 @@ interface Product {
   reviewCount?: number;
   averageRating?: number;
 }
-
 type ProductType = 'Best Seller' | 'Special Product' | 'New Product';
 interface ProductShowcaseProps {
   initialFilter?: ProductType;
@@ -36,7 +36,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const navigate = useNavigate();
   const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
-
+  const { activeOffer } = useActiveOffer();
   const productsPerPage = 8;
   const trackRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -45,13 +45,13 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [activeOffer]);
 
   useEffect(() => {
     if (location.state?.filterType) {
       setSelectedType(location.state.filterType);
     }
-    
+
     if (location.state?.scrollToProducts) {
       setTimeout(() => {
         const element = document.getElementById('product-showcase');
@@ -67,23 +67,23 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   }, [products, selectedType]);
 
   useEffect(() => {
-    setCurrentPage(0); 
+    setCurrentPage(0);
   }, [filteredProducts]);
 
   const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // Set loading state for this specific product
     setLoadingProductId(product.id);
     setQuickViewLoading(true);
-    
+
     try {
       // Simulate a small delay for better UX (optional)
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Process the product to include packageOptions before opening quick view
       const processedProduct = processProductData(product);
-      
+
       // Open the quick view with processed product
       openQuickView(processedProduct);
     } catch (error) {
@@ -104,18 +104,24 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
       const snapshot = await getDocs(q);
       const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
+        const categories = Array.isArray(data.categories) ? data.categories : [];
+        const effectiveDiscount =
+          activeOffer && activeOffer.applicable_categories.some((cat) => categories.includes(cat))
+            ? activeOffer.discount_percentage
+            : 0;
+
         return {
           id: docSnap.id,
           name: data.name,
           description: data.description,
           price: data.price,
           image_url: data.imageUrl,
-          category_id: data.categoryId || "",
+          categories,
           in_stock: data.inStock,
           created_at: data.createdAt?.toDate
             ? data.createdAt.toDate().toISOString()
             : data.createdAt,
-          discount_percentage: data.discountPercentage || 0,
+          discount_percentage: effectiveDiscount,
           product_types: Array.isArray(data.productTypes) ? data.productTypes : [],
           material: data.material ?? null,
           reviewCount: 0,
@@ -134,15 +140,15 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const filterProductsByType = () => {
     if (selectedType === 'New Product') {
       const sixtyDaysAgo = new Date();
-      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60); 
-      
-      const newProducts = products.filter(product => 
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+      const newProducts = products.filter(product =>
         new Date(product.created_at) > sixtyDaysAgo
       );
       setFilteredProducts(newProducts);
     } else {
-      const filtered = products.filter(product => 
-        Array.isArray(product.product_types) && 
+      const filtered = products.filter(product =>
+        Array.isArray(product.product_types) &&
         product.product_types.includes(selectedType)
       );
       setFilteredProducts(filtered);
@@ -172,11 +178,11 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
     const strokeWidth = 2.5;
-    
+
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <svg key={`full-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="#F5BE05" stroke="#F5BE05" strokeWidth={strokeWidth}>
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       );
     }
@@ -190,7 +196,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
               <stop offset="50%" stopColor="transparent" />
             </linearGradient>
           </defs>
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)"/>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)" />
         </svg>
       );
     }
@@ -199,7 +205,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
         <svg key={`empty-${i}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5BE05" strokeWidth={strokeWidth}>
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       );
     }
@@ -228,9 +234,8 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
           {productTypes.map((type) => (
             <button
               key={type}
-              className={`${styles.filterButton} ${
-                selectedType === type ? styles.active : ''
-              }`}
+              className={`${styles.filterButton} ${selectedType === type ? styles.active : ''
+                }`}
               onClick={() => setSelectedType(type)}
             >
               {type}
@@ -246,13 +251,13 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
             <>
               {/* Products Carousel */}
               <div className={styles.carouselContainer}>
-                <button 
+                <button
                   className={`${styles.carouselArrow} ${styles.arrowLeft} ${currentPage === 0 ? styles.disabled : ''}`}
                   onClick={prevPage}
                   disabled={currentPage === 0}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M15 18l-6-6 6-6"/>
+                    <path d="M15 18l-6-6 6-6" />
                   </svg>
                 </button>
 
@@ -260,7 +265,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                   <div className={styles.carouselTrack} ref={trackRef}>
                     <div className={styles.productsGrid}>
                       {currentProducts.map((product) => {
-                        const discountedPrice = product.discount_percentage > 0 
+                        const discountedPrice = product.discount_percentage > 0
                           ? product.price * (1 - product.discount_percentage / 100)
                           : product.price;
 
@@ -271,8 +276,8 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                             navigate(`/product/${product.id}`);
                           }}>
                             <div className={styles.productImageContainer}>
-                              <img 
-                                src={product.image_url} 
+                              <img
+                                src={product.image_url}
                                 alt={product.name}
                                 className={styles.productImage}
                               />
@@ -281,7 +286,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                               ) : product.discount_percentage > 0 ? (
                                 <div className={styles.discountBadge}>-{product.discount_percentage}%</div>
                               ) : null}
-                              
+
                               {/* Display product type badges */}
                               {Array.isArray(product.product_types) && product.product_types.length > 0 && (
                                 <div className={styles.productTypeBadges}>
@@ -292,16 +297,16 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                                   ))}
                                 </div>
                               )}
-                              
+
                               <div className={styles.productOverlay}>
                                 <div className={styles.actionIcons}>
                                   <button className={styles.iconBtn} aria-label="Add to favorites">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                     </svg>
                                   </button>
-                                  <button 
-                                    className={styles.iconBtn} 
+                                  <button
+                                    className={styles.iconBtn}
                                     aria-label="Add to cart"
                                     onClick={(e) => handleQuickViewClick(product, e)}
                                     disabled={isQuickViewLoading && loadingProductId === product.id}
@@ -310,7 +315,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                                       // Loading spinner
                                       <div className={styles.loadingSpinner}>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                                         </svg>
                                       </div>
                                     ) : (
@@ -325,10 +330,10 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className={styles.productInfo}>
                               <h3 className={styles.productName}>{product.name}</h3>
-                              
+
                               {product.in_stock ? (
                                 <div className={styles.priceContainer}>
                                   {product.discount_percentage > 0 ? (
@@ -343,7 +348,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                               ) : (
                                 <div className={styles.outOfStockText}>Currently Unavailable</div>
                               )}
-                              
+
                               <div className={styles.productReviews}>
                                 <div className={styles.stars}>
                                   {renderStars(product.averageRating || 0)}
@@ -358,13 +363,13 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                   </div>
                 </div>
 
-                <button 
+                <button
                   className={`${styles.carouselArrow} ${styles.arrowRight} ${currentPage === totalPages - 1 ? styles.disabled : ''}`}
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 18l6-6-6-6"/>
+                    <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
               </div>

@@ -20,6 +20,7 @@ import CustomerReviews from "../reviews/CustomerReviews";
 import SubscribePage from "../subscribtion/ SubscribePage";
 import Blog from "./blog/blog";
 import ProductShowcase from "./product/product";
+import { useActiveOffer } from "../hooks/useActiveOffer";
 
 interface Category {
   image: string;
@@ -93,7 +94,7 @@ export default function Home(): JSX.Element {
   const sliderRef = useRef<Slider>(null);
   const navigate = useNavigate();
   const location = useLocation();
-
+ const { activeOffer } = useActiveOffer();
   useEffect(() => {
     // Check if mobile on component mount and on resize
     const checkMobile = () => {
@@ -115,60 +116,44 @@ export default function Home(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    const fetchCategoryDiscounts = async () => {
-      try {
+  const applyCategoryDiscounts = async () => {
+    try {
+      let productCountByCategory: Record<string, number> = {};
+
+      // Only bother counting products if there's an active offer to show badges for
+      if (activeOffer && activeOffer.applicable_categories.length > 0) {
         const productsRef = collection(dbLite, "products");
         const snapshot = await getDocs(productsRef);
-        const products = snapshot.docs
-          .map((docSnap) => {
-            const data = docSnap.data();
-            return {
-              categories: Array.isArray(data.categories) ? data.categories : null,
-              discount_percentage: data.discountPercentage || 0,
-            };
-          })
-          .filter((p) => p.categories !== null);
 
-        console.log('Fetched products for discount calculation:', products);
-
-        // Calculate discount statistics for each category
-        const updatedCategories = baseCategories.map(baseCategory => {
-          // Filter products that belong to this category
-          const categoryProducts = products?.filter(product =>
-            product.categories &&
-            Array.isArray(product.categories) &&
-            product.categories.includes(baseCategory.category)
-          ) || [];
-
-          // Calculate average discount percentage
-          const productsWithDiscount = categoryProducts.filter(p => p.discount_percentage > 0);
-          const totalDiscount = productsWithDiscount.reduce((sum, product) =>
-            sum + product.discount_percentage, 0
-          );
-          const averageDiscount = productsWithDiscount.length > 0
-            ? Math.round(totalDiscount / productsWithDiscount.length)
-            : 0;
-
-          // Count products on sale
-          const productsOnSale = productsWithDiscount.length;
-
-          return {
-            ...baseCategory,
-            averageDiscount,
-            productsOnSale,
-            hasDiscount: averageDiscount > 0
-          };
+        snapshot.docs.forEach((docSnap) => {
+          const data = docSnap.data();
+          const cats: string[] = Array.isArray(data.categories) ? data.categories : [];
+          cats.forEach((cat) => {
+            productCountByCategory[cat] = (productCountByCategory[cat] || 0) + 1;
+          });
         });
-
-        setCategories(updatedCategories);
-
-      } catch (error) {
-        console.error('Error in fetchCategoryDiscounts:', error);
       }
-    };
 
-    fetchCategoryDiscounts();
-  }, []);
+      const updatedCategories = baseCategories.map((baseCategory) => {
+        const isOnOffer =
+          !!activeOffer && activeOffer.applicable_categories.includes(baseCategory.category);
+
+        return {
+          ...baseCategory,
+          averageDiscount: isOnOffer ? activeOffer!.discount_percentage : 0,
+          productsOnSale: isOnOffer ? (productCountByCategory[baseCategory.category] || 0) : 0,
+          hasDiscount: isOnOffer,
+        };
+      });
+
+      setCategories(updatedCategories);
+    } catch (error) {
+      console.error('Error applying category discounts:', error);
+    }
+  };
+
+  applyCategoryDiscounts();
+}, [activeOffer]);
 
   const handleSlideShopNow = () => {
     navigate('/products', {

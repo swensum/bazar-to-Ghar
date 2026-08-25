@@ -5,6 +5,8 @@ import styles from "./trending.module.scss";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
 import { useNavigate } from "react-router-dom";
 import { useQuickView } from "../../contexts/QuickViewContext";
+import { useActiveOffer } from "../../hooks/useActiveOffer";
+import { getEffectiveDiscount } from "../../utils/offerUtils";
 
 interface Product {
   id: string;
@@ -13,9 +15,9 @@ interface Product {
   price: number;
   image_url: string;
   category_id: string;
+  categories: string[];
   in_stock: boolean;
   material: string;
-  
   created_at: string;
   discount_percentage: number;
   reviewCount?: number;
@@ -23,6 +25,7 @@ interface Product {
 }
 
 export default function TrendingProducts(): JSX.Element {
+  const { activeOffer } = useActiveOffer();
   const [products, setProducts] = useState<Product[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [config, setConfig] = useState(() => getItemConfig(window.innerWidth));
@@ -48,9 +51,8 @@ export default function TrendingProducts(): JSX.Element {
   }, [autoSlide]);
 
   useEffect(() => {
-    fetchTrendingProducts();
-  }, []);
-
+  fetchTrendingProducts();
+}, [activeOffer]);
   useEffect(() => {
     const handleResize = () => {
       const newConfig = getItemConfig(window.innerWidth);
@@ -120,22 +122,26 @@ export default function TrendingProducts(): JSX.Element {
       const snapshot = await getDocs(q);
       const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          image_url: data.imageUrl,
-          category_id: data.categoryId || "",
-          in_stock: data.inStock,
-          material: data.material,
-          created_at: data.createdAt?.toDate
-            ? data.createdAt.toDate().toISOString()
-            : data.createdAt,
-          discount_percentage: data.discountPercentage || 0,
-          reviewCount: 0,
-          averageRating: 0,
-        };
+        const categories = Array.isArray(data.categories) ? data.categories : [];
+const productForDiscount = { id: docSnap.id, price: data.price, discountPercentage: 0, categories };
+
+return {
+  id: docSnap.id,
+  name: data.name,
+  description: data.description,
+  price: data.price,
+  image_url: data.imageUrl,
+  category_id: data.categoryId || "",
+  categories,
+  in_stock: data.inStock,
+  material: data.material,
+  created_at: data.createdAt?.toDate
+    ? data.createdAt.toDate().toISOString()
+    : data.createdAt,
+  discount_percentage: getEffectiveDiscount(productForDiscount, activeOffer),
+  reviewCount: 0,
+  averageRating: 0,
+};
       });
 
       setProducts(productsWithReviews);

@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { dbLite } from '../store/firebaselite';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore/lite';
+import { useActiveOffer } from '../hooks/useActiveOffer';
+
 interface Category {
     id: string;
     name: string;
@@ -37,6 +39,7 @@ interface ProductContextType {
     products: Product[];
     filteredProducts: Product[];
     loading: boolean;
+    activeOffer: ReturnType<typeof useActiveOffer>['activeOffer'];
     viewMode: 'grid' | 'list';
     sortBy: string;
     currentPage: number;
@@ -102,7 +105,20 @@ const loadCategoryFromStorage = (): Category | null => {
 // Maps a Firestore product doc into the Product shape the rest of this
 // file already expects (snake_case, review fields defaulted to 0 since
 // customer_reviews doesn't exist in Firestore yet).
-function mapProductDoc(id: string, data: any): Product {
+// discount_percentage is no longer read from Firestore — it's computed
+// live from the active offer + this product's categories.
+function mapProductDoc(
+    id: string,
+    data: any,
+    activeOffer: { discount_percentage: number; applicable_categories: string[] } | null
+): Product {
+    const categories = Array.isArray(data.categories) ? data.categories : [];
+
+    const effectiveDiscount =
+        activeOffer && activeOffer.applicable_categories.some((cat) => categories.includes(cat))
+            ? activeOffer.discount_percentage
+            : 0;
+
     return {
         id,
         name: data.name,
@@ -110,12 +126,12 @@ function mapProductDoc(id: string, data: any): Product {
         price: data.price,
         image_url: data.imageUrl,
         category_id: data.categoryId || '',
-        categories: Array.isArray(data.categories) ? data.categories : [],
+        categories,
         in_stock: data.inStock,
         created_at: data.createdAt?.toDate
             ? data.createdAt.toDate().toISOString()
             : data.createdAt,
-        discount_percentage: data.discountPercentage || 0,
+        discount_percentage: effectiveDiscount,
         material: data.material ?? null,
         product_types: Array.isArray(data.productTypes) ? data.productTypes : [],
         reviewCount: 0,
@@ -124,6 +140,7 @@ function mapProductDoc(id: string, data: any): Product {
 }
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { activeOffer } = useActiveOffer();
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
         // Load from localStorage on initial render
@@ -296,7 +313,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 const snapshot = await getDocs(productsRef);
 
                 productsList = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data())
+                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
                 );
             } else {
                 // Fetch products for specific category.
@@ -307,7 +324,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 const snapshot = await getDocs(q);
 
                 productsList = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data())
+                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
                 );
             }
             
@@ -341,7 +358,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 const productsRef = collection(dbLite, 'products');
                 const snapshot = await getDocs(productsRef);
                 const allProducts = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data())
+                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
                 );
                 
                 let filtered: Product[] = [];
@@ -495,6 +512,14 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     }, [selectedCategory]);
 
+    // Re-fetch products when the active offer changes (e.g. loads in after
+    // initial mount, or expires/refetches), so discounts stay in sync.
+    useEffect(() => {
+        if (selectedCategory) {
+            fetchProductsByCategory(selectedCategory);
+        }
+    }, [activeOffer]);
+
     // Apply filters and sorting when dependencies change
     useEffect(() => {
         applyAllFilters();
@@ -626,6 +651,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         products,
         filteredProducts,
         loading,
+        activeOffer,
         viewMode,
         sortBy,
         currentPage,

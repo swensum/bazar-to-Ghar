@@ -555,17 +555,53 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
   }
 
 }
-/* ---------- Email verification screen ---------- */
 
-.auth-container--single {
+/* ---------- Email verification takeover ----------
+   Instead of swapping to a separate screen, this layer sits on top of the
+   existing auth-container (same gradient as .overlay) and fades/scales in.
+   It's independent of .overlay-container, so the mobile rule above that
+   hides the sliding color panel does NOT hide this — mobile gets the same
+   colored takeover as desktop automatically. */
+
+.auth-container--verifying {
+  min-height: 560px;
+}
+
+.verify-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200; // above form panels (1/2) and sliding color panel (100)
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 520px;
-  height: auto !important; // overrides the JS-measured height from the form panels
+  overflow: hidden;
+  background: linear-gradient(135deg, $accent-deep 0%, $accent-mid 45%, $accent-bright 100%);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity $transition-speed $transition-ease, transform $transition-speed $transition-ease;
+  pointer-events: none;
+
+  &--active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .blob--a {
+    top: -30px;
+    left: -30px;
+  }
+
+  .blob--d {
+    bottom: -40px;
+    right: -40px;
+    top: auto;
+  }
 }
 
 .verify-screen {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 420px;
   padding: 56px 40px;
@@ -573,13 +609,14 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
   flex-direction: column;
   align-items: center;
   text-align: center;
+  color: $paper;
 
   &__icon {
     width: 68px;
     height: 68px;
     border-radius: 50%;
-    background: $field-bg;
-    color: $accent-bright;
+    background: rgba(255, 255, 255, 0.14);
+    color: $paper;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -591,16 +628,17 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
     font-weight: 600;
     font-size: 26px;
     margin: 0 0 12px;
+    color: $paper;
   }
 
   &__body {
-    color: $ink-soft;
+    color: rgba(255, 255, 255, 0.82);
     font-size: 14px;
     line-height: 1.6;
     margin: 0 0 26px;
 
     strong {
-      color: $ink;
+      color: $paper;
     }
   }
 
@@ -610,16 +648,36 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
     gap: 10px;
     font-size: 13px;
     font-weight: 600;
-    color: $accent-mid;
+    color: $accent-lime;
     margin-bottom: 26px;
   }
 
   &__back {
     margin-top: 16px;
+    color: $paper;
+    opacity: 0.85;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   .btn-google {
     margin-bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: $paper;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
   }
 }
 
@@ -627,8 +685,8 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid $line;
-  border-top-color: $accent-bright;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: $paper;
   animation: verify-spin 0.8s linear infinite;
   display: inline-block;
 }
@@ -640,135 +698,25 @@ $font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .verify-overlay {
+    transition-duration: 0.01ms !important;
+  }
+
   .verify-spinner {
     animation: none;
   }
 }
-/* ---------- Toast notifications (top-right) ---------- */
 
-.toast-viewport {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 340px;
-  max-width: calc(100vw - 32px);
-  pointer-events: none;
-}
-
-.toast {
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 14px 14px 16px;
-  border-radius: 14px;
-  background: $paper;
-  border: 1px solid $line;
-  box-shadow: 0 16px 32px -12px rgba(15, 51, 47, 0.28), 0 2px 6px rgba(15, 51, 47, 0.08);
-  animation: toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  &--closing {
-    animation: toast-out 0.2s ease forwards;
+@media (max-width: 720px) {
+  .auth-container--verifying {
+    min-height: 560px;
   }
 
-  &--success {
-    border-left: 3px solid #1c7a68;
-  }
-
-  &--error {
-    border-left: 3px solid $error;
+  .verify-screen {
+    padding: 48px 26px;
   }
 }
 
-.toast__icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  margin-top: 1px;
-}
-
-.toast__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.toast__title {
-  margin: 0;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: $ink;
-  line-height: 1.35;
-}
-
-.toast__message {
-  margin: 2px 0 0;
-  font-size: 12.5px;
-  color: $ink-soft;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.toast__close {
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  padding: 3px;
-  color: $ink-soft;
-  cursor: pointer;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: $field-bg;
-    color: $ink;
-  }
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(24px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes toast-out {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    max-height: 200px;
-    margin-bottom: 0;
-  }
-  to {
-    opacity: 0;
-    transform: translateX(24px) scale(0.98);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .toast {
-    animation: none !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .toast-viewport {
-    top: 12px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-  }
-}
 .switch-text--mobile-only {
   display: none;
 }

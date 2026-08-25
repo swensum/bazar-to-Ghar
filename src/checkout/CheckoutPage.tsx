@@ -1,9 +1,10 @@
 // checkout/CheckoutPage.tsx
-import { type JSX, useState, useEffect } from "react";
+import { type JSX, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./CheckoutPage.module.scss";
 import appLogo from "../assets/logo.png";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
 
 // Add these type definitions
 interface CheckoutProduct {
@@ -24,7 +25,8 @@ export default function CheckoutPage(): JSX.Element {
      useDocumentTitle("Checkout");
     const navigate = useNavigate();
     const location = useLocation();
-    
+    const { currentUser } = useAuth();
+
     // Form state
     const [email, setEmail] = useState("");
     const [newsletterOptIn, setNewsletterOptIn] = useState(false);
@@ -78,6 +80,22 @@ export default function CheckoutPage(): JSX.Element {
     useEffect(() => {
         setPaymentMethod("esewa");
     }, []);
+    const prefilledFromUserRef = useRef(false);
+    useEffect(() => {
+        if (!currentUser || prefilledFromUserRef.current) return;
+
+        if (currentUser.email) {
+            setEmail((prev) => prev || currentUser.email || "");
+        }
+
+        if (currentUser.displayName) {
+            const [first, ...rest] = currentUser.displayName.trim().split(/\s+/);
+            setFirstName((prev) => prev || first || "");
+            setLastName((prev) => prev || rest.join(" "));
+        }
+
+        prefilledFromUserRef.current = true;
+    }, [currentUser]);
 
     // Calculate prices - works for both single product and cart
     const calculateItemPrice = (item: CheckoutProduct) => {
@@ -105,10 +123,10 @@ export default function CheckoutPage(): JSX.Element {
 
     const subtotal = calculateSubtotal();
 
-    // FIXED: Determine shipping charge based on source
+  
     const shippingCharge = isCartCheckout 
-        ? (hasFreeShipping ? 0 : cartShippingCharge)  // Use 0 if free shipping, otherwise use cart shipping
-        : 5;  // Default shipping for single product buy now
+        ? (hasFreeShipping ? 0 : cartShippingCharge)  
+        : 5;  
 
     const discount = discountAmount;
     const grandTotal = subtotal + shippingCharge - discount;
@@ -211,8 +229,13 @@ export default function CheckoutPage(): JSX.Element {
         }
     };
 
+    // Sends the person to sign in, carrying the current checkout state
+    // (product / cart / totals) along so it isn't lost — AuthPage doesn't
+    // consume "from" today, but it's there for when sign-in redirects back.
     const handleSignIn = () => {
-        console.log("Sign in clicked");
+        navigate('/auth', {
+            state: { mode: 'signin', from: '/checkout', checkoutState: location.state },
+        });
     };
 
     const handlePayNow = () => {
@@ -325,9 +348,15 @@ export default function CheckoutPage(): JSX.Element {
                         <div className={styles.contactSection}>
                             <div className={styles.sectionHeader}>
                                 <h2 className={styles.sectionTitle}>Contact</h2>
-                                <button className={styles.signInButton} onClick={handleSignIn}>
-                                    Sign in
-                                </button>
+                                {currentUser ? (
+                                    <span className={styles.signedInAs}>
+                                        Signed in as {currentUser.displayName || currentUser.email}
+                                    </span>
+                                ) : (
+                                    <button className={styles.signInButton} onClick={handleSignIn}>
+                                        Sign in
+                                    </button>
+                                )}
                             </div>
 
                             {/* Email Field */}
