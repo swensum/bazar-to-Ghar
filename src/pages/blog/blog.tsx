@@ -21,11 +21,13 @@ export default function Blog(): JSX.Element {
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
-const handlePostClick = (slug: string) => {
-  navigate(`/blog/${slug}`);
-};
+    const handlePostClick = (e: React.MouseEvent, slug: string) => {
+        e.preventDefault();
+        navigate(`/blog/${slug}`);
+    };
+
     useEffect(() => {
         fetchBlogPosts();
     }, []);
@@ -86,9 +88,10 @@ const handlePostClick = (slug: string) => {
     };
 
     const handleViewAllBlogs = () => {
-        // Add your navigation logic here
+        // TODO: wire this to a real route (e.g. navigate('/blogs')) once the
+        // full blog listing page/route exists, then convert this button to
+        // an <a href="/blogs"> like the cards below.
         console.log('View All Blogs clicked');
-        // Example: navigate('/blogs');
     };
 
     if (loading) {
@@ -119,7 +122,12 @@ const handlePostClick = (slug: string) => {
             <section className={styles.blogSection}>
                 <div className={styles.blogContainer}>
                     {blogPosts.map((post, index) => (
-                      <div key={post.id} className={styles.blogCard} onClick={() => handlePostClick(post.slug)}>
+                        <a
+                            key={post.id}
+                            href={`/blog/${post.slug}`}
+                            className={styles.blogCard}
+                            onClick={(e) => handlePostClick(e, post.slug)}
+                        >
                             {/* Numbering Container */}
                             <div className={styles.numberContainer}>
                                 <span className={styles.number}>{(index + 1).toString().padStart(2, '0')}</span>
@@ -160,13 +168,15 @@ const handlePostClick = (slug: string) => {
 
                                 {/* Read More - Fixed at bottom */}
                                 <div className={styles.readMoreWrapper}>
-                                    <button
-  className={styles.readMoreBtn}
-  onClick={(e) => {
-    e.stopPropagation();
-    handlePostClick(post.slug);
-  }}
->
+                                    <a
+                                        href={`/blog/${post.slug}`}
+                                        className={styles.readMoreBtn}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            navigate(`/blog/${post.slug}`);
+                                        }}
+                                    >
                                         Read More
                                         <svg
                                             width="16"
@@ -177,21 +187,20 @@ const handlePostClick = (slug: string) => {
                                         >
                                             <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
                                         </svg>
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     ))}
                 </div>
 
                 {/* View All Blogs Button */}
                 <div className={styles.viewAllContainer}>
-                    <button 
+                    <button
                         className={styles.viewAllBtn}
                         onClick={handleViewAllBlogs}
                     >
                         View All Blogs
-                        
                     </button>
                 </div>
             </section>

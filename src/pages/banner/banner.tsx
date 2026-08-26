@@ -12,38 +12,40 @@ export default function BannerSection(): JSX.Element {
     minutes: 0,
     seconds: 0
   });
-const refetchRef = useRef(refetch);
-useEffect(() => {
-  refetchRef.current = refetch;
-}, [refetch]);
+  const refetchRef = useRef(refetch);
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
+
   // Countdown timer
   useEffect(() => {
-  if (!currentOffer) return;
+    if (!currentOffer) return;
 
-  const calculateTimeLeft = () => {
-    const endDate = new Date(currentOffer.end_date);
-    const now = new Date();
-    const difference = endDate.getTime() - now.getTime();
+    const calculateTimeLeft = () => {
+      const endDate = new Date(currentOffer.end_date);
+      const now = new Date();
+      const difference = endDate.getTime() - now.getTime();
 
-    if (difference > 0) {
-      setTimeLeft({
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((difference % (1000 * 60)) / 1000)
-      });
-    } else {
-      refetchRef.current();
-    }
-  };
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      } else {
+        refetchRef.current();
+      }
+    };
 
-  calculateTimeLeft();
-  const timer = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
 
-  return () => clearInterval(timer);
-}, [currentOffer]);
+    return () => clearInterval(timer);
+  }, [currentOffer]);
 
-  const handleBannershopnow = () => {
+  const handleBannershopnow = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     navigate('/products', {
       state: {
         selectedCategory: 'all-products'
@@ -107,10 +109,14 @@ useEffect(() => {
               <span className={styles.timeLabel}>Seconds</span>
             </div>
           </div>
-
-          <button className={styles.shopNowButton} onClick={() => handleBannershopnow()}>
+<a
+          
+            href="/products"
+            className={styles.shopNowButton}
+            onClick={handleBannershopnow}
+          >
             Shop Now
-          </button>
+          </a>
         </div>
       </div>
     </section>

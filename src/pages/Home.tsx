@@ -155,7 +155,8 @@ export default function Home(): JSX.Element {
   applyCategoryDiscounts();
 }, [activeOffer]);
 
-  const handleSlideShopNow = () => {
+  const handleSlideShopNow = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     navigate('/products', {
       state: {
         selectedCategory: 'all-products'
@@ -163,7 +164,8 @@ export default function Home(): JSX.Element {
     });
   };
 
-  const handleCategoryShopNow = (categoryName: string) => {
+  const handleCategoryShopNow = (e: React.MouseEvent<HTMLAnchorElement>, categoryName: string) => {
+    e.preventDefault();
     navigate('/products', {
       state: {
         selectedCategory: categoryName
@@ -247,12 +249,13 @@ export default function Home(): JSX.Element {
                       </span>
                     ))}
                   </h1>
-                  <button
+                  <a
+                    href="/products"
                     className={styles.shopNowBtn}
-                    onClick={() => handleSlideShopNow()}
+                    onClick={handleSlideShopNow}
                   >
                     {slide.buttonText}
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -305,12 +308,13 @@ export default function Home(): JSX.Element {
                   <h3 className={styles.categoryTitle}>{category.title}</h3>
                   <p className={styles.categoryDescription}>{category.description}</p>
 
-                  <button
+                  <a
+                    href={`/products?category=${encodeURIComponent(category.category)}`}
                     className={styles.categoryShopBtn}
-                    onClick={() => handleCategoryShopNow(category.category)}
+                    onClick={(e) => handleCategoryShopNow(e, category.category)}
                   >
                     {category.buttonText}
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

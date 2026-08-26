@@ -98,6 +98,8 @@
   }
 
   .shopNowBtn {
+    display: inline-block;
+    text-decoration: none;
     background: #f5ab1e;
     color: white;
     border: 2px solid transparent;
@@ -143,7 +145,7 @@
   
   .shopNowBtn {
     margin-left: auto;
-    display: block;
+    width: fit-content;
   }
 }
 
@@ -163,8 +165,9 @@
   }
   
   .shopNowBtn {
+   display: inline-block;
     margin: 10px auto 0 auto;
-    display: block;
+    width: fit-content;
   }
 }
 
@@ -382,6 +385,8 @@
 }
 
 .categoryShopBtn {
+  display: inline-block;
+  text-decoration: none;
   background: #f5ab1e;
   color: white;
   border: 2px solid transparent;

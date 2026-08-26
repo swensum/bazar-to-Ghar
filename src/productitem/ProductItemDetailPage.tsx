@@ -103,6 +103,7 @@ export default function ProductItemDetailPage(): JSX.Element {
         }
     }, [submitSuccess, setSubmitSuccess]);
     const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+        e.preventDefault();
         e.stopPropagation();
 
         // Set loading state for this specific product
@@ -123,6 +124,12 @@ export default function ProductItemDetailPage(): JSX.Element {
             setQuickViewLoading(false);
         }
     };
+
+    const handleRelatedProductLinkClick = (e: React.MouseEvent, product: any) => {
+        e.preventDefault();
+        handleRelatedProductClick(product);
+    };
+
     const toggleFavorite = () => {
         if (!selectedProduct) return;
 
@@ -277,10 +284,11 @@ export default function ProductItemDetailPage(): JSX.Element {
                             <div className={styles.relatedProductsSection}>
                                 <div className={styles.relatedProductsScroll}>
                                     {relatedProducts.map((product) => (
-                                        <button
+                                        <a
                                             key={product.id}
+                                            href={`/product/${product.id}`}
                                             className={styles.relatedProductThumb}
-                                            onClick={() => handleRelatedProductClick(product)}
+                                            onClick={(e) => handleRelatedProductLinkClick(e, product)}
                                         >
                                             <img
                                                 src={product.image_url}
@@ -292,7 +300,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                     -{product.discount_percentage}%
                                                 </div>
                                             )}
-                                        </button>
+                                        </a>
                                     ))}
                                 </div>
                             </div>
@@ -544,10 +552,11 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                     : product.price;
 
                                                 return (
-                                                    <div
+                                                    <a
                                                         key={product.id}
+                                                        href={`/product/${product.id}`}
                                                         className={styles.relatedProductCard}
-                                                        onClick={() => handleRelatedProductClick(product)}
+                                                        onClick={(e) => handleRelatedProductLinkClick(e, product)}
                                                     >
                                                         <div className={styles.relatedProductImage}>
                                                             <img
@@ -563,7 +572,14 @@ export default function ProductItemDetailPage(): JSX.Element {
 
                                                             <div className={styles.relatedProductOverlay}>
                                                                 <div className={styles.relatedActionIcons}>
-                                                                    <button className={styles.relatedIconBtn} aria-label="Add to favorites">
+                                                                    <button
+                                                                        className={styles.relatedIconBtn}
+                                                                        aria-label="Add to favorites"
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                        }}
+                                                                    >
                                                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                                         </svg>
@@ -620,7 +636,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                                 <span className={styles.relatedReviewCount}>({product.reviewCount || 0})</span>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </a>
                                                 );
                                             })}
                                         </div>

@@ -71,6 +71,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   }, [filteredProducts]);
 
   const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
 
     // Set loading state for this specific product
@@ -270,11 +271,17 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                           : product.price;
 
                         return (
-                          <div key={product.id} className={styles.productCard} onClick={() => {
-                            const processedProduct = processProductData(product);
-                            setSelectedProduct(processedProduct);
-                            navigate(`/product/${product.id}`);
-                          }}>
+                          <a
+                            key={product.id}
+                            href={`/product/${product.id}`}
+                            className={styles.productCard}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const processedProduct = processProductData(product);
+                              setSelectedProduct(processedProduct);
+                              navigate(`/product/${product.id}`);
+                            }}
+                          >
                             <div className={styles.productImageContainer}>
                               <img
                                 src={product.image_url}
@@ -300,7 +307,14 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
 
                               <div className={styles.productOverlay}>
                                 <div className={styles.actionIcons}>
-                                  <button className={styles.iconBtn} aria-label="Add to favorites">
+                                  <button
+                                    className={styles.iconBtn}
+                                    aria-label="Add to favorites"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                  >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                     </svg>
@@ -356,7 +370,7 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
                                 <span className={styles.reviewCount}>({product.reviewCount || 0})</span>
                               </div>
                             </div>
-                          </div>
+                          </a>
                         );
                       })}
                     </div>

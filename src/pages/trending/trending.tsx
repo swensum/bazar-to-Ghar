@@ -51,8 +51,9 @@ export default function TrendingProducts(): JSX.Element {
   }, [autoSlide]);
 
   useEffect(() => {
-  fetchTrendingProducts();
-}, [activeOffer]);
+    fetchTrendingProducts();
+  }, [activeOffer]);
+
   useEffect(() => {
     const handleResize = () => {
       const newConfig = getItemConfig(window.innerWidth);
@@ -90,18 +91,19 @@ export default function TrendingProducts(): JSX.Element {
   }, [products.length, visibleCount]);
 
   const handleQuickViewClick = async (product: any, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    
+
     // Set loading state for this specific product
     setLoadingProductId(product.id);
     setQuickViewLoading(true);
-    
+
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Process the product to include packageOptions before opening quick view
       const processedProduct = processProductData(product);
-      
+
       // Open the quick view with processed product
       openQuickView(processedProduct);
     } catch (error) {
@@ -123,25 +125,25 @@ export default function TrendingProducts(): JSX.Element {
       const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         const categories = Array.isArray(data.categories) ? data.categories : [];
-const productForDiscount = { id: docSnap.id, price: data.price, discountPercentage: 0, categories };
+        const productForDiscount = { id: docSnap.id, price: data.price, discountPercentage: 0, categories };
 
-return {
-  id: docSnap.id,
-  name: data.name,
-  description: data.description,
-  price: data.price,
-  image_url: data.imageUrl,
-  category_id: data.categoryId || "",
-  categories,
-  in_stock: data.inStock,
-  material: data.material,
-  created_at: data.createdAt?.toDate
-    ? data.createdAt.toDate().toISOString()
-    : data.createdAt,
-  discount_percentage: getEffectiveDiscount(productForDiscount, activeOffer),
-  reviewCount: 0,
-  averageRating: 0,
-};
+        return {
+          id: docSnap.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          image_url: data.imageUrl,
+          category_id: data.categoryId || "",
+          categories,
+          in_stock: data.inStock,
+          material: data.material,
+          created_at: data.createdAt?.toDate
+            ? data.createdAt.toDate().toISOString()
+            : data.createdAt,
+          discount_percentage: getEffectiveDiscount(productForDiscount, activeOffer),
+          reviewCount: 0,
+          averageRating: 0,
+        };
       });
 
       setProducts(productsWithReviews);
@@ -155,7 +157,7 @@ return {
   const handleNext = () => {
     setCurrentIndex((prev) => {
       const next = prev + 1;
-      
+
       if (next >= products.length * 2) {
         setIsTransitioning(false);
         const newIndex = next - products.length;
@@ -165,7 +167,7 @@ return {
         }, 0);
         return newIndex;
       }
-      
+
       return next;
     });
   };
@@ -173,7 +175,7 @@ return {
   const handlePrev = () => {
     setCurrentIndex((prev) => {
       const next = prev - 1;
-      
+
       if (next < 0) {
         setIsTransitioning(false);
         const newIndex = next + products.length;
@@ -183,20 +185,20 @@ return {
         }, 0);
         return newIndex;
       }
-      
+
       return next;
     });
   };
 
   const handleArrowClick = (direction: 'prev' | 'next') => {
     setAutoSlide(false);
-    
+
     if (direction === 'prev') {
       handlePrev();
     } else {
       handleNext();
     }
-    
+
     setTimeout(() => {
       setAutoSlide(true);
     }, 5000);
@@ -204,7 +206,7 @@ return {
 
   const handleCarouselHover = (isHovering: boolean) => {
     setShowArrows(isHovering);
-    
+
     if (isHovering) {
       setAutoSlide(false);
     } else {
@@ -219,19 +221,18 @@ return {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
 
-    
     const strokeWidth = 2.5;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <svg 
-          key={`full-${i}`} 
-          width="16" 
-          height="16" 
-          viewBox="0 0 24 24" 
-          fill="#F5BE05" 
+        <svg
+          key={`full-${i}`}
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="#F5BE05"
           stroke="#F5BE05"
-          strokeWidth={strokeWidth} // Add this line
+          strokeWidth={strokeWidth}
         >
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
@@ -240,14 +241,14 @@ return {
 
     if (hasHalfStar) {
       stars.push(
-        <svg 
-          key="half" 
-          width="16" 
-          height="16" 
-          viewBox="0 0 24 24" 
-          fill="#F5BE05" 
+        <svg
+          key="half"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="#F5BE05"
           stroke="#F5BE05"
-          strokeWidth={strokeWidth} // Add this line
+          strokeWidth={strokeWidth}
         >
           <defs>
             <linearGradient id="half">
@@ -263,14 +264,14 @@ return {
     const emptyStars = 5 - stars.length;
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-        <svg 
-          key={`empty-${i}`} 
-          width="16" 
-          height="16" 
-          viewBox="0 0 24 24" 
-          fill="none" 
+        <svg
+          key={`empty-${i}`}
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
           stroke="#F5BE05"
-          strokeWidth={strokeWidth} 
+          strokeWidth={strokeWidth}
         >
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
@@ -308,64 +309,72 @@ return {
       </section>
 
       {/* Products Carousel Section */}
-      <section 
+      <section
         className={styles.productsSection}
         onMouseEnter={() => handleCarouselHover(true)}
         onMouseLeave={() => handleCarouselHover(false)}
       >
         <div className={styles.productsContainer}>
-          <div 
-            className={styles.productsViewport} 
+          <div
+            className={styles.productsViewport}
             style={{ width: `${viewportWidth}px` }}
           >
-            <div 
+            <div
               className={styles.productsTrack}
-              style={{ 
+              style={{
                 transform: `translateX(-${currentIndex * step}px)`,
                 gap: `${gap}px`,
                 transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
               }}
             >
               {extendedProducts.map((product, index) => {
-                const discountedPrice = product.discount_percentage > 0 
+                const discountedPrice = product.discount_percentage > 0
                   ? product.price * (1 - product.discount_percentage / 100)
                   : product.price;
 
                 return (
-                  <div 
-                    key={`${product.id}-${index}`} 
+                  <a
+                    key={`${product.id}-${index}`}
+                    href={`/product/${product.id}`}
                     className={styles.productCard}
                     style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       const processedProduct = processProductData(product);
                       setSelectedProduct(processedProduct);
                       navigate(`/product/${product.id}`);
                     }}
                   >
                     <div className={styles.productImageContainer}>
-                      <img 
-                        src={product.image_url} 
+                      <img
+                        src={product.image_url}
                         alt={product.name}
                         className={styles.productImage}
-                         style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
-                    
+                        style={{ flex: `0 0 ${itemWidth}px`, width: `${itemWidth}px` }}
                       />
-                    
+
                       {!product.in_stock ? (
                         <div className={styles.outOfStock}>Out of Stock</div>
                       ) : product.discount_percentage > 0 ? (
                         <div className={styles.discountBadge}>-{product.discount_percentage}%</div>
                       ) : null}
-                      
+
                       <div className={styles.productOverlay}>
                         <div className={styles.actionIcons}>
-                          <button className={styles.iconBtn} aria-label="Add to favorites">
+                          <button
+                            className={styles.iconBtn}
+                            aria-label="Add to favorites"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                           </button>
-                          <button 
-                            className={styles.iconBtn} 
+                          <button
+                            className={styles.iconBtn}
                             aria-label="Add to cart"
                             onClick={(e) => handleQuickViewClick(product, e)}
                             disabled={isQuickViewLoading && loadingProductId === product.id}
@@ -389,10 +398,10 @@ return {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className={styles.productInfo}>
                       <h3 className={styles.productName}>{product.name}</h3>
-                      
+
                       {/* Show prices only if item is in stock */}
                       {product.in_stock ? (
                         <div className={styles.priceContainer}>
@@ -410,7 +419,7 @@ return {
                       ) : (
                         <div className={styles.outOfStockText}>Currently Unavailable</div>
                       )}
-                      
+
                       <div className={styles.productReviews}>
                         <div className={styles.stars}>
                           {renderStars(product.averageRating || 0)}
@@ -418,12 +427,12 @@ return {
                         <span className={styles.reviewCount}>({product.reviewCount || 0})</span>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 );
               })}
             </div>
           </div>
-          
+
           {/* Arrows */}
           {showArrows && products.length > visibleCount && (
             <>
@@ -440,7 +449,7 @@ return {
 const NextArrow = (props: any) => {
   const { onClick } = props;
   return (
-    <button 
+    <button
       className={`${styles.arrow} ${styles.arrowRight}`}
       onClick={onClick}
       aria-label="Next slide"
@@ -465,7 +474,7 @@ const NextArrow = (props: any) => {
 const PrevArrow = (props: any) => {
   const { onClick } = props;
   return (
-    <button 
+    <button
       className={`${styles.arrow} ${styles.arrowLeft}`}
       onClick={onClick}
       aria-label="Previous slide"
