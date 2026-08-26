@@ -70,7 +70,9 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
- 
+ display: block;           // ADD — anchors are inline by default, this was a grid item before
+  text-decoration: none;    // ADD — kills the default underline
+  color: inherit;
   transition: all 0.3s ease;
   
   &:hover {

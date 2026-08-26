@@ -1016,7 +1016,9 @@
   width: 100%;
   max-width: 300px;
   cursor: pointer;
-  
+  display: block;           // ADD — anchors are inline by default, this was a grid item before
+  text-decoration: none;    // ADD — kills the default underline
+  color: inherit;
   &:hover {
     .relatedProductOverlay {
       opacity: 1;

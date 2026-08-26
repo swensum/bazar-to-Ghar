@@ -942,7 +942,9 @@
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
-  
+  display: block;           // ADD — anchors are inline by default, this was a grid item before
+  text-decoration: none;    // ADD — kills the default underline
+  color: inherit;
   &:hover {
     .productOverlay {
       opacity: 1;
@@ -1190,7 +1192,9 @@
   border-radius: 8px;
   gap: 0;
   overflow: hidden;
-  
+
+  text-decoration: none;    // ADD — kills the default underline
+  color: inherit;
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 2px;

@@ -231,13 +231,6 @@ const AuthPage: React.FC = () => {
     const [signUpSubmitting, setSignUpSubmitting] = useState(false);
 
     const [resendCooldown, setResendCooldown] = useState(0);
-
-    /* ---------- Verify overlay mount/animate state ----------
-       verifyMounted keeps the overlay in the DOM long enough to play its
-       exit transition; verifyActive toggles the actual visual state one
-       frame after mount so the enter transition has something to animate
-       from. lastVerifyEmail keeps the email visible during the fade-out,
-       since pendingVerificationEmail itself goes null immediately. */
     const [verifyMounted, setVerifyMounted] = useState(false);
     const [verifyActive, setVerifyActive] = useState(false);
     const [lastVerifyEmail, setLastVerifyEmail] = useState('');
@@ -254,9 +247,6 @@ const AuthPage: React.FC = () => {
             return () => clearTimeout(t);
         }
     }, [pendingVerificationEmail]);
-
-    // Refs used to measure each form's natural height so the container
-    // can smoothly resize instead of clipping the taller sign-up form.
     const signInFormRef = useRef<HTMLFormElement>(null);
     const signUpFormRef = useRef<HTMLFormElement>(null);
     const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
@@ -296,28 +286,29 @@ useEffect(() => {
     wasCheckingRef.current = verificationChecking;
 }, [verificationChecking, pendingVerificationEmail, navigate, pushToast]);
    
-    const handleSignIn = async (e: React.FormEvent) => {
-        e.preventDefault();
+   const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        const errors: SignInErrors = {};
-        if (!signInEmail.trim()) errors.email = 'Email is required';
-        else if (!isValidEmail(signInEmail)) errors.email = 'Enter a valid email address';
+    const errors: SignInErrors = {};
+    if (!signInEmail.trim()) errors.email = 'Email is required';
+    else if (!isValidEmail(signInEmail)) errors.email = 'Enter a valid email address';
 
-        if (!signInPassword) errors.password = 'Password is required';
-        else if (signInPassword.length < 8) errors.password = 'Must be at least 8 characters';
+    if (!signInPassword) errors.password = 'Password is required';
+    else if (signInPassword.length < 8) errors.password = 'Must be at least 8 characters';
 
-        setSignInErrors(errors);
-        if (Object.keys(errors).length > 0) return;
+    setSignInErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
-        setSignInSubmitting(true);
-        try {
-            await signInWithEmail(signInEmail, signInPassword);
-        } catch (err: any) {
-            pushToast('error', 'Sign-in failed', friendlyAuthError(err));
-        } finally {
-            setSignInSubmitting(false);
-        }
-    };
+    setSignInSubmitting(true);
+    try {
+        await signInWithEmail(signInEmail, signInPassword);
+        pushToast('success', 'Welcome back', 'You are now signed in.');
+    } catch (err: any) {
+        pushToast('error', 'Sign-in failed', friendlyAuthError(err));
+    } finally {
+        setSignInSubmitting(false);
+    }
+};
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -348,13 +339,15 @@ useEffect(() => {
         }
     };
 
-    const handleGoogle = async () => {
-        try {
-            await signInWithGoogle();
-        } catch (err: any) {
-            pushToast('error', 'Sign-in failed', friendlyAuthError(err));
-        }
-    };
+   const handleGoogle = async () => {
+    try {
+        await signInWithGoogle();
+        pushToast('success', 'Welcome back', 'You are now signed in.');
+        navigate('/', { replace: true });
+    } catch (err: any) {
+        pushToast('error', 'Sign-in failed', friendlyAuthError(err));
+    }
+};
 
     const handleResend = async () => {
         try {
