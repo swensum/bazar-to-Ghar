@@ -20,11 +20,6 @@ interface NavbarProps {
   onCartClick: () => void;
 }
 
-// Maps each product-listing heading in the Shop dropdown to the category
-// tag(s) used in Firestore's `categories` array field on each product doc.
-// Adjust these strings to match your real category values exactly — e.g.
-// if a vegetable product has categories: ["Vegetables"], make sure
-// "Vegetables" is listed here, or it will never be matched.
 const PRODUCT_HEADING_CATEGORY_MAP: Record<string, string[]> = {
   "Fresh Vegis": ["Vegetables", "Vegitables"],
   "Non Vegis": ["Meat", "Poultry", "Seafood"],
@@ -61,16 +56,35 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     }
   };
 
+  // Shared "go home / reload" behaviour used by both the logo and the
+  // Home nav item: if already on the homepage, scroll to top smoothly;
+  // otherwise navigate to it.
+  const goHome = () => {
+    if (location.pathname === '/') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      navigate('/', { replace: true });
+    }
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setMobileNavStack([]);
+  };
+
   const handleMobileNavClick = (item: any) => {
+    if (item.title === "Home") {
+      goHome();
+      return;
+    }
+
     if (item.categories || item.options) {
       setMobileNavStack(prev => [...prev, {
         title: item.title,
         content: item.categories || item.options
       }]);
     } else {
-      if (item.title === "Home") {
-        navigate('/');
-      }
       setIsMobileMenuOpen(false);
       setMobileNavStack([]);
     }
@@ -84,9 +98,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
   const handleMobileItemClick = (item: any, parentTitle?: string) => {
     if (item && typeof item === 'object' && (item.type === 'category' || item.type === 'product')) {
-      handleShopItemClick(item);
-    } else if (parentTitle === "Home" && item === "New Arrivals") {
-      handleNewArrivalsClick();
+      handleShopItemClick(undefined, item);
     } else if (parentTitle === "Blogs" || parentTitle === "Pages") {
       console.log(`Navigate to ${item} under ${parentTitle}`);
     } else if (typeof item === 'string') {
@@ -203,7 +215,19 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     fetchShopProducts();
   }, []);
 
-  const handleShopItemClick = async (item: { id?: string; name: string; type: string }) => {
+  const getShopItemHref = (item: { id?: string; name: string; type: string }) => {
+    if (item.type === 'product' && item.id) {
+      return `/product/${item.id}`;
+    }
+    return `/products?category=${encodeURIComponent(item.name)}`;
+  };
+
+  const handleShopItemClick = async (
+    e: React.MouseEvent<HTMLAnchorElement> | undefined,
+    item: { id?: string; name: string; type: string }
+  ) => {
+    e?.preventDefault();
+
     if (item.type === 'category') {
       try {
         const categoriesRef = fsCollection(dbLite, "categories");
@@ -282,7 +306,17 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setMobileNavStack([]);
   };
 
-  const handleCollectionClick = async (collection: any) => {
+  // Version used by the mobile submenu, which doesn't pass a MouseEvent
+  // (its item onClick handlers aren't anchor tags there).
+  const handleShopItemClickMobile = (item: { id?: string; name: string; type: string }) => {
+    handleShopItemClick({ preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>, item);
+  };
+
+  const getCollectionHref = (collection: any) =>
+    `/products?category=${encodeURIComponent(collection.category)}`;
+
+  const handleCollectionClick = async (e: React.MouseEvent<HTMLAnchorElement>, collection: any) => {
+    e.preventDefault();
     try {
       const categoriesRef = fsCollection(dbLite, "categories");
       const q = query(categoriesRef, where("name", "==", collection.category), limit(1));
@@ -318,7 +352,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   };
 
   const menuItems = [
-    { title: "Home", options: ["New Arrivals"] },
+    { title: "Home" },
     {
       title: "Shop",
       categories: [
@@ -388,37 +422,14 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     { title: "Pages", options: ["About Us", "Contact Us", "FAQ"] },
   ];
 
-  const handleNewArrivalsClick = () => {
-    if (location.pathname === '/') {
-      const productSection = document.getElementById('product-showcase');
-      if (productSection) {
-        productSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      navigate('/', {
-        state: {
-          scrollToProducts: true,
-          filterType: 'New Product'
-        }
-      });
-    }
-    setIsMobileMenuOpen(false);
-    setActiveDropdown(null);
-    setMobileNavStack([]);
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    goHome();
   };
 
-  const handleLogoClick = () => {
-    if (location.pathname === '/') {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    } else {
-      navigate('/', { replace: true });
-    }
-    setIsMobileMenuOpen(false);
-    setActiveDropdown(null);
-    setMobileNavStack([]);
+  const handleHomeNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    goHome();
   };
 
   return (
@@ -436,16 +447,13 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         className={`${styles.mainNav} ${isScrolled ? styles.mainNavSticky : ''}`}
       >
         <div className={styles.mainBar}>
-          <div
+          <a
+            href="/"
             className={styles.logo}
             onClick={handleLogoClick}
-            style={{ cursor: 'pointer' }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogoClick()}
           >
             <img src={logoImg} alt="Logo" />
-          </div>
+          </a>
 
           <div className={styles.centerSection}>
             <div className={styles.searchBar}>
@@ -486,7 +494,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                     <p className={styles.accountLabel}>ACCOUNT</p>
                     <div className={styles.accountLinks}>
                       <a
-                        href="#"
+                        href="/auth"
                         onClick={(e) => {
                           e.preventDefault();
                           navigate('/auth', { state: { mode: 'signup' } });
@@ -496,7 +504,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                       </a>
                       <span>|</span>
                       <a
-                        href="#"
+                        href="/auth"
                         onClick={(e) => {
                           e.preventDefault();
                           navigate('/auth', { state: { mode: 'signin' } });
@@ -542,84 +550,102 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         {/* Desktop Navigation */}
         <nav className={`${styles.navMenu} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
           <div className={styles.navLinks}>
-            {menuItems.map((item, index) => (
-              <div
-                key={index}
-                className={`${styles.navItem} ${activeDropdown === item.title ? styles.active : ''}`}
-                onClick={() => window.innerWidth <= 768 && toggleDropdown(item.title)}
-              >
-                <span>{item.title}</span>
-                <FontAwesomeIcon icon={faChevronDown} className={styles.navArrow} />
+            {menuItems.map((item, index) => {
+              const isHome = item.title === "Home";
 
-                <div className={`${styles.dropdown} ${item.categories ? styles.shopDropdown : item.type === 'image-grid' ? styles.collectionDropdown : styles.regularDropdown}`}>
-                  {item.categories ? (
-                    <div className={styles.shopContent}>
-                      {item.categories.map((cat, i) => (
-                        <div key={i} className={styles.shopCategory}>
-                          <h4>{cat.heading}</h4>
-                          <div className={styles.shopItems}>
-                            {cat.items.map((itm, j) => (
-                              <div
-                                key={j}
-                                className={styles.dropdownItem}
-                                onClick={() => handleShopItemClick(itm)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                {itm.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : item.type === 'image-grid' ? (
-                    <div className={styles.collectionContent}>
-                      {item.collections?.map((collection, i) => (
-                        <div
-                          key={i}
-                          className={styles.collectionItem}
-                          onClick={() => handleCollectionClick(collection)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <div className={styles.collectionImageWrapper}>
-                            <img
-                              src={collection.image}
-                              alt={collection.name}
-                              className={styles.collectionImage}
-                            />
-                            <div className={styles.collectionOverlay}>
-                              <div className={styles.overlayContent}>
-                                <p className={styles.overlayLine1}>{collection.overlayText?.line1}</p>
-                                <h3 className={styles.overlayLine2}>{collection.overlayText?.line2}</h3>
-                                <p className={styles.overlayLine3}>{collection.overlayText?.line3}</p>
+              return (
+                <div
+                  key={index}
+                  className={`${styles.navItem} ${activeDropdown === item.title ? styles.active : ''}`}
+                  onClick={() => {
+                    if (isHome) return; // handled by the <a> itself
+                    if (window.innerWidth <= 768) {
+                      toggleDropdown(item.title);
+                    }
+                  }}
+                >
+                  {isHome ? (
+                    <a href="/" onClick={handleHomeNavClick}>
+                      Home
+                    </a>
+                  ) : (
+                    <span>{item.title}</span>
+                  )}
+
+                  {!isHome && (
+                    <FontAwesomeIcon icon={faChevronDown} className={styles.navArrow} />
+                  )}
+
+                  {!isHome && (
+                    <div className={`${styles.dropdown} ${item.categories ? styles.shopDropdown : item.type === 'image-grid' ? styles.collectionDropdown : styles.regularDropdown}`}>
+                      {item.categories ? (
+                        <div className={styles.shopContent}>
+                          {item.categories.map((cat, i) => (
+                            <div key={i} className={styles.shopCategory}>
+                              <h4>{cat.heading}</h4>
+                              <div className={styles.shopItems}>
+                                {cat.items.map((itm, j) => (
+                                  <a
+                                    key={j}
+                                    href={getShopItemHref(itm)}
+                                    className={styles.dropdownItem}
+                                    onClick={(e) => handleShopItemClick(e, itm)}
+                                  >
+                                    {itm.name}
+                                  </a>
+                                ))}
                               </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={styles.regularContent}>
-                      {item.options?.map((opt, i) => (
-                        <a
-                          key={i}
-                          href="#"
-                          className={styles.dropdownItem}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (opt === "New Arrivals") {
-                              handleNewArrivalsClick();
-                            }
-                          }}
-                        >
-                          {opt}
-                        </a>
-                      ))}
+                      ) : item.type === 'image-grid' ? (
+                        <div className={styles.collectionContent}>
+                          {item.collections?.map((collection, i) => (
+                            <a
+                              key={i}
+                              href={getCollectionHref(collection)}
+                              className={styles.collectionItem}
+                              onClick={(e) => handleCollectionClick(e, collection)}
+                            >
+                              <div className={styles.collectionImageWrapper}>
+                                <img
+                                  src={collection.image}
+                                  alt={collection.name}
+                                  className={styles.collectionImage}
+                                />
+                                <div className={styles.collectionOverlay}>
+                                  <div className={styles.overlayContent}>
+                                    <p className={styles.overlayLine1}>{collection.overlayText?.line1}</p>
+                                    <h3 className={styles.overlayLine2}>{collection.overlayText?.line2}</h3>
+                                    <p className={styles.overlayLine3}>{collection.overlayText?.line3}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={styles.regularContent}>
+                          {item.options?.map((opt, i) => (
+                            <a
+                              key={i}
+                              href="#"
+                              className={styles.dropdownItem}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                console.log(`Navigate to ${opt}`);
+                              }}
+                            >
+                              {opt}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className={styles.hotline}>
@@ -659,16 +685,27 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
               <div className={styles.mobileMainMenu}>
                 {menuItems.map((item, index) => (
                   item.title !== "Collection" && (
-                    <div
-                      key={index}
-                      className={styles.mobileMenuItem}
-                      onClick={() => handleMobileNavClick(item)}
-                    >
-                      <span className={styles.mobileMenuText}>{item.title}</span>
-                      {(item.categories || item.options) && (
-                        <FontAwesomeIcon icon={faChevronRight} className={styles.mobileMenuArrow} />
-                      )}
-                    </div>
+                    item.title === "Home" ? (
+                      <a
+                        key={index}
+                        href="/"
+                        className={styles.mobileMenuItem}
+                        onClick={handleHomeNavClick}
+                      >
+                        <span className={styles.mobileMenuText}>Home</span>
+                      </a>
+                    ) : (
+                      <div
+                        key={index}
+                        className={styles.mobileMenuItem}
+                        onClick={() => handleMobileNavClick(item)}
+                      >
+                        <span className={styles.mobileMenuText}>{item.title}</span>
+                        {(item.categories || item.options) && (
+                          <FontAwesomeIcon icon={faChevronRight} className={styles.mobileMenuArrow} />
+                        )}
+                      </div>
+                    )
                   )
                 ))}
               </div>
@@ -683,19 +720,23 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                           <h4 className={styles.mobileCategoryHeading}>{category.heading}</h4>
                           <div className={styles.mobileCategoryItems}>
                             {category.items.map((item: any, itemIndex: number) => (
-                              <div
+                              <a
                                 key={itemIndex}
+                                href={getShopItemHref(item)}
                                 className={styles.mobileSubMenuItem}
-                                onClick={() => handleMobileItemClick(item)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleShopItemClickMobile(item);
+                                }}
                               >
                                 <span className={styles.mobileSubMenuText}>{item.name}</span>
-                              </div>
+                              </a>
                             ))}
                           </div>
                         </div>
                       ))
                     ) : (
-                      // Home, Blogs, Pages options
+                      // Blogs, Pages options
                       mobileNavStack[mobileNavStack.length - 1].content.map((option: string, index: number) => (
                         <div
                           key={index}

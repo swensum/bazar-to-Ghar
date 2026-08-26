@@ -1,12 +1,11 @@
 // App.tsx
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Home from "./pages/Home";
 import Navbar from "./navbar/navbar";
 import ProductDetail from "./productdetail/ProductDetail";
 import Footer from "./footer/footer";
 import { ProductProvider } from "./contexts/ProductContext";
-import ScrollToTop from "./ScrollToTop";
 import { ProductDetailProvider } from "./contexts/ProductDetailContext";
 import ProductItemDetailPage from "./productitem/ProductItemDetailPage";
 import { QuickViewProvider, useQuickView } from "./contexts/QuickViewContext";
@@ -19,14 +18,15 @@ import LoadingScreen from "./loading/LoadingScreen";
 import ProductQuickViewPopup from "./cart/ProductQuickViewPopup";
 import CheckoutPage from "./checkout/CheckoutPage";
 import AuthPage from "./auth/authpage";
-
+import BlogDetailPage from "./blogdetail/BlogDetailPage";
 import { ToastProvider } from "./contexts/ToastContext";
-import { ToastViewport } from "./auth/Toast"; // adjust path to match where Toast.tsx lives
+import { ToastViewport } from "./auth/Toast";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "./utils/PageTransition";
+import { useScrollRestoration } from "./hooks/useScrollRestoration";
 
-// Routes where the Navbar/Footer should be hidden (auth screens, checkout)
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
-// Create a separate component that uses the QuickView hook
 function AppContent() {
   const { quickViewProduct, isQuickViewOpen, closeQuickView } = useQuickView();
   const {
@@ -41,8 +41,18 @@ function AppContent() {
     getCartTotal
   } = useCart();
 
+  const location = useLocation();
+
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  // true once it's safe to show the page (correct scroll position applied)
+  const isReady = useScrollRestoration();
+
   const handleAddToCart = (product: any, quantity: number, selectedPackage?: string) => {
-    // Add item to cart
     const newItem = {
       id: product.id,
       name: product.name,
@@ -51,15 +61,14 @@ function AppContent() {
       image: product.images?.[0] || product.image_url,
       selectedPackage: selectedPackage,
       discount_percentage: product.discount_percentage,
-      material: product.material // Add this line
+      material: product.material
     };
 
     addToCart(newItem);
-
-    // Open cart sidebar
     openCart();
     console.log('Added to cart:', newItem);
   };
+
   const handleUpdateQuantity = (id: string, quantity: number) => {
     updateQuantity(id, quantity);
   };
@@ -71,7 +80,6 @@ function AppContent() {
   return (
     <>
       <div className="app-content">
-
         <Routes>
           {CHROME_HIDDEN_PATHS.map((path) => (
             <Route key={path} path={path} element={null} />
@@ -84,17 +92,19 @@ function AppContent() {
           } />
         </Routes>
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<ProductDetail />} />
-          <Route path="/product/:productId" element={<ProductItemDetailPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/auth" element={<AuthPage />} />
+        <div style={{ opacity: isReady ? 1 : 0, transition: "opacity 0.2s ease" }}>
+          <AnimatePresence mode="popLayout">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+              <Route path="/products" element={<PageTransition><ProductDetail /></PageTransition>} />
+              <Route path="/product/:productId" element={<PageTransition><ProductItemDetailPage /></PageTransition>} />
+              <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
+              <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+              <Route path="/blog/:slug" element={<PageTransition><BlogDetailPage /></PageTransition>} />
+            </Routes>
+          </AnimatePresence>
+        </div>
 
-
-        </Routes>
-
-        {/* Conditionally render Footer - don't show on checkout/auth pages */}
         <Routes>
           {CHROME_HIDDEN_PATHS.map((path) => (
             <Route key={path} path={path} element={null} />
@@ -103,16 +113,13 @@ function AppContent() {
         </Routes>
       </div>
 
-      {/* Quick View Popup */}
       <ProductQuickViewPopup
         product={quickViewProduct}
         isOpen={isQuickViewOpen}
         onClose={closeQuickView}
         onAddToCart={handleAddToCart}
-
       />
 
-      {/* Cart Sidebar */}
       <CartSidebar
         isOpen={isCartOpen}
         onClose={closeCart}
@@ -129,41 +136,33 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial app loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // Increased to 2 seconds for better experience
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Show loading screen until everything is ready
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-
-     <ToastProvider>
-      {/* Mounted once, above the Router, so toasts survive navigate() calls
-          from any page (e.g. AuthPage redirecting to "/" after verification).
-          This was previously missing entirely — ToastProvider held state,
-          but nothing ever rendered it. */}
+    <ToastProvider>
       <ToastViewport />
       <AuthProvider>
-      <ProductProvider>
-        <ProductDetailProvider>
-          <QuickViewProvider>
-            <CartProvider>
-              <Router>
-                <ScrollToTop />
-                <AppContent />
-              </Router>
-            </CartProvider>
-          </QuickViewProvider>
-        </ProductDetailProvider>
-      </ProductProvider>
-    </AuthProvider>
+        <ProductProvider>
+          <ProductDetailProvider>
+            <QuickViewProvider>
+              <CartProvider>
+                <Router>
+                  <AppContent />
+                </Router>
+              </CartProvider>
+            </QuickViewProvider>
+          </ProductDetailProvider>
+        </ProductProvider>
+      </AuthProvider>
     </ToastProvider>
   );
 }

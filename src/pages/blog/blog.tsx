@@ -2,6 +2,7 @@ import { type JSX, useState, useEffect } from "react";
 import { dbLite } from "../../store/firebaselite";
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
 import styles from "./Blog.module.scss";
+import { useNavigate } from "react-router-dom";
 
 interface BlogPost {
     id: string;
@@ -20,7 +21,11 @@ export default function Blog(): JSX.Element {
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+const navigate = useNavigate();
 
+const handlePostClick = (slug: string) => {
+  navigate(`/blog/${slug}`);
+};
     useEffect(() => {
         fetchBlogPosts();
     }, []);
@@ -114,7 +119,7 @@ export default function Blog(): JSX.Element {
             <section className={styles.blogSection}>
                 <div className={styles.blogContainer}>
                     {blogPosts.map((post, index) => (
-                        <div key={post.id} className={styles.blogCard}>
+                      <div key={post.id} className={styles.blogCard} onClick={() => handlePostClick(post.slug)}>
                             {/* Numbering Container */}
                             <div className={styles.numberContainer}>
                                 <span className={styles.number}>{(index + 1).toString().padStart(2, '0')}</span>
@@ -155,7 +160,13 @@ export default function Blog(): JSX.Element {
 
                                 {/* Read More - Fixed at bottom */}
                                 <div className={styles.readMoreWrapper}>
-                                    <button className={styles.readMoreBtn}>
+                                    <button
+  className={styles.readMoreBtn}
+  onClick={(e) => {
+    e.stopPropagation();
+    handlePostClick(post.slug);
+  }}
+>
                                         Read More
                                         <svg
                                             width="16"
