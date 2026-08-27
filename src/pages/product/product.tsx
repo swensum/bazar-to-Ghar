@@ -1,11 +1,10 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { dbLite } from "../../store/firebaselite";
-import { collection, getDocs, orderBy, query } from "firebase/firestore/lite";
 import styles from "./ProductShowcase.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
-import { useActiveOffer } from "../../hooks/useActiveOffer";
+
 import { useQuickView } from "../../contexts/QuickViewContext";
+import { useProduct } from "../../contexts/ProductContext";
 
 interface Product {
   id: string;
@@ -27,6 +26,9 @@ interface ProductShowcaseProps {
   initialFilter?: ProductType;
 }
 export default function ProductShowcase({ initialFilter }: ProductShowcaseProps): JSX.Element {
+  
+  const { allProducts } = useProduct();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedType, setSelectedType] = useState<ProductType>(initialFilter || 'Best Seller');
@@ -36,16 +38,16 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
   const navigate = useNavigate();
   const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
-  const { activeOffer } = useActiveOffer();
   const productsPerPage = 8;
   const trackRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   const productTypes: ProductType[] = ['Best Seller', 'Special Product', 'New Product'];
-
   useEffect(() => {
-    fetchProducts();
-  }, [activeOffer]);
+    if (allProducts.length === 0) return;
+    setProducts(allProducts as unknown as Product[]);
+    setLoading(false);
+  }, [allProducts]);
 
   useEffect(() => {
     if (location.state?.filterType) {
@@ -93,48 +95,6 @@ export default function ProductShowcase({ initialFilter }: ProductShowcaseProps)
       // Reset loading states
       setLoadingProductId(null);
       setQuickViewLoading(false);
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-
-      const productsRef = collection(dbLite, "products");
-      const q = query(productsRef, orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        const categories = Array.isArray(data.categories) ? data.categories : [];
-        const effectiveDiscount =
-          activeOffer && activeOffer.applicable_categories.some((cat) => categories.includes(cat))
-            ? activeOffer.discount_percentage
-            : 0;
-
-        return {
-          id: docSnap.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          image_url: data.imageUrl,
-          categories,
-          in_stock: data.inStock,
-          created_at: data.createdAt?.toDate
-            ? data.createdAt.toDate().toISOString()
-            : data.createdAt,
-          discount_percentage: effectiveDiscount,
-          product_types: Array.isArray(data.productTypes) ? data.productTypes : [],
-          material: data.material ?? null,
-          reviewCount: 0,
-          averageRating: 0,
-        };
-      });
-
-      setProducts(productsWithReviews);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

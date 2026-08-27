@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, type JSX } from "react";
 import styles from "./banner.module.scss";
 import { useNavigate } from "react-router-dom";
-import { useActiveOffer } from "../../hooks/useActiveOffer";
+import { useActiveOffer } from "../../contexts/OfferContext";
+
 
 export default function BannerSection(): JSX.Element {
   const { activeOffer: currentOffer, loading, refetch } = useActiveOffer();

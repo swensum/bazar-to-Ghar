@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, type JSX, type ReactNode } from 'react';
 import { dbLite } from '../store/firebaselite';
 import { collection, doc, getDoc, getDocs, query, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore/lite';
-import { useActiveOffer } from '../hooks/useActiveOffer';
+
 import { categoryDetails } from '../data/categoryDetails';
+import { useActiveOffer } from './OfferContext';
 
 interface ProductDetail {
     id: string;

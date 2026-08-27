@@ -20,7 +20,8 @@ import CustomerReviews from "../reviews/CustomerReviews";
 import SubscribePage from "../subscribtion/ SubscribePage";
 import Blog from "./blog/blog";
 import ProductShowcase from "./product/product";
-import { useActiveOffer } from "../hooks/useActiveOffer";
+import { useActiveOffer } from "../contexts/OfferContext";
+
 
 interface Category {
   image: string;

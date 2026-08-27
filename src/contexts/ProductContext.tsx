@@ -1,8 +1,9 @@
 // contexts/ProductContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { dbLite } from '../store/firebaselite';
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore/lite';
-import { useActiveOffer } from '../hooks/useActiveOffer';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore/lite';
+import { useActiveOffer } from './OfferContext';
+
 
 interface Category {
     id: string;
@@ -38,6 +39,7 @@ interface ProductContextType {
     selectedCategory: Category | null;
     products: Product[];
     filteredProducts: Product[];
+    allProducts: Product[];
     loading: boolean;
     activeOffer: ReturnType<typeof useActiveOffer>['activeOffer'];
     viewMode: 'grid' | 'list';
@@ -101,12 +103,6 @@ const loadCategoryFromStorage = (): Category | null => {
     return null;
   }
 };
-
-// Maps a Firestore product doc into the Product shape the rest of this
-// file already expects (snake_case, review fields defaulted to 0 since
-// customer_reviews doesn't exist in Firestore yet).
-// discount_percentage is no longer read from Firestore — it's computed
-// live from the active offer + this product's categories.
 function mapProductDoc(
     id: string,
     data: any,
@@ -146,6 +142,9 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         // Load from localStorage on initial render
         return loadCategoryFromStorage();
     });
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [allProductsLoaded, setAllProductsLoaded] = useState(false);
+
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -231,6 +230,41 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         return sortedProducts;
     };
 
+    // ---- Fetch the full products collection exactly ONCE ----------------
+    const fetchAllProducts = async () => {
+        try {
+            const productsRef = collection(dbLite, 'products');
+            const snapshot = await getDocs(productsRef);
+            const list = snapshot.docs.map((docSnap) =>
+                mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
+            );
+            setAllProducts(list);
+        } catch (error) {
+            console.error('Error fetching all products:', error);
+        }
+    };
+    useEffect(() => {
+        if (allProductsLoaded) return;
+        setAllProductsLoaded(true);
+        fetchAllProducts();
+   
+    }, [allProductsLoaded]);
+
+    useEffect(() => {
+        if (!allProductsLoaded) return;
+        setAllProducts((prev) =>
+            prev.map((p) => {
+                const effectiveDiscount =
+                    activeOffer && activeOffer.applicable_categories.some((cat) => p.categories?.includes(cat))
+                        ? activeOffer.discount_percentage
+                        : 0;
+                return { ...p, discount_percentage: effectiveDiscount };
+            })
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeOffer, allProductsLoaded]);
+
+    // ---- Categories: derive product_count from the cache, not Firestore -
     const fetchCategories = async () => {
         try {
             setLoading(true);
@@ -255,22 +289,11 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 };
             });
 
-            const productsRef = collection(dbLite, 'products');
-            const productsSnapshot = await getDocs(productsRef);
-            const productsData = productsSnapshot.docs.map((docSnap) => {
-                const data = docSnap.data();
-                return {
-                    id: docSnap.id,
-                    categories: Array.isArray(data.categories) ? data.categories : [],
-                };
-            });
-
+            // Use the shared cache instead of a second getDocs() on products
             const categoriesWithCount = categoriesData.map((category) => {
-                const productCount = productsData.filter((product) => {
-                    return product.categories &&
-                        Array.isArray(product.categories) &&
-                        product.categories.includes(category.name);
-                }).length;
+                const productCount = allProducts.filter((p) =>
+                    p.categories?.includes(category.name)
+                ).length;
 
                 return {
                     ...category,
@@ -279,7 +302,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
             });
 
             // Add "All Products" category at the beginning
-            const allProductsCount = productsData?.length || 0;
+            const allProductsCount = allProducts.length;
             const allProductsCategory: Category = {
                 id: 'all-products',
                 name: 'All Products',
@@ -299,113 +322,39 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     };
 
+    // ---- Products for a given category: filter the cache, no getDocs ----
     const fetchProductsByCategory = async (category: Category) => {
-        try {
-            setLoading(true);
-            
-            let productsList: Product[] = [];
-            
-            if (category.id === 'all-products') {
-                // Fetch all products for "All Products" category.
-                // customer_reviews doesn't exist in Firestore yet, so
-                // reviewCount/averageRating default to 0 for now.
-                const productsRef = collection(dbLite, 'products');
-                const snapshot = await getDocs(productsRef);
+        setLoading(true);
 
-                productsList = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
-                );
-            } else {
-                // Fetch products for specific category.
-                // Firestore's array-contains is the direct equivalent of
-                // Supabase's .contains('categories', [...]) here.
-                const productsRef = collection(dbLite, 'products');
-                const q = query(productsRef, where('categories', 'array-contains', category.name));
-                const snapshot = await getDocs(q);
+        const productsList: Product[] =
+            category.id === 'all-products'
+                ? allProducts
+                : allProducts.filter((p) => p.categories?.includes(category.name));
 
-                productsList = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
-                );
-            }
-            
-            setProducts(productsList);
-            
-            const calculatedMaxPrice = calculateMaxPrice(productsList);
-            setMaxPrice(calculatedMaxPrice);
-            
-            const materials = extractMaterialsFromProducts(productsList);
-            setAvailableMaterials(materials);
-            
-            const productTypes = extractProductTypesFromProducts(productsList);
-            setAvailableProductTypes(productTypes);
-            
-            // Reset all filters when category changes
-            setSliderValues({ min: 0, max: calculatedMaxPrice });
-            setAppliedPriceRange({ min: 0, max: calculatedMaxPrice });
-            setSelectedMaterials([]);
-            setSelectedProductTypes([]);
-            setSelectedAvailability([]);
-            
-            // Apply initial sorting
-            const sortedProducts = applySorting(productsList);
-            setFilteredProducts(sortedProducts);
-            setCurrentPage(1);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            
-            try {
-                // Fallback: fetch all products and filter manually
-                const productsRef = collection(dbLite, 'products');
-                const snapshot = await getDocs(productsRef);
-                const allProducts = snapshot.docs.map((docSnap) =>
-                    mapProductDoc(docSnap.id, docSnap.data(), activeOffer)
-                );
-                
-                let filtered: Product[] = [];
-                
-                if (category.id === 'all-products') {
-                    filtered = allProducts;
-                } else {
-                    filtered = allProducts.filter(product => {
-                        if (!product.categories || !Array.isArray(product.categories)) return false;
-                        return product.categories.includes(category.name);
-                    });
-                }
-                
-                setProducts(filtered);
-                
-                const materials = extractMaterialsFromProducts(filtered);
-                setAvailableMaterials(materials);
-                
-                const productTypes = extractProductTypesFromProducts(filtered);
-                setAvailableProductTypes(productTypes);
-                
-                const calculatedMaxPrice = calculateMaxPrice(filtered);
-                setMaxPrice(calculatedMaxPrice);
-                setSliderValues({ min: 0, max: calculatedMaxPrice });
-                setAppliedPriceRange({ min: 0, max: calculatedMaxPrice });
-                setSelectedMaterials([]);
-                setSelectedProductTypes([]);
-                setSelectedAvailability([]);
-                
-                const sortedProducts = applySorting(filtered);
-                setFilteredProducts(sortedProducts);
-            } catch (fallbackError) {
-                console.error('Fallback also failed:', fallbackError);
-                setProducts([]);
-                setFilteredProducts([]);
-                setAvailableMaterials([]);
-                setAvailableProductTypes(['Best Seller', 'New Product', 'Special Product']);
-                setMaxPrice(100);
-                setSliderValues({ min: 0, max: 100 });
-                setAppliedPriceRange({ min: 0, max: 100 });
-                setSelectedMaterials([]);
-                setSelectedProductTypes([]);
-                setSelectedAvailability([]);
-            }
-        } finally {
-            setLoading(false);
-        }
+        setProducts(productsList);
+
+        const calculatedMaxPrice = calculateMaxPrice(productsList);
+        setMaxPrice(calculatedMaxPrice);
+
+        const materials = extractMaterialsFromProducts(productsList);
+        setAvailableMaterials(materials);
+
+        const productTypes = extractProductTypesFromProducts(productsList);
+        setAvailableProductTypes(productTypes);
+
+        // Reset all filters when category changes
+        setSliderValues({ min: 0, max: calculatedMaxPrice });
+        setAppliedPriceRange({ min: 0, max: calculatedMaxPrice });
+        setSelectedMaterials([]);
+        setSelectedProductTypes([]);
+        setSelectedAvailability([]);
+
+        // Apply initial sorting
+        const sortedProducts = applySorting(productsList);
+        setFilteredProducts(sortedProducts);
+        setCurrentPage(1);
+
+        setLoading(false);
     };
 
     // Apply all filters (price + materials + product types + availability) and sorting
@@ -505,24 +454,27 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         applyAllFilters();
     };
 
-    // Auto-fetch products when selectedCategory changes
+    // Once the shared product cache is ready, (re)build categories from it
     useEffect(() => {
-        if (selectedCategory) {
-            fetchProductsByCategory(selectedCategory);
+        if (allProductsLoaded) {
+            fetchCategories();
         }
-    }, [selectedCategory]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allProducts, allProductsLoaded]);
 
-    // Re-fetch products when the active offer changes (e.g. loads in after
-    // initial mount, or expires/refetches), so discounts stay in sync.
+    // Auto-fetch products when selectedCategory changes (now just filters
+    // the in-memory cache, no network call)
     useEffect(() => {
-        if (selectedCategory) {
+        if (selectedCategory && allProductsLoaded) {
             fetchProductsByCategory(selectedCategory);
         }
-    }, [activeOffer]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCategory, allProducts, allProductsLoaded]);
 
     // Apply filters and sorting when dependencies change
     useEffect(() => {
         applyAllFilters();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [products, sliderValues, selectedMaterials, selectedProductTypes, selectedAvailability, sortBy]);
 
     // Handle automatic category selection when categories are loaded
@@ -533,6 +485,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 setSelectedCategoryPersistent(allProductsCategory);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categories, selectedCategory]);
 
     const initializeFromNavigation = (categoryData: any) => {
@@ -650,6 +603,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         selectedCategory,
         products,
         filteredProducts,
+        allProducts,
         loading,
         activeOffer,
         viewMode,

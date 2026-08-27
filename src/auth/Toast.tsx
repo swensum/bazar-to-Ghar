@@ -58,13 +58,9 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
         </div>
     );
 };
-
-// Reads directly from ToastContext — mount this once, high in the tree
-// (e.g. right inside <ToastProvider>, alongside your <Router>), so it
-// survives route changes instead of being remounted per-page.
 export const ToastViewport: React.FC = () => {
     const { toasts, removeToast } = useToast();
-
+    
     if (toasts.length === 0) return null;
     return (
         <div className="toast-viewport" aria-live="polite">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { dbLite } from "../store/firebaselite";
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
 
@@ -12,9 +12,18 @@ export interface Offer {
   applicable_categories: string[];
 }
 
-export function useActiveOffer() {
+interface OfferContextValue {
+  activeOffer: Offer | null;
+  loading: boolean;
+  refetch: () => Promise<void>;
+}
+
+const OfferContext = createContext<OfferContextValue | undefined>(undefined);
+
+export function OfferProvider({ children }: { children: ReactNode }) {
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const fetchActiveOffer = useCallback(async () => {
     try {
@@ -56,8 +65,27 @@ export function useActiveOffer() {
   }, []);
 
   useEffect(() => {
+    // Guard: only fetch once per app session, even under StrictMode's
+    // double-invoke or multiple consumers mounting/unmounting.
+    if (hasFetched) return;
+    setHasFetched(true);
     fetchActiveOffer();
-  }, [fetchActiveOffer]);
+  }, [hasFetched, fetchActiveOffer]);
 
-  return { activeOffer, loading, refetch: fetchActiveOffer };
+  return (
+    <OfferContext.Provider value={{ activeOffer, loading, refetch: fetchActiveOffer }}>
+      {children}
+    </OfferContext.Provider>
+  );
+}
+
+// Drop-in replacement for your old `useActiveOffer()` hook.
+// Same return shape, but now reads from shared context instead of
+// firing its own Firestore query every time a component uses it.
+export function useActiveOffer() {
+  const ctx = useContext(OfferContext);
+  if (!ctx) {
+    throw new Error("useActiveOffer must be used within an OfferProvider");
+  }
+  return ctx;
 }

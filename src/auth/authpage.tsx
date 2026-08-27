@@ -200,6 +200,7 @@ const VerifyEmailScreen: React.FC<VerifyScreenProps> = ({ email, checking, onRes
 
 const AuthPage: React.FC = () => {
     const {
+        currentUser,
         googleLoading,
         signUpWithEmail,
         signInWithEmail,
@@ -231,6 +232,8 @@ const AuthPage: React.FC = () => {
     const [signUpSubmitting, setSignUpSubmitting] = useState(false);
 
     const [resendCooldown, setResendCooldown] = useState(0);
+
+    /* ---------- Verify overlay mount/animate state ---------- */
     const [verifyMounted, setVerifyMounted] = useState(false);
     const [verifyActive, setVerifyActive] = useState(false);
     const [lastVerifyEmail, setLastVerifyEmail] = useState('');
@@ -247,6 +250,7 @@ const AuthPage: React.FC = () => {
             return () => clearTimeout(t);
         }
     }, [pendingVerificationEmail]);
+
     const signInFormRef = useRef<HTMLFormElement>(null);
     const signUpFormRef = useRef<HTMLFormElement>(null);
     const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
@@ -274,41 +278,46 @@ const AuthPage: React.FC = () => {
         const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
         return () => clearTimeout(t);
     }, [resendCooldown]);
-const wasCheckingRef = useRef(false);
-useEffect(() => {
-    if (wasCheckingRef.current && !verificationChecking && !pendingVerificationEmail) {
-        pushToast('success', 'Email verified', 'Your account is now active.');
-        const t = setTimeout(() => {
-            navigate('/', { replace: true });
-        }, 1400); 
-        return () => clearTimeout(t);
-    }
-    wasCheckingRef.current = verificationChecking;
-}, [verificationChecking, pendingVerificationEmail, navigate, pushToast]);
-   
-   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const wasPendingVerificationRef = useRef(false);
+    useEffect(() => {
+        const nowVerified = currentUser?.emailVerified ?? false;
+        if (wasPendingVerificationRef.current && !pendingVerificationEmail && nowVerified) {
+            pushToast('success', 'Email verified', 'Your account is now active.');
+            const t = setTimeout(() => {
+                navigate('/', { replace: true });
+            }, 1400);
+            wasPendingVerificationRef.current = false;
+            return () => clearTimeout(t);
+        }
+        wasPendingVerificationRef.current = !!pendingVerificationEmail;
+    }, [currentUser, pendingVerificationEmail, navigate, pushToast]);
 
-    const errors: SignInErrors = {};
-    if (!signInEmail.trim()) errors.email = 'Email is required';
-    else if (!isValidEmail(signInEmail)) errors.email = 'Enter a valid email address';
+    const handleSignIn = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    if (!signInPassword) errors.password = 'Password is required';
-    else if (signInPassword.length < 8) errors.password = 'Must be at least 8 characters';
+        const errors: SignInErrors = {};
+        if (!signInEmail.trim()) errors.email = 'Email is required';
+        else if (!isValidEmail(signInEmail)) errors.email = 'Enter a valid email address';
 
-    setSignInErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+        if (!signInPassword) errors.password = 'Password is required';
+        else if (signInPassword.length < 8) errors.password = 'Must be at least 8 characters';
 
-    setSignInSubmitting(true);
-    try {
-        await signInWithEmail(signInEmail, signInPassword);
-        pushToast('success', 'Welcome back', 'You are now signed in.');
-    } catch (err: any) {
-        pushToast('error', 'Sign-in failed', friendlyAuthError(err));
-    } finally {
-        setSignInSubmitting(false);
-    }
-};
+        setSignInErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
+        setSignInSubmitting(true);
+        try {
+            const verified = await signInWithEmail(signInEmail, signInPassword);
+            if (verified) {
+                pushToast('success', 'Welcome back', 'You are now signed in.');
+                navigate('/', { replace: true });
+            }
+        } catch (err: any) {
+            pushToast('error', 'Sign-in failed', friendlyAuthError(err));
+        } finally {
+            setSignInSubmitting(false);
+        }
+    };
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -339,15 +348,14 @@ useEffect(() => {
         }
     };
 
-   const handleGoogle = async () => {
-    try {
-        await signInWithGoogle();
-        pushToast('success', 'Welcome back', 'You are now signed in.');
-        navigate('/', { replace: true });
-    } catch (err: any) {
-        pushToast('error', 'Sign-in failed', friendlyAuthError(err));
-    }
-};
+    const handleGoogle = async () => {
+        try {
+            await signInWithGoogle();
+      
+        } catch (err: any) {
+            pushToast('error', 'Sign-in failed', friendlyAuthError(err));
+        }
+    };
 
     const handleResend = async () => {
         try {
@@ -548,10 +556,6 @@ useEffect(() => {
                     </div>
                 </div>
 
-                {/* ---------- Verification takeover ----------
-                    Independent of .overlay-container, so it isn't affected
-                    by the mobile rule that hides the sliding color panel —
-                    it shows on both desktop and mobile the same way. */}
                 {verifyMounted && (
                     <div
                         className={`verify-overlay${verifyActive ? ' verify-overlay--active' : ''}`}

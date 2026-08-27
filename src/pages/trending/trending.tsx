@@ -1,12 +1,9 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { dbLite } from "../../store/firebaselite";
-import { collection, getDocs, orderBy, query, limit } from "firebase/firestore/lite";
 import styles from "./trending.module.scss";
 import { useProductDetail } from "../../contexts/ProductDetailContext";
 import { useNavigate } from "react-router-dom";
 import { useQuickView } from "../../contexts/QuickViewContext";
-import { useActiveOffer } from "../../hooks/useActiveOffer";
-import { getEffectiveDiscount } from "../../utils/offerUtils";
+import { useProduct } from "../../contexts/ProductContext";
 
 interface Product {
   id: string;
@@ -25,7 +22,8 @@ interface Product {
 }
 
 export default function TrendingProducts(): JSX.Element {
-  const { activeOffer } = useActiveOffer();
+  const { allProducts } = useProduct();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [config, setConfig] = useState(() => getItemConfig(window.innerWidth));
@@ -51,8 +49,15 @@ export default function TrendingProducts(): JSX.Element {
   }, [autoSlide]);
 
   useEffect(() => {
-    fetchTrendingProducts();
-  }, [activeOffer]);
+    if (allProducts.length === 0) return;
+
+    const sorted = [...allProducts]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 12) as unknown as Product[];
+
+    setProducts(sorted);
+    setLoading(false);
+  }, [allProducts]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -112,45 +117,6 @@ export default function TrendingProducts(): JSX.Element {
       // Reset loading states
       setLoadingProductId(null);
       setQuickViewLoading(false);
-    }
-  };
-
-  const fetchTrendingProducts = async () => {
-    try {
-      setLoading(true);
-
-      const productsRef = collection(dbLite, "products");
-      const q = query(productsRef, orderBy("createdAt", "desc"), limit(12));
-      const snapshot = await getDocs(q);
-      const productsWithReviews: Product[] = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        const categories = Array.isArray(data.categories) ? data.categories : [];
-        const productForDiscount = { id: docSnap.id, price: data.price, discountPercentage: 0, categories };
-
-        return {
-          id: docSnap.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          image_url: data.imageUrl,
-          category_id: data.categoryId || "",
-          categories,
-          in_stock: data.inStock,
-          material: data.material,
-          created_at: data.createdAt?.toDate
-            ? data.createdAt.toDate().toISOString()
-            : data.createdAt,
-          discount_percentage: getEffectiveDiscount(productForDiscount, activeOffer),
-          reviewCount: 0,
-          averageRating: 0,
-        };
-      });
-
-      setProducts(productsWithReviews);
-    } catch (error) {
-      console.error('Error fetching trending products:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

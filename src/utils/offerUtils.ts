@@ -1,4 +1,5 @@
-import type { Offer } from "../hooks/useActiveOffer";
+import type { Offer } from "../contexts/OfferContext";
+
 
 interface ProductLike {
   id: string;

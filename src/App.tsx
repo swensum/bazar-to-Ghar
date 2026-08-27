@@ -24,6 +24,7 @@ import { ToastViewport } from "./auth/Toast";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "./utils/PageTransition";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
+import { OfferProvider } from "./contexts/OfferContext";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -149,10 +150,11 @@ function App() {
 
   return (
     <ToastProvider>
-      <ToastViewport />
-      <AuthProvider>
-        <ProductProvider>
-          <ProductDetailProvider>
+    <ToastViewport />
+    <AuthProvider>
+      <ProductProvider>
+        <ProductDetailProvider>
+          <OfferProvider>              {/* ← add this */}
             <QuickViewProvider>
               <CartProvider>
                 <Router>
@@ -160,10 +162,11 @@ function App() {
                 </Router>
               </CartProvider>
             </QuickViewProvider>
-          </ProductDetailProvider>
-        </ProductProvider>
-      </AuthProvider>
-    </ToastProvider>
+          </OfferProvider>             {/* ← and this */}
+        </ProductDetailProvider>
+      </ProductProvider>
+    </AuthProvider>
+  </ToastProvider>
   );
 }
 

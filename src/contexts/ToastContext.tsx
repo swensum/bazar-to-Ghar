@@ -28,12 +28,16 @@ let toastIdCounter = 0;
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<ToastState[]>([]);
 
-    const pushToast = useCallback((variant: ToastVariant, title: string, message?: string) => {
-        if (!title) return;
-        toastIdCounter += 1;
-        setToasts((prev) => [...prev, { id: toastIdCounter, variant, title, message }]);
-    }, []);
-
+   const pushToast = useCallback((variant: ToastVariant, title: string, message?: string) => {
+    
+    if (!title) return;
+    toastIdCounter += 1;
+    setToasts((prev) => {
+        const next = [...prev, { id: toastIdCounter, variant, title, message }];
+        
+        return next;
+    });
+}, []);
     const removeToast = useCallback((id: number) => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
     }, []);

@@ -6,12 +6,11 @@ $ink: #14171c;
 $ink-soft: #6b7076;
 $field-bg: #f7f6f3;
 /* ---------- Toast notifications (top-right) ---------- */
-
 .toast-viewport {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 9999; // raised from 1000 — was being covered by another stacking context
   display: flex;
   flex-direction: column;
   gap: 10px;

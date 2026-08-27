@@ -14,6 +14,7 @@ import winterCollection from "../assets/juice.jpg";
 import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
+import { useProduct } from "../contexts/ProductContext";
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -43,10 +44,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const [mobileNavStack, setMobileNavStack] = useState<Array<{ title: string, content: any }>>([]);
   const location = useLocation();
   const { currentUser, signOut } = useAuth();
-
-  // Real products pulled from Firestore for each Shop dropdown heading,
-  // keyed by heading — replaces the old hardcoded product name lists so a
-  // click always resolves to a real product id instead of a name guess.
+  const { allProducts } = useProduct();
   const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
 
   const toggleMobileMenu = () => {
@@ -55,10 +53,6 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
       setMobileNavStack([]);
     }
   };
-
-  // Shared "go home / reload" behaviour used by both the logo and the
-  // Home nav item: if already on the homepage, scroll to top smoothly;
-  // otherwise navigate to it.
   const goHome = () => {
     if (location.pathname === '/') {
       window.scrollTo({
@@ -132,88 +126,56 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setActiveDropdown(null);
     setMobileNavStack([]);
   }, [location]);
-
   useEffect(() => {
-    const fetchCollectionDiscounts = async () => {
-      try {
-        const collectionMappings = {
-          "Summer": ["Fruits", "Berries", "Summer Fruits"],
-          "Winter": ["Juices", "Drinks", "Beverages"],
-          "Spring": ["Vegetables", "Greens", "Spring Veggies"]
-        };
+    if (allProducts.length === 0) return;
 
-        const discounts: { [key: string]: number } = {};
-
-        const productsRef = fsCollection(dbLite, "products");
-        const snapshot = await getDocs(productsRef);
-        const allProducts = snapshot.docs.map((docSnap) => {
-          const data = docSnap.data();
-          return {
-            discount_percentage: data.discountPercentage || 0,
-            categories: Array.isArray(data.categories) ? data.categories : null,
-          };
-        });
-
-        for (const [collectionName, categories] of Object.entries(collectionMappings)) {
-          const products = allProducts.filter(
-            (p) => p.categories !== null && p.discount_percentage > 0
-          );
-
-          const collectionProducts = products?.filter(product => {
-            const cats = product.categories;
-            return cats !== null && Array.isArray(cats) && categories.some(cat => cats.includes(cat));
-          }) || [];
-
-          const maxDiscount = collectionProducts.length > 0
-            ? Math.max(...collectionProducts.map(p => p.discount_percentage))
-            : 0;
-
-          discounts[collectionName] = Math.round(maxDiscount);
-        }
-
-        setCollectionDiscounts(discounts);
-      } catch (error) {
-        console.error('Error fetching collection discounts:', error);
-      }
+    const collectionMappings = {
+      "Summer": ["Fruits", "Berries", "Summer Fruits"],
+      "Winter": ["Juices", "Drinks", "Beverages"],
+      "Spring": ["Vegetables", "Greens", "Spring Veggies"]
     };
 
-    fetchCollectionDiscounts();
-  }, []);
+    const discounts: { [key: string]: number } = {};
+
+    for (const [collectionName, categories] of Object.entries(collectionMappings)) {
+      const collectionProducts = allProducts.filter((p) => {
+        const cats = p.categories;
+        return (
+          p.discount_percentage > 0 &&
+          cats !== undefined &&
+          Array.isArray(cats) &&
+          categories.some((cat) => cats.includes(cat))
+        );
+      });
+
+      const maxDiscount = collectionProducts.length > 0
+        ? Math.max(...collectionProducts.map(p => p.discount_percentage))
+        : 0;
+
+      discounts[collectionName] = Math.round(maxDiscount);
+    }
+
+    setCollectionDiscounts(discounts);
+  }, [allProducts]);
+
   useEffect(() => {
-    const fetchShopProducts = async () => {
-      try {
-        const productsRef = fsCollection(dbLite, "products");
-        const snapshot = await getDocs(productsRef);
-        const allProducts = snapshot.docs.map((docSnap) => {
-          const data = docSnap.data();
-          return {
-            id: docSnap.id,
-            name: data.name as string,
-            categories: Array.isArray(data.categories) ? (data.categories as string[]) : [],
-          };
-        });
+    if (allProducts.length === 0) return;
 
-        const grouped: Record<string, ShopProductItem[]> = {};
+    const grouped: Record<string, ShopProductItem[]> = {};
 
-        Object.entries(PRODUCT_HEADING_CATEGORY_MAP).forEach(([heading, tags]) => {
-          const matches = allProducts.filter((p) =>
-            p.categories.some((cat) => tags.includes(cat))
-          );
-         grouped[heading] = matches.map((p) => ({
-  id: p.id,
-  name: p.name,
-  type: "product" as const,
-}));
-        });
+    Object.entries(PRODUCT_HEADING_CATEGORY_MAP).forEach(([heading, tags]) => {
+      const matches = allProducts.filter((p) =>
+        Array.isArray(p.categories) && p.categories.some((cat) => tags.includes(cat))
+      );
+      grouped[heading] = matches.map((p) => ({
+        id: p.id,
+        name: p.name,
+        type: "product" as const,
+      }));
+    });
 
-        setShopProducts(grouped);
-      } catch (error) {
-        console.error('Error fetching shop products:', error);
-      }
-    };
-
-    fetchShopProducts();
-  }, []);
+    setShopProducts(grouped);
+  }, [allProducts]);
 
   const getShopItemHref = (item: { id?: string; name: string; type: string }) => {
     if (item.type === 'product' && item.id) {
@@ -230,6 +192,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
     if (item.type === 'category') {
       try {
+      
         const categoriesRef = fsCollection(dbLite, "categories");
         const q = query(categoriesRef, where("name", "==", item.name), limit(1));
         const snapshot = await getDocs(q);
@@ -262,36 +225,23 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
       }
     } else if (item.type === 'product') {
       if (item.id) {
-        // We already have the real Firestore document id from
-        // fetchShopProducts — no name search needed, so this can never
-        // point at a nonexistent product.
         navigate(`/product/${item.id}`, {
           state: {
             productId: item.id
           }
         });
       } else {
-        // Fallback path, kept for any legacy string-only product entries
-        // that don't carry an id.
-        try {
-          const productsRef = fsCollection(dbLite, "products");
-          const snapshot = await getDocs(productsRef);
-          const match = snapshot.docs.find((docSnap) => {
-            const name = docSnap.data().name as string;
-            return name?.toLowerCase().includes(item.name.toLowerCase());
-          });
+        const match = allProducts.find((p) =>
+          p.name?.toLowerCase().includes(item.name.toLowerCase())
+        );
 
-          if (!match) throw new Error("Product not found");
-
-          const productData = { id: match.id, ...match.data() };
-
+        if (match) {
           navigate(`/product/${match.id}`, {
             state: {
-              product: productData
+              product: match
             }
           });
-        } catch (error) {
-          console.error('Error fetching product:', error);
+        } else {
           navigate('/products', {
             state: {
               searchTerm: item.name,
@@ -305,9 +255,6 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setActiveDropdown(null);
     setMobileNavStack([]);
   };
-
-  // Version used by the mobile submenu, which doesn't pass a MouseEvent
-  // (its item onClick handlers aren't anchor tags there).
   const handleShopItemClickMobile = (item: { id?: string; name: string; type: string }) => {
     handleShopItemClick({ preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>, item);
   };
