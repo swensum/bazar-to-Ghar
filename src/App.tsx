@@ -26,6 +26,7 @@ import { PageTransition } from "./utils/PageTransition";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
 import { OfferProvider } from "./contexts/OfferContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
+import ContactPage from "./components/ContactPage";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -103,6 +104,7 @@ function AppContent() {
               <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
               <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
               <Route path="/blog/:slug" element={<PageTransition><BlogDetailPage /></PageTransition>} />
+              <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
             </Routes>
           </AnimatePresence>
         </div>

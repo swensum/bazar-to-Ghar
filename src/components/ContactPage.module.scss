@@ -1,0 +1,482 @@
+// contact/ContactPage.module.scss
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap');
+
+.page {
+  --ink: #1f2e23;
+  --ink-soft: #2c3f30;
+  --wood: #c98a4b;
+  --leaf: #7fa65a;
+  --cream: #f3efe4;
+  --tomato: #c2452d;
+
+  font-family: "Work Sans", sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  overflow-x: hidden;
+}
+
+/* ---------------- Hero ---------------- */
+
+.hero {
+  background: radial-gradient(circle at 20% 20%, #26392b 0%, var(--ink) 60%);
+  color: var(--cream);
+  padding: 90px 24px 40px;
+  text-align: center;
+  position: relative;
+}
+
+.heroInner {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: "Caveat", cursive;
+  font-size: 1.6rem;
+  color: var(--leaf);
+  transform: rotate(-2deg);
+  margin-bottom: 8px;
+}
+
+.heroTitle {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  line-height: 1.15;
+  margin: 0 0 18px;
+}
+
+.heroSub {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(243, 239, 228, 0.8);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.routeWrap {
+  margin-top: 36px;
+}
+
+.routeSvg {
+  width: 100%;
+  height: 140px;
+  display: block;
+}
+
+.routePath {
+  stroke: rgba(243, 239, 228, 0.35);
+  animation: dashFlow 6s linear infinite;
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+
+.bikeGroup {
+  transform-origin: center;
+}
+
+/* ---------------- Crate cards ---------------- */
+
+.crateSection {
+  padding: 56px 24px 20px;
+}
+
+.crateGrid {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+@media (max-width: 900px) {
+  .crateGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .crateGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crateCard {
+  background: #fffaf0;
+  border: 2px solid rgba(201, 138, 75, 0.35);
+  border-radius: 10px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(31, 46, 35, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.crateGrid > .crateCard:nth-child(odd) {
+  transform: rotate(-1.4deg);
+}
+
+.crateGrid > .crateCard:nth-child(even) {
+  transform: rotate(1.4deg);
+}
+
+.crateCard:hover {
+  transform: translateY(-6px) rotate(0deg);
+  box-shadow: 0 16px 30px rgba(31, 46, 35, 0.14);
+}
+
+.crateIcon {
+  color: var(--tomato);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.crateLabel {
+  font-family: "Caveat", cursive;
+  font-size: 1.25rem;
+  color: var(--leaf);
+  margin-bottom: 4px;
+}
+
+.crateValue {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ---------------- Divider route ---------------- */
+
+.dividerRoute {
+  max-width: 900px;
+  margin: 10px auto 0;
+  padding: 0 24px;
+  opacity: 0.55;
+}
+
+.dividerRoute .routeSvg {
+  height: 60px;
+}
+
+.dividerRoute .routePath {
+  stroke: rgba(31, 46, 35, 0.3);
+}
+
+/* ---------------- Form + side panel ---------------- */
+
+.mainSection {
+  padding: 40px 24px 100px;
+}
+
+.mainGrid {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formCard {
+  background: #fffdf7;
+  border-radius: 14px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 44px rgba(31, 46, 35, 0.1);
+  position: relative;
+  border-left: 3px dashed rgba(201, 138, 75, 0.6);
+}
+
+.formEyebrow {
+  font-family: "Caveat", cursive;
+  font-size: 1.3rem;
+  color: var(--leaf);
+}
+
+.formTitle {
+  font-family: "Fraunces", serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin: 4px 0 24px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 520px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+  border: 1.5px solid rgba(31, 46, 35, 0.15);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: "Work Sans", sans-serif;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formInput:focus,
+.formTextarea:focus,
+.formSelect:focus {
+  outline: none;
+  border-color: var(--leaf);
+  box-shadow: 0 0 0 3px rgba(127, 166, 90, 0.18);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--tomato);
+  color: var(--cream);
+  border: none;
+  border-radius: 8px;
+  padding: 13px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #a83a24;
+  transform: translateY(-2px);
+}
+
+.submitBtn:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(243, 239, 228, 0.4);
+  border-top-color: var(--cream);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.successBox {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(127, 166, 90, 0.15);
+  color: #3f5c2c;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  animation: popIn 0.3s ease;
+}
+
+.errorBox {
+  margin-top: 16px;
+  background: rgba(194, 69, 45, 0.12);
+  color: var(--tomato);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------------- Side panel ---------------- */
+
+.sidePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.zoneCard {
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 14px;
+  padding: 30px 26px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.pinWrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pinIcon {
+  color: var(--tomato);
+  position: relative;
+  z-index: 2;
+}
+
+.pinPulse,
+.pinPulse2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--leaf);
+  animation: pulseRing 2.4s ease-out infinite;
+}
+
+.pinPulse2 {
+  animation-delay: 1.2s;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.zoneTitle {
+  font-family: "Fraunces", serif;
+  font-size: 1.2rem;
+  margin: 0 0 8px;
+}
+
+.zoneText {
+  font-size: 0.9rem;
+  color: rgba(243, 239, 228, 0.75);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.factCard,
+.socialCard {
+  background: #fffaf0;
+  border-radius: 14px;
+  padding: 22px 24px;
+  border: 1.5px solid rgba(201, 138, 75, 0.25);
+}
+
+.factTitle {
+  font-family: "Fraunces", serif;
+  font-size: 1.05rem;
+  margin: 0 0 12px;
+}
+
+.factList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.factList li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.factList li svg {
+  color: var(--leaf);
+  flex-shrink: 0;
+}
+
+.socialRow {
+  display: flex;
+  gap: 10px;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.socialLink:hover {
+  background: var(--tomato);
+  transform: translateY(-2px);
+}
+
+/* ---------------- Motion preference ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .routePath {
+    animation: none;
+  }
+  .pinPulse,
+  .pinPulse2 {
+    animation: none;
+    opacity: 0.4;
+  }
+  .bikeGroup animateMotion {
+    display: none;
+  }
+}

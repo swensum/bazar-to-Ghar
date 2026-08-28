@@ -92,15 +92,17 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
   const handleMobileItemClick = (item: any, parentTitle?: string) => {
     if (item && typeof item === 'object' && (item.type === 'category' || item.type === 'product')) {
-      handleShopItemClick(undefined, item);
+        handleShopItemClick(undefined, item);
+    } else if (parentTitle === "Pages" && item === "Contact Us") {
+        navigate('/contact');
     } else if (parentTitle === "Blogs" || parentTitle === "Pages") {
-      console.log(`Navigate to ${item} under ${parentTitle}`);
+        console.log(`Navigate to ${item} under ${parentTitle}`);
     } else if (typeof item === 'string') {
-      console.log(`Navigate to ${item}`);
+        console.log(`Navigate to ${item}`);
     }
     setIsMobileMenuOpen(false);
     setMobileNavStack([]);
-  };
+};
 
   const toggleDropdown = (title: string) => {
     setActiveDropdown(activeDropdown === title ? null : title);
@@ -535,11 +537,16 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                               key={i}
                               href="#"
                               className={styles.dropdownItem}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                console.log(`Navigate to ${opt}`);
-                              }}
-                            >
+                             onClick={(e) => {
+                e.preventDefault();
+                if (opt === "Contact Us") {
+                    navigate('/contact');
+                    setActiveDropdown(null);
+                } else {
+                    console.log(`Navigate to ${opt}`);
+                }
+            }}
+        >
                               {opt}
                             </a>
                           ))}
