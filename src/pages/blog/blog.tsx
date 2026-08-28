@@ -168,8 +168,8 @@ export default function Blog(): JSX.Element {
 
                                 {/* Read More - Fixed at bottom */}
                                 <div className={styles.readMoreWrapper}>
-                                    <a
-                                        href={`/blog/${post.slug}`}
+                                    <button
+                                        type="button"
                                         className={styles.readMoreBtn}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -187,7 +187,7 @@ export default function Blog(): JSX.Element {
                                         >
                                             <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
                                         </svg>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </a>

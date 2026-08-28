@@ -25,6 +25,7 @@ import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "./utils/PageTransition";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
 import { OfferProvider } from "./contexts/OfferContext";
+import { CategoryProvider } from "./contexts/CategoryContext";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -132,7 +133,6 @@ function AppContent() {
     </>
   );
 }
-
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -150,23 +150,26 @@ function App() {
 
   return (
     <ToastProvider>
-    <ToastViewport />
-    <AuthProvider>
-      <ProductProvider>
-        <ProductDetailProvider>
-          <OfferProvider>              {/* ← add this */}
-            <QuickViewProvider>
-              <CartProvider>
-                <Router>
-                  <AppContent />
-                </Router>
-              </CartProvider>
-            </QuickViewProvider>
-          </OfferProvider>             {/* ← and this */}
-        </ProductDetailProvider>
-      </ProductProvider>
-    </AuthProvider>
-  </ToastProvider>
+      <ToastViewport />
+
+      <AuthProvider>
+        <OfferProvider>
+           <CategoryProvider>
+          <ProductProvider>
+            <ProductDetailProvider>
+              <QuickViewProvider>
+                <CartProvider>
+                  <Router>
+                    <AppContent />
+                  </Router>
+                </CartProvider>
+              </QuickViewProvider>
+            </ProductDetailProvider>
+          </ProductProvider>
+          </CategoryProvider>
+        </OfferProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

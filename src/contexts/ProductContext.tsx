@@ -1,8 +1,9 @@
 // contexts/ProductContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { dbLite } from '../store/firebaselite';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore/lite';
+import { collection, getDocs } from 'firebase/firestore/lite';
 import { useActiveOffer } from './OfferContext';
+import { useCategories } from './CategoryContext';
 
 
 interface Category {
@@ -137,6 +138,7 @@ function mapProductDoc(
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { activeOffer } = useActiveOffer();
+    const { categories: baseCategories } = useCategories(); // shared cache, fetched once in CategoryProvider
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
         // Load from localStorage on initial render
@@ -264,62 +266,41 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeOffer, allProductsLoaded]);
 
-    // ---- Categories: derive product_count from the cache, not Firestore -
-    const fetchCategories = async () => {
-        try {
-            setLoading(true);
+    // ---- Categories: build purely from the shared CategoryContext cache +
+    // the in-memory product cache. No Firestore calls happen here anymore. --
+    const buildCategoriesFromCache = () => {
+        setLoading(true);
 
-            const categoriesRef = collection(dbLite, 'categories');
-            const categoriesQuery = query(categoriesRef, orderBy('name'));
-            const categoriesSnapshot = await getDocs(categoriesQuery);
+        const categoriesWithCount = baseCategories.map((category) => {
+            const productCount = allProducts.filter((p) =>
+                p.categories?.includes(category.name)
+            ).length;
 
-            const categoriesData = categoriesSnapshot.docs.map((docSnap) => {
-                const data = docSnap.data();
-                return {
-                    id: docSnap.id,
-                    name: data.name,
-                    image_url: data.imageUrl,
-                    description: data.description ?? null,
-                    created_at: data.createdAt?.toDate
-                        ? data.createdAt.toDate().toISOString()
-                        : data.createdAt,
-                    updated_at: data.updatedAt?.toDate
-                        ? data.updatedAt.toDate().toISOString()
-                        : data.updatedAt,
-                };
-            });
-
-            // Use the shared cache instead of a second getDocs() on products
-            const categoriesWithCount = categoriesData.map((category) => {
-                const productCount = allProducts.filter((p) =>
-                    p.categories?.includes(category.name)
-                ).length;
-
-                return {
-                    ...category,
-                    product_count: productCount
-                };
-            });
-
-            // Add "All Products" category at the beginning
-            const allProductsCount = allProducts.length;
-            const allProductsCategory: Category = {
-                id: 'all-products',
-                name: 'All Products',
-                image_url: '',
-                description: 'Browse all available products',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                product_count: allProductsCount
+            return {
+                ...category,
+                product_count: productCount
             };
+        });
 
-            setCategories([allProductsCategory, ...categoriesWithCount]);
+        const allProductsCategory: Category = {
+            id: 'all-products',
+            name: 'All Products',
+            image_url: '',
+            description: 'Browse all available products',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            product_count: allProducts.length
+        };
 
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        } finally {
-            setLoading(false);
-        }
+        setCategories([allProductsCategory, ...categoriesWithCount]);
+        setLoading(false);
+    };
+
+    // Kept for backward compatibility with callers (e.g. ProductDetail.tsx)
+    // that still call `fetchCategories()`. It no longer hits Firestore —
+    // it just rebuilds from the already-cached data.
+    const fetchCategories = async () => {
+        buildCategoriesFromCache();
     };
 
     // ---- Products for a given category: filter the cache, no getDocs ----
@@ -454,13 +435,14 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         applyAllFilters();
     };
 
-    // Once the shared product cache is ready, (re)build categories from it
+    // Once the shared product cache AND the shared category cache are ready,
+    // (re)build categories with counts — purely in-memory, no network call.
     useEffect(() => {
-        if (allProductsLoaded) {
-            fetchCategories();
+        if (allProductsLoaded && baseCategories.length > 0) {
+            buildCategoriesFromCache();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allProducts, allProductsLoaded]);
+    }, [allProducts, allProductsLoaded, baseCategories]);
 
     // Auto-fetch products when selectedCategory changes (now just filters
     // the in-memory cache, no network call)

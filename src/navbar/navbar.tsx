@@ -5,8 +5,6 @@ import { faChevronDown, faBars, faTimes, faChevronLeft, faChevronRight, faMagnif
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
 import { FiShoppingBag } from "react-icons/fi";
 import { FaHeadphonesAlt } from "react-icons/fa";
-import { dbLite } from "../store/firebaselite";
-import { collection as fsCollection, getDocs, query, where, limit } from "firebase/firestore/lite";
 import styles from "./Navbar.module.scss";
 import logoImg from "../assets/logo.png";
 import summerCollection from "../assets/kiwi.jpg";
@@ -15,6 +13,7 @@ import springCollection from "../assets/vegitable.jpg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
 import { useProduct } from "../contexts/ProductContext";
+import { useCategories } from "../contexts/CategoryContext";
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -45,6 +44,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const location = useLocation();
   const { currentUser, signOut } = useAuth();
   const { allProducts } = useProduct();
+  const { categories } = useCategories();
   const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
 
   const toggleMobileMenu = () => {
@@ -126,6 +126,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setActiveDropdown(null);
     setMobileNavStack([]);
   }, [location]);
+
   useEffect(() => {
     if (allProducts.length === 0) return;
 
@@ -184,45 +185,21 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     return `/products?category=${encodeURIComponent(item.name)}`;
   };
 
-  const handleShopItemClick = async (
+  const handleShopItemClick = (
     e: React.MouseEvent<HTMLAnchorElement> | undefined,
     item: { id?: string; name: string; type: string }
   ) => {
     e?.preventDefault();
 
     if (item.type === 'category') {
-      try {
-      
-        const categoriesRef = fsCollection(dbLite, "categories");
-        const q = query(categoriesRef, where("name", "==", item.name), limit(1));
-        const snapshot = await getDocs(q);
+      const categoryData = categories.find((c) => c.name === item.name);
 
-        if (snapshot.empty) throw new Error("Category not found");
-
-        const docSnap = snapshot.docs[0];
-        const data = docSnap.data();
-        const categoryData = {
-          id: docSnap.id,
-          name: data.name,
-          image_url: data.imageUrl,
-          description: data.description ?? null,
-        };
-
-        navigate('/products', {
-          state: {
-            selectedCategory: categoryData,
-            filterType: 'category'
-          }
-        });
-      } catch (error) {
-        console.error('Error fetching category:', error);
-        navigate('/products', {
-          state: {
-            selectedCategory: { name: item.name },
-            filterType: 'category'
-          }
-        });
-      }
+      navigate('/products', {
+        state: {
+          selectedCategory: categoryData || { name: item.name },
+          filterType: 'category'
+        }
+      });
     } else if (item.type === 'product') {
       if (item.id) {
         navigate(`/product/${item.id}`, {
@@ -262,37 +239,17 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const getCollectionHref = (collection: any) =>
     `/products?category=${encodeURIComponent(collection.category)}`;
 
-  const handleCollectionClick = async (e: React.MouseEvent<HTMLAnchorElement>, collection: any) => {
+  const handleCollectionClick = (e: React.MouseEvent<HTMLAnchorElement>, collection: any) => {
     e.preventDefault();
-    try {
-      const categoriesRef = fsCollection(dbLite, "categories");
-      const q = query(categoriesRef, where("name", "==", collection.category), limit(1));
-      const snapshot = await getDocs(q);
 
-      if (snapshot.empty) throw new Error("Category not found");
+    const categoryData = categories.find((c) => c.name === collection.category);
 
-      const docSnap = snapshot.docs[0];
-      const data = docSnap.data();
-      const categoryData = {
-        id: docSnap.id,
-        name: data.name,
-        image_url: data.imageUrl,
-        description: data.description ?? null,
-      };
+    navigate('/products', {
+      state: {
+        selectedCategory: categoryData || { name: collection.category }
+      }
+    });
 
-      navigate('/products', {
-        state: {
-          selectedCategory: categoryData
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching category:', error);
-      navigate('/products', {
-        state: {
-          selectedCategory: { name: collection.category }
-        }
-      });
-    }
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
     setMobileNavStack([]);
@@ -494,7 +451,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
         <div className={styles.horizontalBar}></div>
 
-        {/* Desktop Navigation */}
+        
         <nav className={`${styles.navMenu} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
           <div className={styles.navLinks}>
             {menuItems.map((item, index) => {

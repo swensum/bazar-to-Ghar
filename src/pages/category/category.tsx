@@ -1,20 +1,18 @@
 import { type JSX, useState, useEffect, useRef } from "react";
-import { dbLite } from "../../store/firebaselite";
-import { collection, getDocs, orderBy, query } from "firebase/firestore/lite";
 import { useNavigate } from "react-router-dom";
+import { useCategories } from "../../contexts/CategoryContext";
 import type { CategoryWithCount } from "../../types/category";
 import styles from "./CategoryPage.module.scss";
 
 export default function CategoryPage(): JSX.Element {
-  const [categories, setCategories] = useState<CategoryWithCount[]>([]);
+  const { categories, loading } = useCategories();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [config, setConfig] = useState(() => getItemConfig(window.innerWidth));
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const [loading, setLoading] = useState<boolean>(true);
   const [showArrows, setShowArrows] = useState(false);
   const [autoSlide, setAutoSlide] = useState(true);
   const [, setIsMobile] = useState(window.innerWidth <= 768);
-  
+
   const autoSlideRef = useRef(autoSlide);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
@@ -30,10 +28,6 @@ export default function CategoryPage(): JSX.Element {
   useEffect(() => {
     autoSlideRef.current = autoSlide;
   }, [autoSlide]);
-
-  useEffect(() => {
-    fetchCategoriesWithCount();
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,100 +65,22 @@ export default function CategoryPage(): JSX.Element {
         clearInterval(intervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories.length, visibleCount]);
-
-  const fetchCategoriesWithCount = async () => {
-    try {
-      setLoading(true);
-      console.log('Starting to fetch categories...');
-
-      // Fetch categories from Firestore
-      const categoriesRef = collection(dbLite, "categories");
-      const categoriesQuery = query(categoriesRef, orderBy("name"));
-      const categoriesSnapshot = await getDocs(categoriesQuery);
-
-     const categoriesData = categoriesSnapshot.docs.map((docSnap) => {
-  const data = docSnap.data();
-  return {
-    id: docSnap.id,
-    name: data.name,
-    image_url: data.imageUrl,
-    description: data.description ?? null,
-    created_at: data.createdAt?.toDate
-      ? data.createdAt.toDate().toISOString()
-      : data.createdAt,
-    updated_at: data.updatedAt?.toDate
-      ? data.updatedAt.toDate().toISOString()
-      : data.updatedAt,
-  };
-});
-
-      console.log('Fetched categories:', categoriesData);
-
-      if (categoriesData.length === 0) {
-        console.log('No categories found');
-        setCategories([]);
-        return;
-      }
-
-      // Fetch all products once to avoid multiple requests
-      const productsRef = collection(dbLite, "products");
-      const productsSnapshot = await getDocs(productsRef);
-      const productsData = productsSnapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          categories: Array.isArray(data.categories) ? data.categories : [],
-        };
-      });
-
-      console.log('Fetched products:', productsData);
-
-      // Count products for each category by matching category names
-      const categoriesWithCount = categoriesData.map((category) => {
-        const productCount = productsData.filter((product) => {
-          // Check if the product's categories array contains this category name
-          if (!product.categories || !Array.isArray(product.categories)) {
-            return false;
-          }
-          
-          // Debug logging
-          console.log(`Checking category ${category.name} in product:`, product.categories);
-          
-          return product.categories.includes(category.name);
-        }).length;
-
-        console.log(`Category ${category.name} has ${productCount} products`);
-
-        return {
-          ...category,
-          product_count: productCount
-        };
-      });
-
-      console.log('Final categories with counts:', categoriesWithCount);
-      setCategories(categoriesWithCount);
-
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCategoryClick = (category: CategoryWithCount) => {
     // Navigate to products page with category data
-    navigate(`/products`, { 
-      state: { 
-        selectedCategory: category 
-      } 
+    navigate(`/products`, {
+      state: {
+        selectedCategory: category
+      }
     });
   };
 
   const handleNext = () => {
     setCurrentIndex((prev) => {
       const next = prev + 1;
-      
+
       if (next >= categories.length * 2) {
         setIsTransitioning(false);
         const newIndex = next - categories.length;
@@ -174,7 +90,7 @@ export default function CategoryPage(): JSX.Element {
         }, 0);
         return newIndex;
       }
-      
+
       return next;
     });
   };
@@ -182,7 +98,7 @@ export default function CategoryPage(): JSX.Element {
   const handlePrev = () => {
     setCurrentIndex((prev) => {
       const next = prev - 1;
-      
+
       // When we go before the middle section, jump to equivalent position in last section
       if (next < 0) {
         setIsTransitioning(false);
@@ -193,7 +109,7 @@ export default function CategoryPage(): JSX.Element {
         }, 0);
         return newIndex;
       }
-      
+
       return next;
     });
   };
@@ -201,14 +117,14 @@ export default function CategoryPage(): JSX.Element {
   const handleArrowClick = (direction: 'prev' | 'next') => {
     // Pause auto-slide when user clicks arrow
     setAutoSlide(false);
-    
+
     // Perform the navigation
     if (direction === 'prev') {
       handlePrev();
     } else {
       handleNext();
     }
-    
+
     // Resume auto-slide after 5 seconds of inactivity
     setTimeout(() => {
       setAutoSlide(true);
@@ -217,7 +133,7 @@ export default function CategoryPage(): JSX.Element {
 
   const handleCarouselHover = (isHovering: boolean) => {
     setShowArrows(isHovering);
-    
+
     // Pause auto-slide when user hovers over carousel
     if (isHovering) {
       setAutoSlide(false);
@@ -259,30 +175,30 @@ export default function CategoryPage(): JSX.Element {
       </section>
 
       {/* Categories Section with Carousel */}
-      <section 
+      <section
         className={styles.categoriesSection}
         onMouseEnter={() => handleCarouselHover(true)}
         onMouseLeave={() => handleCarouselHover(false)}
       >
         <div className={styles.categoriesContainer}>
-          <div 
-            className={styles.categoriesViewport} 
+          <div
+            className={styles.categoriesViewport}
             style={{ width: `${viewportWidth}px` }}
           >
-            <div 
+            <div
               className={styles.categoriesTrack}
-              style={{ 
+              style={{
                 transform: `translateX(-${currentIndex * step}px)`,
                 gap: `${gap}px`,
                 transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
               }}
             >
               {extendedCategories.map((category, index) => (
-                <div 
-                  key={`${category.id}-${index}`} 
+                <div
+                  key={`${category.id}-${index}`}
                   className={styles.categoryItem}
-                  style={{ 
-                    flex: `0 0 ${itemWidth}px`, 
+                  style={{
+                    flex: `0 0 ${itemWidth}px`,
                     width: `${itemWidth}px`,
                     '--circle-size': `${config.circleSize}px` // CSS custom property for circle size
                   } as React.CSSProperties}
@@ -290,8 +206,8 @@ export default function CategoryPage(): JSX.Element {
                 >
                   <div className={styles.categoryCircle}>
                     <div className={styles.categoryImageWrapper}>
-                      <img 
-                        src={category.image_url} 
+                      <img
+                        src={category.image_url}
                         alt={category.name}
                         className={styles.categoryImage}
                         onError={(e) => {
@@ -314,7 +230,7 @@ export default function CategoryPage(): JSX.Element {
             </div>
           </div>
         </div>
-        
+
         {/* Arrows positioned outside the viewport */}
         {showArrows && categories.length > visibleCount && (
           <>
@@ -330,7 +246,7 @@ export default function CategoryPage(): JSX.Element {
 const NextArrow = (props: any) => {
   const { onClick } = props;
   return (
-    <button 
+    <button
       className={`${styles.arrow} ${styles.arrowRight}`}
       onClick={onClick}
       aria-label="Next slide"
@@ -355,7 +271,7 @@ const NextArrow = (props: any) => {
 const PrevArrow = (props: any) => {
   const { onClick } = props;
   return (
-    <button 
+    <button
       className={`${styles.arrow} ${styles.arrowLeft}`}
       onClick={onClick}
       aria-label="Previous slide"
