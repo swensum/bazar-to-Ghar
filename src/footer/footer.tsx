@@ -100,7 +100,7 @@ export default function Footer(): JSX.Element {
                                 <div className={styles.phoneContent}>
                                     <h4 className={styles.phoneTitle}>Get in Touch</h4>
                                     <p className={styles.phoneText}>
-                                        +977 9800000000
+                                        +977 9867862670
                                     </p>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ export default function Footer(): JSX.Element {
                                 {/* Email Address */}
                                 <div className={styles.emailItem}>
                                     <SiGmail className={styles.emailIcon} />
-                                    <span className={styles.emailText}>info@company.com</span>
+                                    <span className={styles.emailText}>hello@bazartoghar.com</span>
                                 </div>
                                 
                                 {/* Social Media Icons */}

@@ -563,7 +563,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
             <FaHeadphonesAlt className={styles.hotlineIcon} />
             <div className={styles.hotlineTextContainer}>
               <span className={styles.hotlineText}>Hotline:</span>
-              <span className={styles.hotlineNumber}>+1 234 567 890</span>
+              <span className={styles.hotlineNumber}>+977 9867862670</span>
             </div>
           </div>
         </nav>

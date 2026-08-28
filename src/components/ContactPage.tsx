@@ -1,8 +1,10 @@
 // contact/ContactPage.tsx
 import { type JSX, useState } from "react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { dbLite } from "../store/firebaselite";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore/lite";
 import styles from "./ContactPage.module.scss";
-
+import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 interface FormState {
   name: string;
   email: string;
@@ -43,9 +45,16 @@ export default function ContactPage(): JSX.Element {
     setStatus("submitting");
 
     try {
-      // Simulated send — wire this to your backend / Firestore / email
-      // service whenever it's ready.
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await addDoc(collection(dbLite, "contact_messages"), {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || null,
+        subject: form.subject,
+        message: form.message.trim(),
+        createdAt: serverTimestamp(),
+        isRead: false,
+      });
+
       setStatus("success");
       setForm(INITIAL_FORM);
     } catch (error) {
@@ -82,16 +91,17 @@ export default function ContactPage(): JSX.Element {
             label="Our stall"
             value={
               <>
-                123 Market Lane
+                Tinkune, 06
+
                 <br />
-                Kathmandu, Nepal
+              Butwal, Rupandehi, Nepal
               </>
             }
           />
           <CrateCard
             icon={<PhoneIcon />}
             label="Ring / WhatsApp"
-            value="+977 98-0000-0000"
+            value="+977 9867862670"
           />
           <CrateCard
             icon={<MailIcon />}
@@ -257,16 +267,16 @@ export default function ContactPage(): JSX.Element {
             <div className={styles.socialCard}>
               <h4 className={styles.factTitle}>Find us elsewhere</h4>
               <div className={styles.socialRow}>
-                <a href="#" className={styles.socialLink} aria-label="Facebook">
-                  FB
-                </a>
-                <a href="#" className={styles.socialLink} aria-label="Instagram">
-                  IG
-                </a>
-                <a href="#" className={styles.socialLink} aria-label="WhatsApp">
-                  WA
-                </a>
-              </div>
+  <a href="#" className={styles.socialLink} aria-label="Facebook">
+    <FaFacebookF />
+  </a>
+  <a href="#" className={styles.socialLink} aria-label="Instagram">
+    <FaInstagram />
+  </a>
+  <a href="#" className={styles.socialLink} aria-label="WhatsApp">
+    <FaWhatsapp />
+  </a>
+</div>
             </div>
           </aside>
         </div>
