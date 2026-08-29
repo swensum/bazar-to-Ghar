@@ -10,6 +10,7 @@ import { useProductDetail } from "../contexts/ProductDetailContext";
 import { useQuickView } from "../contexts/QuickViewContext";
 import { useSearchParams } from "react-router-dom";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useFavorites } from "../contexts/FavoriteContext";
 
 
 export default function ProductDetail(): JSX.Element {
@@ -19,6 +20,7 @@ export default function ProductDetail(): JSX.Element {
   useDocumentTitle(query ? `Search: ${query}` : "Shop");
     const location = useLocation();
     const navigate = useNavigate()
+    const { isFavorited, toggleFavorite } = useFavorites();
     const { setSelectedProduct, processProductData } = useProductDetail();
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
@@ -664,17 +666,18 @@ export default function ProductDetail(): JSX.Element {
                                                     <div className={styles.productOverlay}>
                                                         <div className={styles.actionIcons}>
                                                             <button
-                                                                className={styles.iconBtn}
-                                                                aria-label="Add to favorites"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                }}
-                                                            >
-                                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                                                </svg>
-                                                            </button>
+    className={styles.iconBtn}
+    aria-label="Add to favorites"
+    onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorite(product.id);
+    }}
+>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+</button>
                                                             <button
                                                                 className={styles.iconBtn}
                                                                 aria-label="Add to cart"
@@ -788,18 +791,19 @@ export default function ProductDetail(): JSX.Element {
                                                     </p>
 
                                                     <div className={styles.listActionIcons}>
-                                                        <button
-                                                            className={styles.listIconBtn}
-                                                            aria-label="Add to favorites"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                            }}
-                                                        >
-                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                                            </svg>
-                                                        </button>
+                                                       <button
+    className={styles.iconBtn}
+    aria-label="Add to favorites"
+    onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorite(product.id);
+    }}
+>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+</button>
                                                         <button className={styles.listIconBtn}  aria-label="Add to cart"
                                                                 onClick={(e) => handleQuickViewClick(product, e)}
                                                                 disabled={isQuickViewLoading && loadingProductId === product.id}

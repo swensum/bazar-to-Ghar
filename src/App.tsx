@@ -27,6 +27,8 @@ import { useScrollRestoration } from "./hooks/useScrollRestoration";
 import { OfferProvider } from "./contexts/OfferContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import ContactPage from "./components/ContactPage";
+import FavoritesPage from "./favorites/FavoritesPage";
+import { FavoriteProvider } from "./contexts/FavoriteContext";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -105,6 +107,7 @@ function AppContent() {
               <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
               <Route path="/blog/:slug" element={<PageTransition><BlogDetailPage /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+              <Route path="/favorites" element={<PageTransition><FavoritesPage /></PageTransition>} />
             </Routes>
           </AnimatePresence>
         </div>
@@ -157,14 +160,17 @@ function App() {
       <AuthProvider>
         <OfferProvider>
            <CategoryProvider>
+            
           <ProductProvider>
             <ProductDetailProvider>
               <QuickViewProvider>
+                <FavoriteProvider>
                 <CartProvider>
                   <Router>
                     <AppContent />
                   </Router>
                 </CartProvider>
+                </FavoriteProvider>
               </QuickViewProvider>
             </ProductDetailProvider>
           </ProductProvider>

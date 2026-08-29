@@ -14,6 +14,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
 import { useProduct } from "../contexts/ProductContext";
 import { useCategories } from "../contexts/CategoryContext";
+import { useFavorites } from "../contexts/FavoriteContext";
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -46,7 +47,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const { allProducts } = useProduct();
   const { categories } = useCategories();
   const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
-
+const { favoritesCount } = useFavorites();
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     if (!isMobileMenuOpen) {
@@ -423,10 +424,12 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                 )}
               </div>
             </div>
-
-            <FontAwesomeIcon icon={faHeart} className={styles.icon} />
-
-            {/* Updated Cart Icon with Count */}
+<div className={styles.favoriteIconContainer} onClick={() => navigate('/favorites')} style={{ cursor: 'pointer' }}>
+  <FontAwesomeIcon icon={faHeart} className={styles.icon} />
+  {favoritesCount > 0 && (
+    <span className={styles.favoriteCount}>{favoritesCount}</span>
+  )}
+</div>
             <div className={styles.cartIconContainer}>
               <FiShoppingBag
                 className={styles.icon}
