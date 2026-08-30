@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./AboutPage.module.scss";
+import styles from "./Aboutpage.module.scss";
 
 import banner1 from "../assets/banner1.jpg";
 import banner2 from "../assets/banner2.jpg";
