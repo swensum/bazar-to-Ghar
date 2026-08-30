@@ -1,10 +1,12 @@
-import { type JSX } from "react";
+import { type JSX, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoriteContext";
 import { useProduct } from "../contexts/ProductContext";
 import { useProductDetail } from "../contexts/ProductDetailContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import styles from "./FavoritesPage.module.scss";
+
+const ITEMS_PER_PAGE = 8;
 
 export default function FavoritesPage(): JSX.Element {
   useDocumentTitle("Your Favorites");
@@ -13,7 +15,28 @@ export default function FavoritesPage(): JSX.Element {
   const { allProducts } = useProduct();
   const { setSelectedProduct, processProductData } = useProductDetail();
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const favoriteProducts = allProducts.filter((p) => favoriteIds.includes(p.id));
+  const totalPages = Math.max(1, Math.ceil(favoriteProducts.length / ITEMS_PER_PAGE));
+
+  // Keep currentPage in range whenever the favorites list shrinks/grows
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = favoriteProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePrevPage = () => {
+    setCurrentPage((p) => Math.max(1, p - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((p) => Math.min(totalPages, p + 1));
+  };
 
   const handleProductClick = (product: any) => {
     const processed = processProductData(product);
@@ -52,60 +75,92 @@ export default function FavoritesPage(): JSX.Element {
           </button>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {favoriteProducts.map((product) => {
-            const discountedPrice =
-              product.discount_percentage > 0
-                ? product.price * (1 - product.discount_percentage / 100)
-                : product.price;
+        <>
+          <div className={styles.grid}>
+            {paginatedProducts.map((product) => {
+              const discountedPrice =
+                product.discount_percentage > 0
+                  ? product.price * (1 - product.discount_percentage / 100)
+                  : product.price;
 
-            return (
-              <a
-                key={product.id}
-                href={`/product/${product.id}`}
-                className={styles.card}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleProductClick(product);
-                }}
-              >
-                <div className={styles.imageWrap}>
-                  <img src={product.image_url} alt={product.name} className={styles.image} />
+              return (
+                <a
+                  key={product.id}
+                  href={`/product/${product.id}`}
+                  className={styles.card}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProductClick(product);
+                  }}
+                >
+                  <div className={styles.imageWrap}>
+                    <img src={product.image_url} alt={product.name} className={styles.image} />
 
-                  {!product.in_stock ? (
-                    <div className={styles.outOfStock}>Out of Stock</div>
-                  ) : product.discount_percentage > 0 ? (
-                    <div className={styles.discountBadge}>-{product.discount_percentage}%</div>
-                  ) : null}
+                    {!product.in_stock ? (
+                      <div className={styles.outOfStock}>Out of Stock</div>
+                    ) : product.discount_percentage > 0 ? (
+                      <div className={styles.discountBadge}>-{product.discount_percentage}%</div>
+                    ) : null}
 
-                  <button
-                    className={styles.removeBtn}
-                    aria-label="Remove from favorites"
-                    onClick={(e) => handleRemove(e, product.id)}
-                  >
-                    <HeartIcon filled />
-                  </button>
-                </div>
+                    <button
+                      className={styles.removeBtn}
+                      aria-label="Remove from favorites"
+                      onClick={(e) => handleRemove(e, product.id)}
+                    >
+                      <HeartIcon filled />
+                    </button>
+                  </div>
 
-                <div className={styles.info}>
-                  <h3 className={styles.name}>{product.name}</h3>
-                  {product.in_stock ? (
-                    product.discount_percentage > 0 ? (
-                      <div className={styles.priceRow}>
-                        <span className={styles.discountedPrice}>${discountedPrice.toFixed(2)}</span>
-                        <span className={styles.originalPrice}>${product.price.toFixed(2)}</span>
-                      </div>
+                  <div className={styles.info}>
+                    <h3 className={styles.name}>{product.name}</h3>
+                    {product.in_stock ? (
+                      product.discount_percentage > 0 ? (
+                        <div className={styles.priceRow}>
+                          <span className={styles.discountedPrice}>${discountedPrice.toFixed(2)}</span>
+                          <span className={styles.originalPrice}>${product.price.toFixed(2)}</span>
+                        </div>
+                      ) : (
+                        <span className={styles.price}>${product.price.toFixed(2)}</span>
+                      )
                     ) : (
-                      <span className={styles.price}>${product.price.toFixed(2)}</span>
-                    )
-                  ) : (
-                    <span className={styles.outOfStockText}>Currently unavailable</span>
-                  )}
-                </div>
-              </a>
-            );
-          })}
-        </div>
+                      <span className={styles.outOfStockText}>Currently unavailable</span>
+                    )}
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          {totalPages > 1 && (
+            <div className={styles.pager}>
+              <button
+                className={styles.pagerArrow}
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                aria-label="Previous page"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              <span className={styles.pagerCount}>
+                {currentPage}/{totalPages}
+              </span>
+
+              <button
+                className={styles.pagerArrow}
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                aria-label="Next page"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

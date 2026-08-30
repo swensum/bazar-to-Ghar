@@ -318,7 +318,95 @@
     }
   }
 }
+.searchWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+}
 
+.searchSuggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  z-index: 50;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.suggestionItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.suggestionItem:hover {
+  background: #f7f7f5;
+}
+
+.suggestionImage {
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.suggestionText {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.suggestionName {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestionPrice {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.suggestionSeeAll {
+  width: 100%;
+  padding: 10px 14px;
+  background: #faf9f6;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c3f30;
+  cursor: pointer;
+  text-align: center;
+}
+
+.suggestionSeeAll:hover {
+  background: #f0efe9;
+}
+
+.noSuggestions {
+  padding: 16px 14px;
+  font-size: 0.85rem;
+  color: #999;
+  text-align: center;
+}
 .mainNavSticky .mainBar {
   height: 80px;
   padding-top: 0;
@@ -329,6 +417,9 @@
   }
   
   .searchBar {
+    max-width: 350px;
+  }
+  .searchWrapper {
     max-width: 350px;
   }
 }
@@ -1009,6 +1100,9 @@
       max-width: 300px;
     }
   }
+  .searchWrapper {
+  max-width: 300px;
+}
 }
 
 // For 768px and below - MOBILE VERSION
@@ -1058,6 +1152,11 @@
           }
         }
       }
+      .searchWrapper {
+  max-width: 180px;
+  min-width: 150px;
+  margin-right: 10px;
+}
     }
     
     .rightSection {
@@ -1158,7 +1257,9 @@
     .centerSection .searchBar {
       max-width: 160px;
     }
-    
+    .centerSection .searchWrapper {
+  max-width: 160px;
+}
     .rightSection {
       .accountBox .accountIcon {
         font-size: 20px;
@@ -1206,7 +1307,9 @@
         }
       }
     }
-    
+    .searchWrapper {
+  max-width: 140px;
+}
     .rightSection {
       gap: 10px;
       

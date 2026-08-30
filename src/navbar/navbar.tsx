@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext"; // adjust path to match your 
 import { useProduct } from "../contexts/ProductContext";
 import { useCategories } from "../contexts/CategoryContext";
 import { useFavorites } from "../contexts/FavoriteContext";
+import { useProductDetail } from "../contexts/ProductDetailContext";
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -33,6 +34,8 @@ interface ShopProductItem {
   type: "product";
 }
 
+const MAX_SUGGESTIONS = 6;
+
 export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JSX.Element {
   const [isScrolled, setIsScrolled] = useState(false);
   const [collectionDiscounts, setCollectionDiscounts] = useState<{ [key: string]: number }>({});
@@ -42,12 +45,17 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileNavStack, setMobileNavStack] = useState<Array<{ title: string, content: any }>>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { currentUser, signOut } = useAuth();
   const { allProducts } = useProduct();
   const { categories } = useCategories();
   const [shopProducts, setShopProducts] = useState<Record<string, ShopProductItem[]>>({});
-const { favoritesCount } = useFavorites();
+  const { favoritesCount } = useFavorites();
+  const { setSelectedProduct, processProductData } = useProductDetail();
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     if (!isMobileMenuOpen) {
@@ -128,7 +136,20 @@ const { favoritesCount } = useFavorites();
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
     setMobileNavStack([]);
+    setShowSuggestions(false);
   }, [location]);
+
+  // Close the suggestions dropdown when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (allProducts.length === 0) return;
@@ -258,6 +279,56 @@ const { favoritesCount } = useFavorites();
     setMobileNavStack([]);
   };
 
+  // ---------------- Search + autocomplete ----------------
+
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+
+  const searchSuggestions = trimmedQuery
+    ? allProducts
+        .filter((p) => p.name?.toLowerCase().includes(trimmedQuery))
+        .slice(0, MAX_SUGGESTIONS)
+    : [];
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setShowSuggestions(e.target.value.trim().length > 0);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.trim().length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+
+    navigate('/products', {
+      state: {
+        searchTerm: trimmed,
+        filterType: 'product'
+      }
+    });
+
+    setSearchQuery("");
+    setShowSuggestions(false);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleSuggestionClick = (product: any) => {
+    const processedProduct = processProductData(product);
+    setSelectedProduct(processedProduct);
+    navigate(`/product/${product.id}`, {
+      state: { productId: product.id }
+    });
+
+    setSearchQuery("");
+    setShowSuggestions(false);
+  };
+
   const menuItems = [
     { title: "Home" },
     {
@@ -363,15 +434,59 @@ const { favoritesCount } = useFavorites();
           </a>
 
           <div className={styles.centerSection}>
-            <div className={styles.searchBar}>
-              <input
-                type="text"
-                placeholder="Search products..."
-                className={styles.searchInput}
-              />
-              <button className={styles.searchButton}>
-                <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
-              </button>
+            <div className={styles.searchWrapper} ref={searchWrapperRef}>
+              <form className={styles.searchBar} onSubmit={handleSearchSubmit}>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className={styles.searchInput}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  autoComplete="off"
+                />
+                <button type="submit" className={styles.searchButton} aria-label="Search">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
+                </button>
+              </form>
+
+              {showSuggestions && (
+                <div className={styles.searchSuggestions}>
+                  {searchSuggestions.length > 0 ? (
+                    <>
+                      {searchSuggestions.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          className={styles.suggestionItem}
+                          onClick={() => handleSuggestionClick(product)}
+                        >
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className={styles.suggestionImage}
+                          />
+                          <div className={styles.suggestionText}>
+                            <span className={styles.suggestionName}>{product.name}</span>
+                            <span className={styles.suggestionPrice}>${product.price?.toFixed(2)}</span>
+                          </div>
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={styles.suggestionSeeAll}
+                        onClick={() => handleSearchSubmit()}
+                      >
+                        See all results for "{searchQuery.trim()}"
+                      </button>
+                    </>
+                  ) : (
+                    <div className={styles.noSuggestions}>
+                      No products match "{searchQuery.trim()}"
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -385,8 +500,8 @@ const { favoritesCount } = useFavorites();
                       {currentUser.displayName || currentUser.email}
                     </p>
                     <div className={styles.accountLinks}>
-                      <a
-                        href="#"
+                      
+                      <a  href="#"
                         onClick={(e) => {
                           e.preventDefault();
                           signOut();
@@ -424,12 +539,12 @@ const { favoritesCount } = useFavorites();
                 )}
               </div>
             </div>
-<div className={styles.favoriteIconContainer} onClick={() => navigate('/favorites')} style={{ cursor: 'pointer' }}>
-  <FontAwesomeIcon icon={faHeart} className={styles.icon} />
-  {favoritesCount > 0 && (
-    <span className={styles.favoriteCount}>{favoritesCount}</span>
-  )}
-</div>
+            <div className={styles.favoriteIconContainer} onClick={() => navigate('/favorites')} style={{ cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={faHeart} className={styles.icon} />
+              {favoritesCount > 0 && (
+                <span className={styles.favoriteCount}>{favoritesCount}</span>
+              )}
+            </div>
             <div className={styles.cartIconContainer}>
               <FiShoppingBag
                 className={styles.icon}
@@ -536,7 +651,7 @@ const { favoritesCount } = useFavorites();
                       ) : (
                         <div className={styles.regularContent}>
                           {item.options?.map((opt, i) => (
-                            <a
+                           <a 
                               key={i}
                               href="#"
                               className={styles.dropdownItem}

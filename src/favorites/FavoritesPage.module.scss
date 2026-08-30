@@ -164,6 +164,60 @@
   color: #a05a5a;
 }
 
+/* ---------------- Pager ---------------- */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 40px;
+  padding: 10px 24px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 10px 26px rgba(36, 48, 42, 0.12);
+}
+
+.pagerArrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.pagerArrow:hover:not(:disabled) {
+  background: var(--accent);
+  transform: scale(1.06);
+}
+
+.pagerArrow:disabled {
+  background: #c7cec8;
+  cursor: default;
+}
+
+.pagerCount {
+  font-family: "Quicksand", sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+  min-width: 40px;
+  text-align: center;
+}
+
+/* ---------------- Empty state ---------------- */
+
 .emptyState {
   text-align: center;
   padding: 50px 32px;

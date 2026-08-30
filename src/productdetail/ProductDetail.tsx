@@ -24,37 +24,38 @@ export default function ProductDetail(): JSX.Element {
     const { setSelectedProduct, processProductData } = useProductDetail();
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
-    const {
-        categories,
-        selectedCategory,
-        filteredProducts,
-        loading,
-        viewMode,
-        sortBy,
-        currentPage,
-        maxPrice,
-        sliderValues,
-        selectedMaterials,
-        availableMaterials,
-        selectedProductTypes,
-        availableProductTypes,
-        selectedAvailability,
-        setSelectedCategory,
-        setViewMode,
-        setSortBy,
-        setCurrentPage,
-        setSliderValues,
-        setSelectedMaterials,
-        applyPriceFilter,
-        resetPriceFilter,
-        resetMaterialFilter,
-        fetchCategories,
-        initializeFromNavigation,
-        setSelectedProductTypes,
-        resetProductTypeFilter,
-        setSelectedAvailability,
-        resetAvailabilityFilter,
-    } = useProduct();
+   const {
+    categories,
+    selectedCategory,
+    filteredProducts,
+    loading,
+    viewMode,
+    sortBy,
+    currentPage,
+    maxPrice,
+    sliderValues,
+    selectedMaterials,
+    availableMaterials,
+    selectedProductTypes,
+    availableProductTypes,
+    selectedAvailability,
+    searchTerm,
+    setSelectedCategory,
+    setViewMode,
+    setSortBy,
+    setCurrentPage,
+    setSliderValues,
+    setSelectedMaterials,
+    applyPriceFilter,
+    resetPriceFilter,
+    resetMaterialFilter,
+    fetchCategories,
+    initializeFromNavigation,
+    setSelectedProductTypes,
+    resetProductTypeFilter,
+    setSelectedAvailability,
+    resetAvailabilityFilter,
+} = useProduct();
 
     const [isInitializing, setIsInitializing] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
@@ -558,14 +559,19 @@ export default function ProductDetail(): JSX.Element {
                 )}
 
                 <div className={styles.productSection}>
-                    {selectedCategory && (
-                        <div className={styles.categoryHeader}>
-                            <h1 className={styles.categoryTitle}>
-                                {selectedCategory.name} ({selectedCategory.product_count})
-                            </h1>
-                        </div>
-                    )}
-
+                    {searchTerm ? (
+    <div className={styles.categoryHeader}>
+        <h1 className={styles.categoryTitle}>
+            Search results for "{searchTerm}" ({filteredProducts.length})
+        </h1>
+    </div>
+) : selectedCategory && (
+    <div className={styles.categoryHeader}>
+        <h1 className={styles.categoryTitle}>
+            {selectedCategory.name} ({selectedCategory.product_count})
+        </h1>
+    </div>
+)}
                     <div className={styles.productBannerContainer}>
                         <img src={productImage} alt="Product Banner" className={styles.productBannerImage} />
                     </div>

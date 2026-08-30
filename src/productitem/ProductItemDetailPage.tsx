@@ -1,6 +1,7 @@
 import { type JSX, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../contexts/ProductDetailContext";
+import { useFavorites } from "../contexts/FavoriteContext";
 import styles from "./ProductItemDetailPage.module.scss";
 import itembanner from "../assets/dealbanner.webp";
 import esewaLogo from "../assets/esewa.png";
@@ -15,8 +16,8 @@ export default function ProductItemDetailPage(): JSX.Element {
     const { productId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
     const { addToCart, openCart } = useCart();
+    const { isFavorited, toggleFavorite } = useFavorites();
 
-    const [isFavorite, setIsFavorite] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
     const [showThankYou, setShowThankYou] = useState(false);
 
@@ -88,8 +89,6 @@ export default function ProductItemDetailPage(): JSX.Element {
             fetchRelatedProducts();
             fetchRandomProducts();
             fetchReviews();
-            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-            setIsFavorite(favorites.includes(selectedProduct.id));
         }
     }, [selectedProduct]);
     useEffect(() => {
@@ -128,24 +127,6 @@ export default function ProductItemDetailPage(): JSX.Element {
     const handleRelatedProductLinkClick = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
         handleRelatedProductClick(product);
-    };
-
-    const toggleFavorite = () => {
-        if (!selectedProduct) return;
-
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        let newFavorites;
-
-        if (isFavorite) {
-            // Remove from favorites
-            newFavorites = favorites.filter((id: string) => id !== selectedProduct.id);
-        } else {
-            // Add to favorites
-            newFavorites = [...favorites, selectedProduct.id];
-        }
-
-        localStorage.setItem('favorites', JSON.stringify(newFavorites));
-        setIsFavorite(!isFavorite);
     };
 
     const handleAddToCart = async () => {
@@ -418,9 +399,9 @@ export default function ProductItemDetailPage(): JSX.Element {
 
                         <div className={styles.wishlistSection}>
                             <button
-                                className={`${styles.wishlistBtn} ${isFavorite ? styles.favorite : ''}`}
+                                className={`${styles.wishlistBtn} ${isFavorited(selectedProduct.id) ? styles.favorite : ''}`}
                                 aria-label="Add to favorites"
-                                onClick={toggleFavorite}
+                                onClick={() => toggleFavorite(selectedProduct.id)}
                             >
                                 <svg
                                     width="20"
@@ -428,7 +409,7 @@ export default function ProductItemDetailPage(): JSX.Element {
                                     viewBox="0 0 24 24"
                                     stroke="black"
                                     strokeWidth="1.5"
-                                    fill={isFavorite ? "currentColor" : "none"}
+                                    fill={isFavorited(selectedProduct.id) ? "currentColor" : "none"}
                                 >
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                 </svg>
@@ -578,9 +559,10 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                                         onClick={(e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
+                                                                            toggleFavorite(product.id);
                                                                         }}
                                                                     >
-                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                                                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                                                         </svg>
                                                                     </button>

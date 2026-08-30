@@ -54,6 +54,7 @@ interface ProductContextType {
     selectedProductTypes: string[];
     availableProductTypes: string[];
     selectedAvailability: string[];
+    searchTerm: string;
     
     // Actions
     setSelectedCategory: (category: Category) => void;
@@ -64,6 +65,7 @@ interface ProductContextType {
     setSelectedMaterials: (materials: string[]) => void;
     setSelectedProductTypes: (types: string[]) => void;
     setSelectedAvailability: (availability: string[]) => void;
+    setSearchTerm: (term: string) => void;
     applyPriceFilter: () => void;
     resetPriceFilter: () => void;
     applyMaterialFilter: () => void;
@@ -161,6 +163,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
     const [availableProductTypes, setAvailableProductTypes] = useState<string[]>([]);
     const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Persistent setter for selected category
     const setSelectedCategoryPersistent = (category: Category) => {
@@ -338,7 +341,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         setLoading(false);
     };
 
-    // Apply all filters (price + materials + product types + availability) and sorting
+    // Apply all filters (price + materials + product types + availability + search) and sorting
     const applyAllFilters = () => {
         let filtered = products;
         
@@ -374,6 +377,14 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
                 }
                 return true;
             });
+        }
+
+        // Apply search term filter (matches product name)
+        if (searchTerm.trim() !== '') {
+            const term = searchTerm.trim().toLowerCase();
+            filtered = filtered.filter(product =>
+                product.name.toLowerCase().includes(term)
+            );
         }
         
         // Apply sorting to the filtered results
@@ -457,7 +468,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     useEffect(() => {
         applyAllFilters();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [products, sliderValues, selectedMaterials, selectedProductTypes, selectedAvailability, sortBy]);
+    }, [products, sliderValues, selectedMaterials, selectedProductTypes, selectedAvailability, sortBy, searchTerm]);
 
     // Handle automatic category selection when categories are loaded
     useEffect(() => {
@@ -472,6 +483,26 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     const initializeFromNavigation = (categoryData: any) => {
     console.log('🔄 ProductContext: initializeFromNavigation received:', categoryData);
+
+    // Direct search navigation (e.g. navbar search bar) takes priority
+    // over any stored/previous category selection.
+    if (
+        categoryData &&
+        typeof categoryData === 'object' &&
+        typeof categoryData.searchTerm === 'string' &&
+        categoryData.searchTerm.trim() !== ''
+    ) {
+        console.log('🔎 ProductContext: Processing search term:', categoryData.searchTerm);
+        setSearchTerm(categoryData.searchTerm);
+        const allProductsCategory = categories.find(cat => cat.id === 'all-products');
+        if (allProductsCategory) {
+            setSelectedCategoryPersistent(allProductsCategory);
+        }
+        return;
+    }
+
+    // Any normal category navigation should clear a stale search term
+    setSearchTerm('');
     
     // First, check if we have a stored category that should take precedence
     const storedCategory = loadCategoryFromStorage();
@@ -599,6 +630,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         selectedProductTypes,
         availableProductTypes,
         selectedAvailability,
+        searchTerm,
         
         // Actions - use the persistent setter
         setSelectedCategory: setSelectedCategoryPersistent,
@@ -609,6 +641,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         setSelectedMaterials,
         setSelectedProductTypes,
         setSelectedAvailability,
+        setSearchTerm,
         applyPriceFilter,
         resetPriceFilter,
         applyMaterialFilter,
