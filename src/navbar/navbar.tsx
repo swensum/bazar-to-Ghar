@@ -104,9 +104,13 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         handleShopItemClick(undefined, item);
     } else if (parentTitle === "Pages" && item === "Contact Us") {
         navigate('/contact');
-    } else if (parentTitle === "Pages" && item === "About Us") {   {/* ← add this */}
-        navigate('/about');                                        {/* ← add this */}
-    } else if (parentTitle === "Blogs" || parentTitle === "Pages") {
+    } else if (parentTitle === "Pages" && item === "About Us") {
+        navigate('/about');
+    } else if (parentTitle === "Pages" && item === "Blog") {
+        navigate('/blogs');
+    } else if (parentTitle === "Pages" && item === "FAQ") {
+    navigate('/faq');
+} else if (parentTitle === "Pages") {
         console.log(`Navigate to ${item} under ${parentTitle}`);
     } else if (typeof item === 'string') {
         console.log(`Navigate to ${item}`);
@@ -397,8 +401,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         }
       ]
     },
-    { title: "Blogs", options: ["Latest", "Tips", "Guides"] },
-    { title: "Pages", options: ["About Us", "Contact Us", "FAQ"] },
+    { title: "Pages", options: ["About Us", "Blog", "Contact Us", "FAQ"] },
   ];
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -652,25 +655,31 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                       ) : (
                         <div className={styles.regularContent}>
                           {item.options?.map((opt, i) => (
-                           <a 
-  key={i}
-  href="#"
-  className={styles.dropdownItem}
-  onClick={(e) => {
-    e.preventDefault();
-    if (opt === "Contact Us") {
-      navigate('/contact');
-      setActiveDropdown(null);
-    } else if (opt === "About Us") {          
-      navigate('/about');                       
-      setActiveDropdown(null);                  
-    } else {
-      console.log(`Navigate to ${opt}`);
-    }
-  }}
->
-  {opt}
-</a>
+                            <a
+                              key={i}
+                              href="#"
+                              className={styles.dropdownItem}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (opt === "Contact Us") {
+                                  navigate('/contact');
+                                  setActiveDropdown(null);
+                                } else if (opt === "About Us") {
+                                  navigate('/about');
+                                  setActiveDropdown(null);
+                                } else if (opt === "Blog") {
+                                  navigate('/blogs');
+                                  setActiveDropdown(null);
+                                 } else if (opt === "FAQ") {
+  navigate('/faq');
+  setActiveDropdown(null);
+}else {
+                                  console.log(`Navigate to ${opt}`);
+                                }
+                              }}
+                            >
+                              {opt}
+                            </a>
                           ))}
                         </div>
                       )}
@@ -769,7 +778,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                         </div>
                       ))
                     ) : (
-                      // Blogs, Pages options
+                      // Pages options (About Us, Blog, Contact Us, FAQ)
                       mobileNavStack[mobileNavStack.length - 1].content.map((option: string, index: number) => (
                         <div
                           key={index}

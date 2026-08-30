@@ -1,7 +1,7 @@
 import { type JSX, useState, useEffect } from "react";
-import { dbLite } from "../../store/firebaselite";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore/lite";
-import styles from "./Blog.module.scss";
+import { dbLite } from "../store/firebaselite";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore/lite";
+import styles from "../pages/blog/Blog.module.scss";
 import { useNavigate } from "react-router-dom";
 
 interface BlogPost {
@@ -17,7 +17,7 @@ interface BlogPost {
     slug: string;
 }
 
-export default function Blog(): JSX.Element {
+export default function BlogsPage(): JSX.Element {
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,8 +41,7 @@ export default function Blog(): JSX.Element {
             const q = query(
                 postsRef,
                 where("isPublished", "==", true),
-                orderBy("publishDate", "desc"),
-                limit(3)
+                orderBy("publishDate", "desc")
             );
             const snapshot = await getDocs(q);
             const postsData: BlogPost[] = snapshot.docs.map((docSnap) => {
@@ -85,10 +84,6 @@ export default function Blog(): JSX.Element {
             }
             return acc;
         }, '') + '......';
-    };
-
-    const handleViewAllBlogs = () => {
-        navigate('/blogs');
     };
 
     if (loading) {
@@ -189,16 +184,10 @@ export default function Blog(): JSX.Element {
                             </div>
                         </a>
                     ))}
-                </div>
 
-                {/* View All Blogs Button */}
-                <div className={styles.viewAllContainer}>
-                    <button
-                        className={styles.viewAllBtn}
-                        onClick={handleViewAllBlogs}
-                    >
-                        View All Blogs
-                    </button>
+                    {blogPosts.length === 0 && (
+                        <p className={styles.noPosts}>No blog posts yet. Check back soon!</p>
+                    )}
                 </div>
             </section>
         </div>

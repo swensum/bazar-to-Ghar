@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+// ---- Design tokens (matches AboutPage) ------------------------------------
+$green-900: #1f3a24;
+$green-700: #2f5233;
+$green-100: #dcebd2;
+$gold-500: #e8a62b;
+$gold-100: #fbe8c6;
+$cream: #faf4e7ed;
+$ink: #22281e;
+$ink-soft: #4a5245;
+$white: #ffffff;
+
+$font-display: 'Fraunces', Georgia, serif;
+$font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+$radius-lg: 28px;
+$radius-md: 18px;
+$shadow-soft: 0 20px 50px -20px rgba(31, 58, 36, 0.25);
+
+@mixin reveal-base {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+@mixin reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page {
+  background: $cream;
+  color: $ink;
+  font-family: $font-body;
+  overflow-x: hidden;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: $font-display;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: $green-700;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+// ---- Hero -----------------------------------------------------------------
+.hero {
+  @include reveal-base;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 5rem 2rem 3rem;
+  text-align: center;
+
+  &.revealed {
+    @include reveal-active;
+  }
+
+  @media (max-width: 900px) {
+    padding: 3rem 1.25rem 2rem;
+  }
+}
+
+.heroTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+  line-height: 1.12;
+  color: $green-900;
+  margin: 0 0 1.1rem;
+}
+
+.heroCopy {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: $ink-soft;
+  margin: 0;
+}
+
+// ---- Garland divider --------------------------------------------------
+.garlandDivider {
+  color: $gold-500;
+  width: 100%;
+  height: 30px;
+  margin-bottom: 1rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// ---- FAQ accordion ----------------------------------------------------
+.faqSection {
+  @include reveal-base;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 2rem 5rem;
+
+  &.revealed {
+    @include reveal-active;
+  }
+
+  @media (max-width: 900px) {
+    padding: 1.5rem 1.25rem 3.5rem;
+  }
+}
+
+.faqGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.categoryBlock {
+  @include reveal-base;
+  transform: translateY(18px);
+
+  .revealed & {
+    @include reveal-active;
+  }
+}
+
+.categoryTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: $green-900;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid $gold-100;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.faqItem {
+  background: $white;
+  border-radius: $radius-md;
+  border: 1.5px solid rgba(31, 58, 36, 0.08);
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &.open {
+    border-color: $gold-500;
+    box-shadow: 0 14px 30px -20px rgba(31, 58, 36, 0.3);
+  }
+}
+
+.faqQuestion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  padding: 1.15rem 1.4rem;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 1rem;
+  color: $green-900;
+
+  &:hover {
+    color: $green-700;
+  }
+}
+
+.faqIcon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: $green-100;
+  color: $green-700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+
+  .open & {
+    background: $gold-500;
+    color: $green-900;
+    transform: rotate(135deg);
+  }
+}
+
+.faqAnswerWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+
+  .open & {
+    grid-template-rows: 1fr;
+  }
+}
+
+.faqAnswer {
+  overflow: hidden;
+  min-height: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: $ink-soft;
+  margin: 0;
+  padding: 0 1.4rem;
+
+  .open & {
+    padding: 0 1.4rem 1.25rem;
+  }
+}
+
+// ---- CTA ------------------------------------------------------------------
+.cta {
+  @include reveal-base;
+  background: $green-700;
+  color: $white;
+  text-align: center;
+  padding: 4.5rem 2rem;
+  margin: 2rem;
+  border-radius: $radius-lg;
+  max-width: 1160px;
+  margin-left: auto;
+  margin-right: auto;
+
+  &.revealed {
+    @include reveal-active;
+  }
+
+  @media (max-width: 900px) {
+    padding: 3.5rem 1.5rem;
+    margin: 1.25rem;
+  }
+}
+
+.ctaTag {
+  display: inline-block;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: $gold-500;
+  color: $green-900;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.ctaTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 3.2vw, 2.3rem);
+  line-height: 1.2;
+  margin: 0 0 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctaBtn {
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: $green-900;
+  background: $white;
+  border: none;
+  padding: 1rem 2.4rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.35);
+  }
+}
+
+// ---- Reduced motion -------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .faqSection,
+  .categoryBlock,
+  .cta,
+  .faqAnswerWrapper {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
