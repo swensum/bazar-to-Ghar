@@ -104,6 +104,8 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
         handleShopItemClick(undefined, item);
     } else if (parentTitle === "Pages" && item === "Contact Us") {
         navigate('/contact');
+    } else if (parentTitle === "Pages" && item === "About Us") {   {/* ← add this */}
+        navigate('/about');                                        {/* ← add this */}
     } else if (parentTitle === "Blogs" || parentTitle === "Pages") {
         console.log(`Navigate to ${item} under ${parentTitle}`);
     } else if (typeof item === 'string') {
@@ -112,7 +114,6 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setIsMobileMenuOpen(false);
     setMobileNavStack([]);
 };
-
   const toggleDropdown = (title: string) => {
     setActiveDropdown(activeDropdown === title ? null : title);
   };
@@ -257,7 +258,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
     setMobileNavStack([]);
   };
   const handleShopItemClickMobile = (item: { id?: string; name: string; type: string }) => {
-    handleShopItemClick({ preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>, item);
+    handleShopItemClick({ preventDefault: () => { } } as React.MouseEvent<HTMLAnchorElement>, item);
   };
 
   const getCollectionHref = (collection: any) =>
@@ -285,8 +286,8 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
   const searchSuggestions = trimmedQuery
     ? allProducts
-        .filter((p) => p.name?.toLowerCase().includes(trimmedQuery))
-        .slice(0, MAX_SUGGESTIONS)
+      .filter((p) => p.name?.toLowerCase().includes(trimmedQuery))
+      .slice(0, MAX_SUGGESTIONS)
     : [];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -500,8 +501,8 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                       {currentUser.displayName || currentUser.email}
                     </p>
                     <div className={styles.accountLinks}>
-                      
-                      <a  href="#"
+
+                      <a href="#"
                         onClick={(e) => {
                           e.preventDefault();
                           signOut();
@@ -571,7 +572,7 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
 
         <div className={styles.horizontalBar}></div>
 
-        
+
         <nav className={`${styles.navMenu} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
           <div className={styles.navLinks}>
             {menuItems.map((item, index) => {
@@ -652,21 +653,24 @@ export default function Navbar({ cartItemsCount, onCartClick }: NavbarProps): JS
                         <div className={styles.regularContent}>
                           {item.options?.map((opt, i) => (
                            <a 
-                              key={i}
-                              href="#"
-                              className={styles.dropdownItem}
-                             onClick={(e) => {
-                e.preventDefault();
-                if (opt === "Contact Us") {
-                    navigate('/contact');
-                    setActiveDropdown(null);
-                } else {
-                    console.log(`Navigate to ${opt}`);
-                }
-            }}
-        >
-                              {opt}
-                            </a>
+  key={i}
+  href="#"
+  className={styles.dropdownItem}
+  onClick={(e) => {
+    e.preventDefault();
+    if (opt === "Contact Us") {
+      navigate('/contact');
+      setActiveDropdown(null);
+    } else if (opt === "About Us") {          
+      navigate('/about');                       
+      setActiveDropdown(null);                  
+    } else {
+      console.log(`Navigate to ${opt}`);
+    }
+  }}
+>
+  {opt}
+</a>
                           ))}
                         </div>
                       )}

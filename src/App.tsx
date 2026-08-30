@@ -29,6 +29,7 @@ import { CategoryProvider } from "./contexts/CategoryContext";
 import ContactPage from "./components/ContactPage";
 import FavoritesPage from "./favorites/FavoritesPage";
 import { FavoriteProvider } from "./contexts/FavoriteContext";
+import AboutPage from "./about/Aboutpage";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -108,6 +109,7 @@ function AppContent() {
               <Route path="/blog/:slug" element={<PageTransition><BlogDetailPage /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
               <Route path="/favorites" element={<PageTransition><FavoritesPage /></PageTransition>} />
+              <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
             </Routes>
           </AnimatePresence>
         </div>
