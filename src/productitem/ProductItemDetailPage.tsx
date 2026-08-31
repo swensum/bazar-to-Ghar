@@ -313,11 +313,11 @@ export default function ProductItemDetailPage(): JSX.Element {
                         <div className={styles.priceSection}>
                             {selectedProduct.discount_percentage > 0 ? (
                                 <div className={styles.discountPrice}>
-                                    <span className={styles.currentPrice}>${discountedPrice.toFixed(2)}</span>
-                                    <span className={styles.originalPrice}>${selectedProduct.price.toFixed(2)}</span>
+                                    <span className={styles.currentPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                                    <span className={styles.originalPrice}>Rs {selectedProduct.price.toFixed(2)}</span>
                                 </div>
                             ) : (
-                                <span className={styles.normalPrice}>${selectedProduct.price.toFixed(2)}</span>
+                                <span className={styles.normalPrice}>Rs {selectedProduct.price.toFixed(2)}</span>
                             )}
                         </div>
 
@@ -600,11 +600,11 @@ export default function ProductItemDetailPage(): JSX.Element {
                                                                 <div className={styles.relatedPriceContainer}>
                                                                     {product.discount_percentage > 0 ? (
                                                                         <div className={styles.relatedDiscountPriceRow}>
-                                                                            <span className={styles.relatedCurrentPrice}>${discountedPrice.toFixed(2)}</span>
-                                                                            <span className={styles.relatedOriginalPrice}>${product.price.toFixed(2)}</span>
+                                                                            <span className={styles.relatedCurrentPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                                                                            <span className={styles.relatedOriginalPrice}>Rs {product.price.toFixed(2)}</span>
                                                                         </div>
                                                                     ) : (
-                                                                        <span className={styles.relatedNormalPrice}>${product.price.toFixed(2)}</span>
+                                                                        <span className={styles.relatedNormalPrice}>Rs {product.price.toFixed(2)}</span>
                                                                     )}
                                                                 </div>
                                                             ) : (

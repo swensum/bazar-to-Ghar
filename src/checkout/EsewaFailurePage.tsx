@@ -7,6 +7,37 @@ export default function EsewaFailurePage(): JSX.Element {
   useDocumentTitle("Payment Failed");
   const navigate = useNavigate();
 
+  const handleBackToCheckout = () => {
+    // CheckoutPage requires `product` or `cartItems` in location.state to
+    // render the actual form — navigating with no state drops the user on
+    // its "No items found" empty state instead. Restore the items/totals
+    // we saved just before redirecting to eSewa so the form comes back
+    // exactly as the user left it.
+    const raw = sessionStorage.getItem("pending-esewa-order");
+
+    if (raw) {
+      try {
+        const order = JSON.parse(raw);
+        navigate("/checkout", {
+          state: {
+            cartItems: order.items,
+            cartTotal: order.subtotal,
+            shippingCharge: order.shippingCharge,
+            hasFreeShipping: order.shippingCharge === 0,
+          },
+        });
+        return;
+      } catch {
+        // fall through to plain navigate below if parsing fails
+      }
+    }
+
+    // No saved order to restore from (e.g. sessionStorage was cleared) —
+    // send the user to checkout anyway; they'll see the empty state and
+    // can navigate from cart/product again.
+    navigate("/checkout");
+  };
+
   return (
     <div className={styles.page}>
       <div className={`${styles.card} ${styles.failure}`}>
@@ -18,7 +49,7 @@ export default function EsewaFailurePage(): JSX.Element {
           Your eSewa payment was cancelled or didn't go through. No amount
           has been charged. You can try again from checkout.
         </p>
-        <button className={styles.primaryBtn} onClick={() => navigate("/checkout")}>
+        <button className={styles.primaryBtn} onClick={handleBackToCheckout}>
           Back to Checkout
         </button>
       </div>

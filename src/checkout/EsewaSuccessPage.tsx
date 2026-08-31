@@ -1,9 +1,23 @@
-import { type JSX, useEffect, useState } from "react";
+import { type JSX, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { decodeEsewaResponse, verifyEsewaSignature } from "../utils/esewa";
 import { useCart } from "../contexts/CartContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import styles from "./EsewaResultPage.module.scss";
+
+type PendingOrder = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  area: string;
+  items: any[];
+  subtotal: number;
+  shippingCharge: number;
+  discount: number;
+  grandTotal: number;
+};
 
 export default function EsewaSuccessPage(): JSX.Element {
   useDocumentTitle("Payment Successful");
@@ -13,7 +27,30 @@ export default function EsewaSuccessPage(): JSX.Element {
   const [status, setStatus] = useState<"verifying" | "confirmed" | "invalid">("verifying");
   const [details, setDetails] = useState<{ transactionCode: string; amount: number } | null>(null);
 
+  // Saved just before the eSewa redirect in CheckoutPage.handlePayNow —
+  // holds the full order (contact info, address, items, totals) that the
+  // eSewa response itself doesn't carry. Kept around in case the user
+  // needs to go "Back to Checkout" from the invalid-payment branch below.
+  const pendingOrderRef = useRef<PendingOrder | null>(null);
+
+  // Guards against React 18 StrictMode's double effect invocation in dev,
+  // which would otherwise call clearCart() twice and (once the Firestore
+  // save below is implemented) risk writing the order twice.
+  const hasRunRef = useRef(false);
+
   useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
+    const raw = sessionStorage.getItem("pending-esewa-order");
+    if (raw) {
+      try {
+        pendingOrderRef.current = JSON.parse(raw);
+      } catch {
+        pendingOrderRef.current = null;
+      }
+    }
+
     const data = searchParams.get("data");
 
     if (!data) {
@@ -29,16 +66,39 @@ export default function EsewaSuccessPage(): JSX.Element {
     }
 
     // Payment confirmed and signature verified — safe to treat as paid.
-    // TODO: save the order to Firestore here (transaction_code, amount,
-    // transaction_uuid, items from the cart, etc.) before clearing the cart.
+    // TODO: save the order to Firestore here using pendingOrderRef.current
+    // (contact info, address, items, totals) plus response.transaction_code,
+    // response.transaction_uuid, response.total_amount.
     setDetails({
       transactionCode: response.transaction_code,
       amount: response.total_amount,
     });
     setStatus("confirmed");
     clearCart();
+
+    // Order is fully captured now — drop the draft so a stale one can't
+    // leak into a future checkout attempt.
+    sessionStorage.removeItem("pending-esewa-order");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  const handleBackToCheckout = () => {
+    const order = pendingOrderRef.current;
+
+    if (order) {
+      navigate("/checkout", {
+        state: {
+          cartItems: order.items,
+          cartTotal: order.subtotal,
+          shippingCharge: order.shippingCharge,
+          hasFreeShipping: order.shippingCharge === 0,
+        },
+      });
+      return;
+    }
+
+    navigate("/checkout");
+  };
 
   return (
     <div className={styles.page}>
@@ -83,7 +143,7 @@ export default function EsewaSuccessPage(): JSX.Element {
             deducted from your eSewa account, please contact support with
             your transaction details before trying again.
           </p>
-          <button className={styles.primaryBtn} onClick={() => navigate("/checkout")}>
+          <button className={styles.primaryBtn} onClick={handleBackToCheckout}>
             Back to Checkout
           </button>
         </div>

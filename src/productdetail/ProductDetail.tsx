@@ -14,48 +14,48 @@ import { useFavorites } from "../contexts/FavoriteContext";
 
 
 export default function ProductDetail(): JSX.Element {
-  const [searchParams] = useSearchParams();
-  const query = searchParams.get("q");
+    const [searchParams] = useSearchParams();
+    const query = searchParams.get("q");
 
-  useDocumentTitle(query ? `Search: ${query}` : "Shop");
+    useDocumentTitle(query ? `Search: ${query}` : "Shop");
     const location = useLocation();
     const navigate = useNavigate()
     const { isFavorited, toggleFavorite } = useFavorites();
     const { setSelectedProduct, processProductData } = useProductDetail();
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const { openQuickView, isQuickViewLoading, setQuickViewLoading } = useQuickView();
-   const {
-    categories,
-    selectedCategory,
-    filteredProducts,
-    loading,
-    viewMode,
-    sortBy,
-    currentPage,
-    maxPrice,
-    sliderValues,
-    selectedMaterials,
-    availableMaterials,
-    selectedProductTypes,
-    availableProductTypes,
-    selectedAvailability,
-    searchTerm,
-    setSelectedCategory,
-    setViewMode,
-    setSortBy,
-    setCurrentPage,
-    setSliderValues,
-    setSelectedMaterials,
-    applyPriceFilter,
-    resetPriceFilter,
-    resetMaterialFilter,
-    fetchCategories,
-    initializeFromNavigation,
-    setSelectedProductTypes,
-    resetProductTypeFilter,
-    setSelectedAvailability,
-    resetAvailabilityFilter,
-} = useProduct();
+    const {
+        categories,
+        selectedCategory,
+        filteredProducts,
+        loading,
+        viewMode,
+        sortBy,
+        currentPage,
+        maxPrice,
+        sliderValues,
+        selectedMaterials,
+        availableMaterials,
+        selectedProductTypes,
+        availableProductTypes,
+        selectedAvailability,
+        searchTerm,
+        setSelectedCategory,
+        setViewMode,
+        setSortBy,
+        setCurrentPage,
+        setSliderValues,
+        setSelectedMaterials,
+        applyPriceFilter,
+        resetPriceFilter,
+        resetMaterialFilter,
+        fetchCategories,
+        initializeFromNavigation,
+        setSelectedProductTypes,
+        resetProductTypeFilter,
+        setSelectedAvailability,
+        resetAvailabilityFilter,
+    } = useProduct();
 
     const [isInitializing, setIsInitializing] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
@@ -560,18 +560,18 @@ export default function ProductDetail(): JSX.Element {
 
                 <div className={styles.productSection}>
                     {searchTerm ? (
-    <div className={styles.categoryHeader}>
-        <h1 className={styles.categoryTitle}>
-            Search results for "{searchTerm}" ({filteredProducts.length})
-        </h1>
-    </div>
-) : selectedCategory && (
-    <div className={styles.categoryHeader}>
-        <h1 className={styles.categoryTitle}>
-            {selectedCategory.name} ({selectedCategory.product_count})
-        </h1>
-    </div>
-)}
+                        <div className={styles.categoryHeader}>
+                            <h1 className={styles.categoryTitle}>
+                                Search results for "{searchTerm}" ({filteredProducts.length})
+                            </h1>
+                        </div>
+                    ) : selectedCategory && (
+                        <div className={styles.categoryHeader}>
+                            <h1 className={styles.categoryTitle}>
+                                {selectedCategory.name} ({selectedCategory.product_count})
+                            </h1>
+                        </div>
+                    )}
                     <div className={styles.productBannerContainer}>
                         <img src={productImage} alt="Product Banner" className={styles.productBannerImage} />
                     </div>
@@ -672,18 +672,18 @@ export default function ProductDetail(): JSX.Element {
                                                     <div className={styles.productOverlay}>
                                                         <div className={styles.actionIcons}>
                                                             <button
-    className={styles.iconBtn}
-    aria-label="Add to favorites"
-    onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleFavorite(product.id);
-    }}
->
-    <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-</button>
+                                                                className={styles.iconBtn}
+                                                                aria-label="Add to favorites"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    toggleFavorite(product.id);
+                                                                }}
+                                                            >
+                                                                <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                                                </svg>
+                                                            </button>
                                                             <button
                                                                 className={styles.iconBtn}
                                                                 aria-label="Add to cart"
@@ -694,7 +694,7 @@ export default function ProductDetail(): JSX.Element {
                                                                     // Loading spinner
                                                                     <div className={styles.iconloadingSpinner}>
                                                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                                                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                                                                         </svg>
                                                                     </div>
                                                                 ) : (
@@ -717,11 +717,11 @@ export default function ProductDetail(): JSX.Element {
                                                         <div className={styles.priceContainer}>
                                                             {product.discount_percentage > 0 ? (
                                                                 <div className={styles.discountPriceRow}>
-                                                                    <span className={styles.discountedPrice}>${discountedPrice.toFixed(2)}</span>
-                                                                    <span className={styles.originalPrice}>${product.price.toFixed(2)}</span>
+                                                                    <span className={styles.discountedPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                                                                    <span className={styles.originalPrice}>Rs {product.price.toFixed(2)}</span>
                                                                 </div>
                                                             ) : (
-                                                                <span className={styles.normalPrice}>${product.price.toFixed(2)}</span>
+                                                                <span className={styles.normalPrice}>Rs {product.price.toFixed(2)}</span>
                                                             )}
                                                         </div>
                                                     ) : (
@@ -774,11 +774,11 @@ export default function ProductDetail(): JSX.Element {
                                                         <div className={styles.listPriceContainer}>
                                                             {product.discount_percentage > 0 ? (
                                                                 <div className={styles.listDiscountPriceRow}>
-                                                                    <span className={styles.listDiscountedPrice}>${discountedPrice.toFixed(2)}</span>
-                                                                    <span className={styles.listOriginalPrice}>${product.price.toFixed(2)}</span>
+                                                                    <span className={styles.listDiscountedPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                                                                    <span className={styles.listOriginalPrice}>Rs {product.price.toFixed(2)}</span>
                                                                 </div>
                                                             ) : (
-                                                                <span className={styles.listNormalPrice}>${product.price.toFixed(2)}</span>
+                                                                <span className={styles.listNormalPrice}>Rs {product.price.toFixed(2)}</span>
                                                             )}
                                                         </div>
                                                     ) : (
@@ -797,28 +797,28 @@ export default function ProductDetail(): JSX.Element {
                                                     </p>
 
                                                     <div className={styles.listActionIcons}>
-                                                       <button
-    className={styles.iconBtn}
-    aria-label="Add to favorites"
-    onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleFavorite(product.id);
-    }}
->
-    <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-</button>
-                                                        <button className={styles.listIconBtn}  aria-label="Add to cart"
-                                                                onClick={(e) => handleQuickViewClick(product, e)}
-                                                                disabled={isQuickViewLoading && loadingProductId === product.id}
+                                                        <button
+                                                            className={styles.listIconBtn}
+                                                            aria-label="Add to favorites"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                toggleFavorite(product.id);
+                                                            }}
+                                                        >
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited(product.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button className={styles.listIconBtn} aria-label="Add to cart"
+                                                            onClick={(e) => handleQuickViewClick(product, e)}
+                                                            disabled={isQuickViewLoading && loadingProductId === product.id}
                                                         >
                                                             {isQuickViewLoading && loadingProductId === product.id ? (
                                                                 // Loading spinner
                                                                 <div className={styles.iconloadingSpinner}>
                                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                                                                     </svg>
                                                                 </div>
                                                             ) : (

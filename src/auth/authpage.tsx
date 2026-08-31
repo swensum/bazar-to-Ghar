@@ -198,6 +198,12 @@ const VerifyEmailScreen: React.FC<VerifyScreenProps> = ({ email, checking, onRes
 
 /* ---------- Main component ---------- */
 
+type AuthLocationState = {
+    mode?: 'signup' | 'signin';
+    from?: string;
+    checkoutState?: unknown;
+} | null;
+
 const AuthPage: React.FC = () => {
     const {
         currentUser,
@@ -215,7 +221,16 @@ const AuthPage: React.FC = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const initialMode = (location.state as { mode?: 'signup' | 'signin' } | null)?.mode;
+
+    const authState = location.state as AuthLocationState;
+    const initialMode = authState?.mode;
+
+    // Where to send the user after a successful sign-in / sign-up / verification.
+    // Falls back to home if nothing was passed in (e.g. navbar login).
+    const from = authState?.from || '/';
+    // Extra state to restore on the target page (e.g. CheckoutPage's
+    // product/cartItems/cartTotal), so returning to `from` isn't a blank page.
+    const checkoutState = authState?.checkoutState;
 
     const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
 
@@ -278,19 +293,31 @@ const AuthPage: React.FC = () => {
         const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
         return () => clearTimeout(t);
     }, [resendCooldown]);
+
+    // Redirect once sign-up's email verification completes
     const wasPendingVerificationRef = useRef(false);
     useEffect(() => {
         const nowVerified = currentUser?.emailVerified ?? false;
         if (wasPendingVerificationRef.current && !pendingVerificationEmail && nowVerified) {
             pushToast('success', 'Email verified', 'Your account is now active.');
             const t = setTimeout(() => {
-                navigate('/', { replace: true });
+                navigate(from, { replace: true, state: checkoutState });
             }, 1400);
             wasPendingVerificationRef.current = false;
             return () => clearTimeout(t);
         }
         wasPendingVerificationRef.current = !!pendingVerificationEmail;
-    }, [currentUser, pendingVerificationEmail, navigate, pushToast]);
+    }, [currentUser, pendingVerificationEmail, navigate, pushToast, from, checkoutState]);
+
+    // Redirect once Google sign-in completes (currentUser flips from
+    // signed-out to signed-in while we're sitting on this page).
+    const prevUserRef = useRef(currentUser);
+    useEffect(() => {
+        if (!prevUserRef.current && currentUser && !pendingVerificationEmail) {
+            navigate(from, { replace: true, state: checkoutState });
+        }
+        prevUserRef.current = currentUser;
+    }, [currentUser, pendingVerificationEmail, navigate, from, checkoutState]);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -310,7 +337,7 @@ const AuthPage: React.FC = () => {
             const verified = await signInWithEmail(signInEmail, signInPassword);
             if (verified) {
                 pushToast('success', 'Welcome back', 'You are now signed in.');
-                navigate('/', { replace: true });
+                navigate(from, { replace: true, state: checkoutState });
             }
         } catch (err: any) {
             pushToast('error', 'Sign-in failed', friendlyAuthError(err));
@@ -351,7 +378,8 @@ const AuthPage: React.FC = () => {
     const handleGoogle = async () => {
         try {
             await signInWithGoogle();
-      
+            // Redirect is handled by the currentUser effect above once
+            // signInWithGoogle resolves and the auth context updates.
         } catch (err: any) {
             pushToast('error', 'Sign-in failed', friendlyAuthError(err));
         }

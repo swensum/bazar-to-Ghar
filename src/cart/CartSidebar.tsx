@@ -152,11 +152,11 @@ const handleProceedToCheckout = () => {
                         <div className={styles.priceSection}>
                           {item.discount_percentage ? (
                             <div className={styles.discountPrice}>
-                              <span className={styles.currentPrice}>${discountedPrice.toFixed(2)}</span>
-                              <span className={styles.originalPrice}>${item.price.toFixed(2)}</span>
+                              <span className={styles.currentPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                              <span className={styles.originalPrice}>Rs {item.price.toFixed(2)}</span>
                             </div>
                           ) : (
-                            <span className={styles.normalPrice}>${item.price.toFixed(2)}</span>
+                            <span className={styles.normalPrice}>Rs {item.price.toFixed(2)}</span>
                           )}
                         </div>
 
@@ -186,7 +186,7 @@ const handleProceedToCheckout = () => {
                         </div>
 
                         <div className={styles.itemTotal}>
-                          Total: <strong>${totalPrice.toFixed(2)}</strong>
+                          Total: <strong>Rs {totalPrice.toFixed(2)}</strong>
                         </div>
                       </div>
                     </div>
@@ -198,7 +198,7 @@ const handleProceedToCheckout = () => {
               <div className={styles.cartSummary}>
                 <div className={styles.summaryRow}>
                   <span>Subtotal:</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span>Rs {cartTotal.toFixed(2)}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Shipping:</span>
@@ -206,11 +206,11 @@ const handleProceedToCheckout = () => {
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Tax:</span>
-                  <span>${(cartTotal * 0.1).toFixed(2)}</span>
+                  <span>Rs {(cartTotal * 0.1).toFixed(2)}</span>
                 </div>
                 <div className={styles.summaryTotal}>
                   <span>Total:</span>
-                  <span>${(cartTotal + (hasFreeShipping ? 0 : 10) + (cartTotal * 0.1)).toFixed(2)}</span> {/* Fixed this line */}
+                  <span>Rs {(cartTotal + (hasFreeShipping ? 0 : 10) + (cartTotal * 0.1)).toFixed(2)}</span> 
                 </div>
                 
                 <button 

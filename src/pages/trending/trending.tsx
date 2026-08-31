@@ -376,12 +376,12 @@ const { isFavorited, toggleFavorite } = useFavorites();
                           {product.discount_percentage > 0 ? (
                             <>
                               <div className={styles.discountPriceRow}>
-                                <span className={styles.discountedPrice}>${discountedPrice.toFixed(2)}</span>
-                                <span className={styles.originalPrice}>${product.price.toFixed(2)}</span>
+                                <span className={styles.discountedPrice}>Rs {discountedPrice.toFixed(2)}</span>
+                                <span className={styles.originalPrice}>Rs {product.price.toFixed(2)}</span>
                               </div>
                             </>
                           ) : (
-                            <span className={styles.normalPrice}>${product.price.toFixed(2)}</span>
+                            <span className={styles.normalPrice}>Rs {product.price.toFixed(2)}</span>
                           )}
                         </div>
                       ) : (

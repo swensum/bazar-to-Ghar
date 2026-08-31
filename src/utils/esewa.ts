@@ -1,9 +1,4 @@
 import CryptoJS from "crypto-js";
-
-// ---- eSewa UAT (test) config ----------------------------------------
-// This secret key is eSewa's publicly documented UAT test key — safe to
-// ship client-side ONLY in test mode. Replace productCode/secretKey and
-// move signature generation to a backend before going to production.
 export const ESEWA_CONFIG = {
   formUrl: "https://rc-epay.esewa.com.np/api/epay/main/v2/form",
   statusCheckUrl: "https://rc.esewa.com.np/api/epay/transaction/status",
@@ -18,17 +13,11 @@ export interface EsewaPaymentInput {
   taxAmount?: number;
   productServiceCharge?: number;
   productDeliveryCharge?: number;
-  transactionUuid: string; // must be unique per attempt — alphanumeric + hyphen only
+  transactionUuid: string; 
 }
 
-// Rounds to 2 decimal places and returns a clean string with no floating
-// point noise (e.g. 24.990000000000002 -> "24.99", 30 -> "30.00" would be
-// wrong for eSewa's plain examples, so we strip a trailing ".00" too).
 function formatAmount(value: number): string {
   const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
-  // Use up to 2 decimals, but drop trailing zeros/decimal point entirely
-  // when the value is a whole number (matches eSewa's own examples like
-  // "100", "110" rather than "100.00").
   return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(2);
 }
 
@@ -38,10 +27,6 @@ function generateSignature(totalAmount: string, transactionUuid: string, product
   return CryptoJS.enc.Base64.stringify(hash);
 }
 
-/**
- * Builds eSewa's required hidden form, appends it to the page, and submits
- * it — this redirects the browser straight to eSewa's login page.
- */
 export function payWithEsewa(input: EsewaPaymentInput) {
   const amount = formatAmount(input.amount);
   const taxAmount = formatAmount(input.taxAmount ?? 0);
@@ -69,7 +54,7 @@ export function payWithEsewa(input: EsewaPaymentInput) {
     signature,
   };
 
-  console.log("eSewa payload:", fields); // helpful while debugging — remove later
+  console.log("eSewa payload:", fields); 
 
   const form = document.createElement("form");
   form.method = "POST";

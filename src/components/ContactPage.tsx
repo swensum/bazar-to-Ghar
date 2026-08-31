@@ -135,7 +135,7 @@ export default function ContactPage(): JSX.Element {
                   name="name"
                   type="text"
                   className={styles.formInput}
-                  placeholder="Sabnam Shrestha"
+                  placeholder="Example"
                   value={form.name}
                   onChange={handleChange}
                   disabled={status === "submitting"}

@@ -185,8 +185,6 @@ export default function CheckoutPage(): JSX.Element {
         newErrors.address = validateField('address', address);
         newErrors.city = validateField('city', city);
         
-        // Payment method specific fields (eSewa has no on-site fields —
-        // the user authenticates on eSewa's own site after redirect)
         if (paymentMethod === 'khalti') {
             newErrors.khaltiNumber = validateField('khaltiNumber', khaltiNumber);
             newErrors.khaltiMpin = validateField('khaltiMpin', khaltiMpin);
@@ -216,9 +214,6 @@ export default function CheckoutPage(): JSX.Element {
         }
     };
 
-    // Sends the person to sign in, carrying the current checkout state
-    // (product / cart / totals) along so it isn't lost — AuthPage doesn't
-    // consume "from" today, but it's there for when sign-in redirects back.
     const handleSignIn = () => {
         navigate('/auth', {
             state: { mode: 'signin', from: '/checkout', checkoutState: location.state },
@@ -226,7 +221,7 @@ export default function CheckoutPage(): JSX.Element {
     };
 
     const handlePayNow = () => {
-        // Mark all fields as touched
+     
         const allTouched = {
             email: true, firstName: true, lastName: true,
             address: true, city: true, khaltiNumber: true, khaltiMpin: true
@@ -246,9 +241,6 @@ export default function CheckoutPage(): JSX.Element {
 
         if (paymentMethod === 'esewa') {
             setIsRedirectingToEsewa(true);
-
-            // Persist order details locally so the success page can read
-            // them back after eSewa redirects the browser back to us.
             const orderDraft = {
                 email, firstName, lastName, address, city, area,
                 items: checkoutItems,
@@ -265,12 +257,10 @@ export default function CheckoutPage(): JSX.Element {
                 productDeliveryCharge: shippingCharge,
                 transactionUuid,
             });
-            // Browser is redirected to eSewa immediately after this — no
-            // further code here will run.
             return;
         }
 
-        // Khalti / COD: placeholder until those are wired up too.
+        
         console.log("Form submitted successfully!");
         console.log("Payment method:", paymentMethod);
         console.log("Checkout items:", checkoutItems);
@@ -540,8 +530,6 @@ export default function CheckoutPage(): JSX.Element {
                                         <div className={styles.paymentHorizontalBar}></div>
                                     </div>
 
-                                    {/* eSewa Note — real eSewa payments happen on eSewa's own
-                                        site after redirect, so we don't collect credentials here */}
                                     {paymentMethod === 'esewa' && (
                                         <div className={styles.codNote}>
                                             <p>🔒 You'll be redirected to eSewa to log in and confirm payment</p>
@@ -585,7 +573,7 @@ export default function CheckoutPage(): JSX.Element {
                                         </div>
                                     )}
 
-                                    {/* COD Note */}
+                                  
                                     {paymentMethod === 'cod' && (
                                         <div className={styles.codNote}>
                                             <p>💵 Pay with cash when your order is delivered</p>
@@ -637,7 +625,7 @@ export default function CheckoutPage(): JSX.Element {
                                         <div className={styles.productDetails}>
                                             <div className={styles.productHeader}>
                                                 <h3 className={styles.productName}>{item.name}</h3>
-                                                <span className={styles.productPrice}>${itemPrice.toFixed(2)}</span>
+                                                <span className={styles.productPrice}>Rs {itemPrice.toFixed(2)}</span>
                                             </div>
                                             <div className={styles.productSpecs}>
                                                 <span className={styles.sizeText}>{item.selectedPackage || 'Standard'}</span>
@@ -685,23 +673,23 @@ export default function CheckoutPage(): JSX.Element {
                             <div className={styles.orderSummary}>
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Subtotal:</span>
-                                    <span className={styles.summaryValue}>${subtotal.toFixed(2)}</span>
+                                    <span className={styles.summaryValue}>Rs {subtotal.toFixed(2)}</span>
                                 </div>
                                 {discount > 0 && (
                                     <div className={styles.summaryRow}>
                                         <span className={styles.summaryLabel}>Discount:</span>
-                                        <span className={styles.discountValue}>-${discount.toFixed(2)}</span>
+                                        <span className={styles.discountValue}>-Rs {discount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Shipping:</span>
                                     <span className={styles.summaryValue}>
-                                        {shippingCharge > 0 ? `$${shippingCharge.toFixed(2)}` : 'FREE'}
+                                        {shippingCharge > 0 ? `Rs ${shippingCharge.toFixed(2)}` : 'FREE'}
                                     </span>
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Grand Total:</span>
-                                    <span className={styles.grandTotal}>${grandTotal.toFixed(2)}</span>
+                                    <span className={styles.grandTotal}>Rs {grandTotal.toFixed(2)}</span>
                                 </div>
                             </div>
 
