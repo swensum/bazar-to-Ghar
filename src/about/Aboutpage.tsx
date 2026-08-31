@@ -1,5 +1,5 @@
 import { type JSX, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Aboutpage.module.scss";
 
 import banner1 from "../assets/banner1.jpg";
@@ -118,6 +118,19 @@ const stats = [
   { value: "10,000+", label: "Happy homes" },
 ];
 
+interface TeamMember {
+  name: string;
+  role: string;
+  photo: string;
+}
+
+const teamMembers: TeamMember[] = [
+  { name: "Sabnam Shrestha", role: "Founder & CEO", photo: banner1 },
+  { name: "Rajan Thapa", role: "Head of Operations", photo: banner2 },
+  { name: "Anita Gurung", role: "Sourcing Lead", photo: heroImg3 },
+  { name: "Bikash Rai", role: "Delivery & Logistics", photo: logo },
+];
+
 function useReveal<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
@@ -145,78 +158,101 @@ function useReveal<T extends HTMLElement>() {
 
 export default function AboutPage(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     document.title = `About Us | ${BRAND_NAME}`;
   }, []);
 
+  // Scroll to the section matching the URL hash (e.g. /about#team)
+  useEffect(() => {
+  if (location.hash) {
+    const id = location.hash.replace('#', '');
+
+    const scrollToSection = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    // Try once early, then again after scroll restoration / animations settle
+    const t1 = setTimeout(scrollToSection, 150);
+    const t2 = setTimeout(scrollToSection, 700);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }
+}, [location.hash]);
+
   const hero = useReveal<HTMLElement>();
   const journey = useReveal<HTMLElement>();
   const why = useReveal<HTMLElement>();
   const story = useReveal<HTMLElement>();
+  const team = useReveal<HTMLElement>();
   const cta = useReveal<HTMLElement>();
 
   const handleShopNow = () => {
     navigate("/products", { state: { selectedCategory: "all-products" } });
   };
-const trailContainerRef = useRef<HTMLDivElement>(null);
-const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
-const [trailPathD, setTrailPathD] = useState("");
-const [trailSvgBox, setTrailSvgBox] = useState({ width: 0, height: 0 });
+  const trailContainerRef = useRef<HTMLDivElement>(null);
+  const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [trailPathD, setTrailPathD] = useState("");
+  const [trailSvgBox, setTrailSvgBox] = useState({ width: 0, height: 0 });
 
-const ANCHOR_GAP = 12;      // gap between the icon top and where the line touches
-const ARCH_PADDING = 70;    // room reserved above the row for the arcs
-const ARCH_HEIGHTS = [30, 46]; // alternating arc heights for a natural rhythm
+  const ANCHOR_GAP = 12;      // gap between the icon top and where the line touches
+  const ARCH_PADDING = 70;    // room reserved above the row for the arcs
+  const ARCH_HEIGHTS = [30, 46]; // alternating arc heights for a natural rhythm
 
-useEffect(() => {
-  function computeTrailPath() {
-    const container = trailContainerRef.current;
-    if (!container) return;
+  useEffect(() => {
+    function computeTrailPath() {
+      const container = trailContainerRef.current;
+      if (!container) return;
 
-    const containerRect = container.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
 
-    const points = iconRefs.current
-      .map((el) => {
-        if (!el) return null;
-        const r = el.getBoundingClientRect();
-        return {
-          x: r.left + r.width / 2 - containerRect.left,
-          // anchor to the TOP of the icon circle, not its center,
-          // so the garland rests just above each icon
-          y: r.top - containerRect.top - ANCHOR_GAP + ARCH_PADDING,
-        };
-      })
-      .filter((p): p is { x: number; y: number } => p !== null);
+      const points = iconRefs.current
+        .map((el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return {
+            x: r.left + r.width / 2 - containerRect.left,
+          
+            y: r.top - containerRect.top - ANCHOR_GAP + ARCH_PADDING,
+          };
+        })
+        .filter((p): p is { x: number; y: number } => p !== null);
 
-    if (points.length < 2) return;
+      if (points.length < 2) return;
 
-    let d = `M ${points[0].x},${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i];
-      const p1 = points[i + 1];
-      const archHeight = ARCH_HEIGHTS[i % ARCH_HEIGHTS.length];
-      const archY = Math.min(p0.y, p1.y) - archHeight;
-      const c1x = p0.x + (p1.x - p0.x) / 3;
-      const c2x = p0.x + ((p1.x - p0.x) * 2) / 3;
-      // both control points share the arch's peak y — this bows the
-      // curve upward between anchors like a garland strung between poles,
-      // while still landing exactly on each icon's anchor point
-      d += ` C ${c1x},${archY} ${c2x},${archY} ${p1.x},${p1.y}`;
+      let d = `M ${points[0].x},${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const archHeight = ARCH_HEIGHTS[i % ARCH_HEIGHTS.length];
+        const archY = Math.min(p0.y, p1.y) - archHeight;
+        const c1x = p0.x + (p1.x - p0.x) / 3;
+        const c2x = p0.x + ((p1.x - p0.x) * 2) / 3;
+        
+        d += ` C ${c1x},${archY} ${c2x},${archY} ${p1.x},${p1.y}`;
+      }
+
+      setTrailPathD(d);
+      setTrailSvgBox({ width: containerRect.width, height: containerRect.height + ARCH_PADDING });
     }
 
-    setTrailPathD(d);
-    setTrailSvgBox({ width: containerRect.width, height: containerRect.height + ARCH_PADDING });
-  }
+    computeTrailPath();
+    const settleTimer = setTimeout(computeTrailPath, 300);
+    window.addEventListener("resize", computeTrailPath);
 
-  computeTrailPath();
-  const settleTimer = setTimeout(computeTrailPath, 300);
-  window.addEventListener("resize", computeTrailPath);
+    return () => {
+      clearTimeout(settleTimer);
+      window.removeEventListener("resize", computeTrailPath);
+    };
+  }, []);
 
-  return () => {
-    clearTimeout(settleTimer);
-    window.removeEventListener("resize", computeTrailPath);
-  };
-}, []);
   return (
     <main className={styles.page}>
       {/* Hero */}
@@ -280,37 +316,38 @@ useEffect(() => {
         </p>
 
         <div className={styles.trail} ref={trailContainerRef}>
-  {trailPathD && (
-    <svg
-      className={styles.trailPath}
-      viewBox={`0 0 ${trailSvgBox.width} ${trailSvgBox.height}`}
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <path d={trailPathD} fill="none" pathLength="1" />
-    </svg>
-  )}
+          {trailPathD && (
+            <svg
+              className={styles.trailPath}
+              viewBox={`0 0 ${trailSvgBox.width} ${trailSvgBox.height}`}
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d={trailPathD} fill="none" pathLength="1" />
+            </svg>
+          )}
 
-  <div className={styles.trailSteps}>
-    {journeySteps.map((step, i) => (
-      <div key={step.label} className={styles.trailStep} style={{ transitionDelay: `${i * 0.15}s` }}>
-        <div
-          className={styles.trailIcon}
-          ref={(el) => { iconRefs.current[i] = el; }}
-        >
-          {step.icon}
+          <div className={styles.trailSteps}>
+            {journeySteps.map((step, i) => (
+              <div key={step.label} className={styles.trailStep} style={{ transitionDelay: `${i * 0.15}s` }}>
+                <div
+                  className={styles.trailIcon}
+                  ref={(el) => { iconRefs.current[i] = el; }}
+                >
+                  {step.icon}
+                </div>
+                <h3 className={styles.trailLabel}>{step.label}</h3>
+                <p className={styles.trailDescription}>{step.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <h3 className={styles.trailLabel}>{step.label}</h3>
-        <p className={styles.trailDescription}>{step.description}</p>
-      </div>
-    ))}
-  </div>
-</div>
       </section>
 
       {/* Why us */}
       <section
         ref={why.ref}
+        id="mission"
         className={`${styles.why} ${why.inView ? styles.revealed : ""}`}
       >
         <span className={styles.eyebrow}>Why {BRAND_NAME}</span>
@@ -346,6 +383,7 @@ useEffect(() => {
       {/* Story */}
       <section
         ref={story.ref}
+        id="story"
         className={`${styles.story} ${story.inView ? styles.revealed : ""}`}
       >
         <div className={styles.storyImage} style={{ backgroundImage: `url(${heroImg3})` }} />
@@ -364,6 +402,36 @@ useEffect(() => {
             and delivering orders the same day they're placed, so your kitchen
             never has to wait on the harvest.
           </p>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section
+        ref={team.ref}
+        id="team"
+        className={`${styles.team} ${team.inView ? styles.revealed : ""}`}
+      >
+        <span className={styles.eyebrow}>The People Behind It</span>
+        <h2 className={styles.sectionTitle}>Meet the team</h2>
+        <p className={styles.sectionSubtitle}>
+          A small crew working early mornings so your kitchen never runs short.
+        </p>
+
+        <div className={styles.teamGrid}>
+          {teamMembers.map((member, i) => (
+            <div
+              key={member.name}
+              className={styles.teamCard}
+              style={{ transitionDelay: `${i * 0.1}s` }}
+            >
+              <div
+                className={styles.teamPhoto}
+                style={{ backgroundImage: `url(${member.photo})` }}
+              />
+              <h3 className={styles.teamName}>{member.name}</h3>
+              <p className={styles.teamRole}>{member.role}</p>
+            </div>
+          ))}
         </div>
       </section>
 

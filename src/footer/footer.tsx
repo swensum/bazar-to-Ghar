@@ -30,29 +30,29 @@ export default function Footer(): JSX.Element {
                 description: data.description ?? null,
             };
 
-            navigate('/products', { 
-                state: { 
+            navigate('/products', {
+                state: {
                     selectedCategory: categoryData,
                     filterType: 'category'
-                } 
+                }
             });
         } catch (error) {
             console.error('Error fetching category:', error);
-            
-            navigate('/products', { 
-                state: { 
+
+            navigate('/products', {
+                state: {
                     selectedCategory: { name: categoryName },
                     filterType: 'category'
-                } 
+                }
             });
         }
     };
 
     const handleNavigation = (filterType: string) => {
-        navigate('/products', { 
-            state: { 
+        navigate('/products', {
+            state: {
                 filterType: filterType
-            } 
+            }
         });
     };
 
@@ -85,7 +85,7 @@ export default function Footer(): JSX.Element {
                                     <h4 className={styles.addressTitle}>Address</h4>
                                     <p className={styles.addressText}>
                                         Tinkune, 06<br />
-                                       Butwal, Rupandehi
+                                        Butwal, Rupandehi
                                     </p>
                                 </div>
                             </div>
@@ -117,8 +117,8 @@ export default function Footer(): JSX.Element {
                             <h4 className={styles.sectionTitle}>Shop</h4>
                             <ul className={styles.linkList}>
                                 <li>
-                                    <a 
-                                        href="/products" 
+                                    <a
+                                        href="/products"
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -129,8 +129,8 @@ export default function Footer(): JSX.Element {
                                     </a>
                                 </li>
                                 <li>
-                                    <a 
-                                        href="/new-arrivals" 
+                                    <a
+                                        href="/new-arrivals"
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -141,8 +141,8 @@ export default function Footer(): JSX.Element {
                                     </a>
                                 </li>
                                 <li>
-                                    <a 
-                                        href="/best-sellers" 
+                                    <a
+                                        href="/best-sellers"
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -153,8 +153,8 @@ export default function Footer(): JSX.Element {
                                     </a>
                                 </li>
                                 <li>
-                                    <a 
-                                        href="/fruits" 
+                                    <a
+                                        href="/fruits"
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -165,12 +165,12 @@ export default function Footer(): JSX.Element {
                                     </a>
                                 </li>
                                 <li>
-                                    <a 
-                                        href="/vegetables" 
+                                    <a
+                                        href="/vegetables"
                                         className={styles.link}
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handleCategoryClick('Vegitables'); 
+                                            handleCategoryClick('Vegitables');
                                         }}
                                     >
                                         Vegetables
@@ -180,15 +180,42 @@ export default function Footer(): JSX.Element {
                         </div>
 
 
-                      
+
                         <div className={styles.linkSection}>
                             <h4 className={styles.sectionTitle}>Information</h4>
                             <ul className={styles.linkList}>
-                                <li><a href="/shipping" className={styles.link}>Shipping Info</a></li>
-                                <li><a href="/returns" className={styles.link}>Returns & Refunds</a></li>
-                                <li><a href="/privacy" className={styles.link}>Privacy Policy</a></li>
-                                <li><a href="/terms" className={styles.link}>Terms of Service</a></li>
-                                <li><a href="/faq" className={styles.link}>FAQ</a></li>
+                                <li>
+    <a href="/shipping" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/shipping'); }}>
+        Shipping Info
+    </a>
+</li>
+<li>
+    <a href="/returns" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/returns'); }}>
+        Returns & Refunds
+    </a>
+</li>
+                               <li>
+    <a href="/privacy" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}>
+        Privacy Policy
+    </a>
+</li>
+<li>
+    <a href="/terms" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/terms'); }}>
+        Terms of Service
+    </a>
+</li>
+                                <li>
+                                    <a
+                                        href="/faq"
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/faq');
+                                        }}
+                                    >
+                                        FAQ
+                                    </a>
+                                </li>
                             </ul>
                         </div>
 
@@ -196,11 +223,45 @@ export default function Footer(): JSX.Element {
                         <div className={styles.linkSection}>
                             <h4 className={styles.sectionTitle}>About</h4>
                             <ul className={styles.linkList}>
-                                <li><a href="/our-story" className={styles.link}>Our Story</a></li>
-                                <li><a href="/mission" className={styles.link}>Our Mission</a></li>
-                                <li><a href="/team" className={styles.link}>Our Team</a></li>
-                                <li><a href="/blog" className={styles.link}>Blog</a></li>
-                                <li><a href="/contact" className={styles.link}>Contact Us</a></li>
+                                <li>
+                                    <a href="/about#story" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/about#story'); }}>
+                                        Our Story
+                                    </a>
+                                </li>
+                                <li>
+                                <a href="/about#mission" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/about#mission'); }}>
+                                    Our Mission
+                                </a>
+                                </li>
+                                <li>
+                                    <a href="/about#team" className={styles.link} onClick={(e) => { e.preventDefault(); navigate('/about#team'); }}>
+                                        Our Team
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/blogs"
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/blogs');
+                                        }}
+                                    >
+                                        Blog
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/contact"
+                                        className={styles.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/contact');
+                                        }}
+                                    >
+                                        Contact Us
+                                    </a>
+                                </li>
                             </ul>
                         </div>
 
@@ -213,7 +274,7 @@ export default function Footer(): JSX.Element {
                                     <SiGmail className={styles.emailIcon} />
                                     <span className={styles.emailText}>hello@bazartoghar.com</span>
                                 </div>
-                                
+
                                 {/* Social Media Icons */}
                                 <div className={styles.socialIcons}>
                                     <a href="https://facebook.com" className={styles.socialLink} aria-label="Facebook">

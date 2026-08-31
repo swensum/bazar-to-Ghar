@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+$green-900: #1f3a24;
+$green-700: #2f5233;
+$green-100: #dcebd2;
+$gold-500: #e8a62b;
+$gold-100: #fbe8c6;
+$cream: #faf4e7ed;
+$ink: #22281e;
+$ink-soft: #4a5245;
+$white: #f5f7ee;
+
+$font-display: 'Fraunces', Georgia, serif;
+$font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+$radius-md: 18px;
+
+.page {
+  background: $cream;
+  color: $ink;
+  font-family: $font-body;
+}
+
+.hero {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4.5rem 2rem 2rem;
+  text-align: center;
+
+  @media (max-width: 900px) {
+    padding: 3rem 1.25rem 1.5rem;
+  }
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: $font-display;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: $green-700;
+  margin-bottom: 0.75rem;
+}
+
+.heroTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(2.1rem, 4vw, 2.9rem);
+  color: $green-900;
+  margin: 0 0 0.75rem;
+}
+
+.lastUpdated {
+  font-size: 0.9rem;
+  color: $ink-soft;
+  margin: 0;
+}
+
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem 5rem;
+
+  @media (max-width: 900px) {
+    padding: 0 1.25rem 3.5rem;
+  }
+}
+
+.section {
+  margin-bottom: 2.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.sectionHeading {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: $green-900;
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid $gold-100;
+}
+
+.sectionText {
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: $ink-soft;
+  margin: 0 0 0.9rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.list {
+  margin: 0 0 0.9rem;
+  padding-left: 1.3rem;
+  color: $ink-soft;
+  font-size: 0.98rem;
+  line-height: 1.75;
+
+  li {
+    margin-bottom: 0.4rem;
+  }
+}
+
+.contactBox {
+  background: $white;
+  border-radius: $radius-md;
+  padding: 1.5rem 1.75rem;
+  border: 1.5px solid rgba(31, 58, 36, 0.08);
+}
+
+.contactBox p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+  color: $ink-soft;
+
+  strong {
+    color: $green-900;
+  }
+}

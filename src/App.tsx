@@ -32,6 +32,12 @@ import { FavoriteProvider } from "./contexts/FavoriteContext";
 import AboutPage from "./about/Aboutpage";
 import BlogsPage from "./blogdetail/BlogsPage";
 import FAQPage from "./faq/FAQPage";
+import PrivacyPage from "./security/PrivacyPage";
+import TermsPage from "./security/TermsPage";
+import ReturnsPage from "./security/ReturnsPage";
+import ShippingPage from "./security/ShippingPage";
+import EsewaSuccessPage from "./checkout/EsewaSuccessPage";
+import EsewaFailurePage from "./checkout/EsewaFailurePage";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -114,6 +120,12 @@ function AppContent() {
               <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
               <Route path="/blogs" element={<PageTransition><BlogsPage /></PageTransition>} />
               <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
+              <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+<Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+<Route path="/shipping" element={<PageTransition><ShippingPage /></PageTransition>} />
+<Route path="/returns" element={<PageTransition><ReturnsPage /></PageTransition>} />
+<Route path="/payment/esewa/success" element={<EsewaSuccessPage />} />
+<Route path="/payment/esewa/failure" element={<EsewaFailurePage />} />
             </Routes>
           </AnimatePresence>
         </div>

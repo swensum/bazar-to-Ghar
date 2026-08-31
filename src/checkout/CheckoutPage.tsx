@@ -5,6 +5,7 @@ import styles from "./CheckoutPage.module.scss";
 import appLogo from "../assets/logo.png";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { useAuth } from "../contexts/AuthContext"; // adjust path to match your project
+import { payWithEsewa } from "../utils/esewa";
 
 // Add these type definitions
 interface CheckoutProduct {
@@ -36,10 +37,9 @@ export default function CheckoutPage(): JSX.Element {
     const [city, setCity] = useState("");
     const [area, setArea] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("esewa");
-    const [esewaId, setEsewaId] = useState("");
-    const [esewaPassword, setEsewaPassword] = useState("");
     const [khaltiNumber, setKhaltiNumber] = useState("");
     const [khaltiMpin, setKhaltiMpin] = useState("");
+    const [isRedirectingToEsewa, setIsRedirectingToEsewa] = useState(false);
     
     // Discount state
     const [discountCode, setDiscountCode] = useState("");
@@ -160,15 +160,6 @@ export default function CheckoutPage(): JSX.Element {
                 if (!value.trim()) return "Please select a city";
                 return "";
             
-            case 'esewaId':
-                if (paymentMethod === 'esewa' && !value.trim()) return "eSewa ID is required";
-                if (paymentMethod === 'esewa' && value.trim().length < 5) return "Please enter a valid eSewa ID";
-                return "";
-            
-            case 'esewaPassword':
-                if (paymentMethod === 'esewa' && !value.trim()) return "eSewa password is required";
-                return "";
-            
             case 'khaltiNumber':
                 if (paymentMethod === 'khalti' && !value.trim()) return "Khalti number is required";
                 if (paymentMethod === 'khalti' && !/^98[0-9]{8}$/.test(value.replace(/\s/g, ''))) return "Please enter a valid Khalti number (98XXXXXXXX)";
@@ -194,11 +185,9 @@ export default function CheckoutPage(): JSX.Element {
         newErrors.address = validateField('address', address);
         newErrors.city = validateField('city', city);
         
-        // Payment method specific fields
-        if (paymentMethod === 'esewa') {
-            newErrors.esewaId = validateField('esewaId', esewaId);
-            newErrors.esewaPassword = validateField('esewaPassword', esewaPassword);
-        } else if (paymentMethod === 'khalti') {
+        // Payment method specific fields (eSewa has no on-site fields —
+        // the user authenticates on eSewa's own site after redirect)
+        if (paymentMethod === 'khalti') {
             newErrors.khaltiNumber = validateField('khaltiNumber', khaltiNumber);
             newErrors.khaltiMpin = validateField('khaltiMpin', khaltiMpin);
         }
@@ -216,8 +205,6 @@ export default function CheckoutPage(): JSX.Element {
             fieldName === 'lastName' ? lastName :
             fieldName === 'address' ? address :
             fieldName === 'city' ? city :
-            fieldName === 'esewaId' ? esewaId :
-            fieldName === 'esewaPassword' ? esewaPassword :
             fieldName === 'khaltiNumber' ? khaltiNumber :
             fieldName === 'khaltiMpin' ? khaltiMpin : ''
         );
@@ -241,18 +228,12 @@ export default function CheckoutPage(): JSX.Element {
     const handlePayNow = () => {
         // Mark all fields as touched
         const allTouched = {
-            email: true, firstName: true, lastName: true, 
-            address: true, city: true, esewaId: true, 
-            esewaPassword: true, khaltiNumber: true, khaltiMpin: true
+            email: true, firstName: true, lastName: true,
+            address: true, city: true, khaltiNumber: true, khaltiMpin: true
         };
         setTouched(allTouched);
         
-        if (validateForm()) {
-            console.log("Form submitted successfully!");
-            console.log("Checkout items:", checkoutItems);
-            console.log("Total amount:", grandTotal);
-            // Handle payment logic here
-        } else {
+        if (!validateForm()) {
             console.log("Form has errors, please fix them");
             // Scroll to first error
             const firstErrorField = Object.keys(errors).find(key => errors[key]);
@@ -260,7 +241,40 @@ export default function CheckoutPage(): JSX.Element {
                 const element = document.getElementById(firstErrorField);
                 element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            return;
         }
+
+        if (paymentMethod === 'esewa') {
+            setIsRedirectingToEsewa(true);
+
+            // Persist order details locally so the success page can read
+            // them back after eSewa redirects the browser back to us.
+            const orderDraft = {
+                email, firstName, lastName, address, city, area,
+                items: checkoutItems,
+                subtotal, shippingCharge, discount, grandTotal,
+            };
+            sessionStorage.setItem('pending-esewa-order', JSON.stringify(orderDraft));
+
+            const transactionUuid = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+            payWithEsewa({
+                amount: subtotal,
+                taxAmount: 0,
+                productServiceCharge: 0,
+                productDeliveryCharge: shippingCharge,
+                transactionUuid,
+            });
+            // Browser is redirected to eSewa immediately after this — no
+            // further code here will run.
+            return;
+        }
+
+        // Khalti / COD: placeholder until those are wired up too.
+        console.log("Form submitted successfully!");
+        console.log("Payment method:", paymentMethod);
+        console.log("Checkout items:", checkoutItems);
+        console.log("Total amount:", grandTotal);
     };
 
     const handleApplyDiscount = async () => {
@@ -303,7 +317,7 @@ export default function CheckoutPage(): JSX.Element {
         // Clear payment method errors when switching
         setErrors(prev => ({
             ...prev,
-            esewaId: "", esewaPassword: "", khaltiNumber: "", khaltiMpin: ""
+            khaltiNumber: "", khaltiMpin: ""
         }));
     };
 
@@ -327,7 +341,13 @@ export default function CheckoutPage(): JSX.Element {
     }
 
     // Determine button text based on payment method
-    const payButtonText = paymentMethod === 'cod' ? 'Proceed' : 'Pay Now';
+    const payButtonText = isRedirectingToEsewa
+        ? 'Redirecting to eSewa...'
+        : paymentMethod === 'cod'
+            ? 'Proceed'
+            : paymentMethod === 'esewa'
+                ? 'Pay with eSewa'
+                : 'Pay Now';
 
     return (
         <div className={styles.checkoutPage}>
@@ -520,39 +540,12 @@ export default function CheckoutPage(): JSX.Element {
                                         <div className={styles.paymentHorizontalBar}></div>
                                     </div>
 
-                                    {/* eSewa Fields */}
+                                    {/* eSewa Note — real eSewa payments happen on eSewa's own
+                                        site after redirect, so we don't collect credentials here */}
                                     {paymentMethod === 'esewa' && (
-                                        <div className={styles.paymentLogin}>
-                                            <div className={styles.fieldWrapper}>
-                                                <div className={`${styles.inputContainer} ${hasValue(esewaId) ? styles.hasValue : ''} ${getFieldError('esewaId') ? styles.inputError : ''}`}>
-                                                    <input
-                                                        type="text"
-                                                        value={esewaId}
-                                                        onChange={(e) => setEsewaId(e.target.value)}
-                                                        onBlur={() => handleFieldBlur('esewaId')}
-                                                        className={styles.shopifyInput}
-                                                    />
-                                                    <label className={styles.shopifyLabel}>
-                                                        <span className={styles.labelText}>eSewa ID or Mobile Number</span>
-                                                    </label>
-                                                </div>
-                                                {getFieldError('esewaId') && <div className={styles.errorText}>{getFieldError('esewaId')}</div>}
-                                            </div>
-                                            <div className={styles.fieldWrapper}>
-                                                <div className={`${styles.inputContainer} ${hasValue(esewaPassword) ? styles.hasValue : ''} ${getFieldError('esewaPassword') ? styles.inputError : ''}`}>
-                                                    <input
-                                                        type="password"
-                                                        value={esewaPassword}
-                                                        onChange={(e) => setEsewaPassword(e.target.value)}
-                                                        onBlur={() => handleFieldBlur('esewaPassword')}
-                                                        className={styles.shopifyInput}
-                                                    />
-                                                    <label className={styles.shopifyLabel}>
-                                                        <span className={styles.labelText}>eSewa Password</span>
-                                                    </label>
-                                                </div>
-                                                {getFieldError('esewaPassword') && <div className={styles.errorText}>{getFieldError('esewaPassword')}</div>}
-                                            </div>
+                                        <div className={styles.codNote}>
+                                            <p>🔒 You'll be redirected to eSewa to log in and confirm payment</p>
+                                            <p>✅ Your eSewa credentials are never entered on this site</p>
                                         </div>
                                     )}
 
@@ -602,7 +595,11 @@ export default function CheckoutPage(): JSX.Element {
                                 </div>
 
                                 {/* Desktop Pay Now Button */}
-                                <button className={styles.payNowButton} onClick={handlePayNow}>
+                                <button
+                                    className={styles.payNowButton}
+                                    onClick={handlePayNow}
+                                    disabled={isRedirectingToEsewa}
+                                >
                                     {payButtonText}
                                 </button>
 
@@ -712,6 +709,7 @@ export default function CheckoutPage(): JSX.Element {
                             <button 
                                 className={styles.mobilePayNowButton}
                                 onClick={handlePayNow}
+                                disabled={isRedirectingToEsewa}
                             >
                                 {payButtonText}
                             </button>

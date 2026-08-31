@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+$green-900: #1f3a24;
+$green-700: #2f5233;
+$green-100: #dcebd2;
+$gold-500: #e8a62b;
+$gold-100: #fbe8c6;
+$cream: #faf4e7ed;
+$ink: #22281e;
+$ink-soft: #4a5245;
+$white: #f5f7ee;
+
+$font-display: 'Fraunces', Georgia, serif;
+$font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+$radius-lg: 24px;
+$radius-md: 16px;
+$shadow-soft: 0 16px 40px -20px rgba(31, 58, 36, 0.25);
+
+.page {
+  background: $cream;
+  color: $ink;
+  font-family: $font-body;
+}
+
+// ---- Hero -----------------------------------------------------------------
+.hero {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4.5rem 2rem 1.5rem;
+  text-align: center;
+
+  @media (max-width: 900px) {
+    padding: 3rem 1.25rem 1rem;
+  }
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: $font-display;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: $green-700;
+  margin-bottom: 0.75rem;
+}
+
+.heroTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(2.1rem, 4vw, 2.9rem);
+  color: $green-900;
+  margin: 0 0 0.5rem;
+}
+
+.lastUpdated {
+  font-size: 0.85rem;
+  color: $ink-soft;
+  margin: 0;
+}
+
+// ---- Route divider (nods to delivery theme) --------------------------
+.routeDivider {
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+  padding: 0 2rem;
+  color: $gold-500;
+
+  svg {
+    width: 100%;
+    height: 34px;
+  }
+
+  @media (max-width: 900px) {
+    padding: 0 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+}
+
+// ---- Quick facts strip ------------------------------------------------
+.factsStrip {
+  max-width: 1100px;
+  margin: 0 auto 3.5rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 900px) {
+    padding: 0 1.25rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+}
+
+.factCard {
+  background: $green-900;
+  color: $cream;
+  border-radius: $radius-lg;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+}
+
+.factIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba($gold-500, 0.15);
+  color: $gold-500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.9rem;
+}
+
+.factValue {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin: 0 0 0.25rem;
+}
+
+.factLabel {
+  font-size: 0.82rem;
+  color: rgba($cream, 0.75);
+  margin: 0;
+}
+
+// ---- Content cards ------------------------------------------------------
+.content {
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 0 2rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (max-width: 900px) {
+    padding: 0 1.25rem 3.5rem;
+  }
+}
+
+.sectionCard {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: 2rem;
+  box-shadow: $shadow-soft;
+  display: flex;
+  gap: 1.4rem;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+}
+
+.sectionIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: $green-100;
+  color: $green-700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sectionBody {
+  flex: 1;
+}
+
+.sectionHeading {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: $green-900;
+  margin: 0 0 0.6rem;
+}
+
+.sectionText {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: $ink-soft;
+  margin: 0 0 0.75rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.list {
+  margin: 0 0 0.75rem;
+  padding-left: 1.2rem;
+  color: $ink-soft;
+  font-size: 0.96rem;
+  line-height: 1.7;
+
+  li {
+    margin-bottom: 0.35rem;
+  }
+}
+
+// ---- Contact card ---------------------------------------------------------
+.contactCard {
+  background: $green-700;
+  color: $white;
+  border-radius: $radius-lg;
+  padding: 2rem;
+  text-align: center;
+}
+
+.contactHeading {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+
+.contactText {
+  font-size: 0.9rem;
+  color: rgba($white, 0.85);
+  margin: 0.2rem 0;
+}
