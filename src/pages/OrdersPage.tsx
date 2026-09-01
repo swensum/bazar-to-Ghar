@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getUserOrders, type OrderRecord } from "../utils/orders";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import styles from "./OrdersPage.module.scss";
+import styles from "./Orderspage.module.scss";
 
 export default function OrdersPage(): JSX.Element {
   useDocumentTitle("My Orders");
