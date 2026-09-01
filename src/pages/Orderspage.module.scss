@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.page {
+  max-width: 800px;
+  margin: 40px auto 80px;
+  padding: 32px 28px 48px;
+  font-family: 'Poppins', sans-serif;
+  min-height: 60vh;
+
+  // Give the page its own readable surface instead of floating over the bg image
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 28px;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: #444;
+  font-size: 15px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e5e5;
+  border-top-color: #f5ab1e;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: #444;
+
+  svg {
+    margin-bottom: 20px;
+    color: #b0b0b0;
+  }
+
+  p {
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+}
+
+.shopButton {
+  background: #f5ab1e;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e59a17;
+    transform: translateY(-2px);
+  }
+}
+
+.orderCard {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 18px;
+  background: #ffffff;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.orderMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transactionCode {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.orderDate {
+  font-size: 12px;
+  color: #777;
+}
+
+.statusBadge {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #e8f8ee;
+  color: #1e7e34;
+}
+
+.orderItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.orderItemRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #333;
+}
+
+.itemQty {
+  color: #888;
+  margin-left: 6px;
+}
+
+.orderFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 16px;
+}

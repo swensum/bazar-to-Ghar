@@ -2,7 +2,10 @@ import { type JSX, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { decodeEsewaResponse, verifyEsewaSignature } from "../utils/esewa";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { Storage } from "../utils/storage";
+import { saveOrder } from "../utils/orders";
 import styles from "./EsewaResultPage.module.scss";
 
 type PendingOrder = {
@@ -24,18 +27,19 @@ export default function EsewaSuccessPage(): JSX.Element {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
+  const { currentUser } = useAuth();
   const [status, setStatus] = useState<"verifying" | "confirmed" | "invalid">("verifying");
   const [details, setDetails] = useState<{ transactionCode: string; amount: number } | null>(null);
 
   // Saved just before the eSewa redirect in CheckoutPage.handlePayNow —
   // holds the full order (contact info, address, items, totals) that the
   // eSewa response itself doesn't carry. Kept around in case the user
-  // needs to go "Back to Checkout" from the invalid-payment branch below.
+  // needs to go "Back to Checkout" from the invalid-payment branch below,
+  // and to build the Firestore order record on success.
   const pendingOrderRef = useRef<PendingOrder | null>(null);
 
   // Guards against React 18 StrictMode's double effect invocation in dev,
-  // which would otherwise call clearCart() twice and (once the Firestore
-  // save below is implemented) risk writing the order twice.
+  // which would otherwise call clearCart() twice and save the order twice.
   const hasRunRef = useRef(false);
 
   useEffect(() => {
@@ -66,14 +70,39 @@ export default function EsewaSuccessPage(): JSX.Element {
     }
 
     // Payment confirmed and signature verified — safe to treat as paid.
-    // TODO: save the order to Firestore here using pendingOrderRef.current
-    // (contact info, address, items, totals) plus response.transaction_code,
-    // response.transaction_uuid, response.total_amount.
+    const order = pendingOrderRef.current;
+
+    if (order) {
+      saveOrder({
+        userId: currentUser?.uid ?? null,
+        email: order.email,
+        firstName: order.firstName,
+        lastName: order.lastName,
+        address: order.address,
+        city: order.city,
+        area: order.area,
+        items: order.items,
+        subtotal: order.subtotal,
+        shippingCharge: order.shippingCharge,
+        discount: order.discount,
+        grandTotal: order.grandTotal,
+        paymentMethod: "esewa",
+        transactionCode: response.transaction_code,
+        transactionUuid: response.transaction_uuid,
+        totalAmountPaid: Number(response.total_amount),
+        status: "paid",
+      }).catch((err) => console.error("Failed to save order:", err));
+    } else {
+      console.warn("No pending order found in sessionStorage — order was not saved.");
+    }
+
     setDetails({
       transactionCode: response.transaction_code,
-      amount: response.total_amount,
+      amount: Number(response.total_amount),
     });
     setStatus("confirmed");
+
+    Storage.clearCart();
     clearCart();
 
     // Order is fully captured now — drop the draft so a stale one can't
@@ -128,6 +157,9 @@ export default function EsewaSuccessPage(): JSX.Element {
           </div>
           <button className={styles.primaryBtn} onClick={() => navigate("/")}>
             Continue Shopping
+          </button>
+          <button className={styles.secondaryBtn} onClick={() => navigate("/orders")}>
+            View My Orders
           </button>
         </div>
       )}

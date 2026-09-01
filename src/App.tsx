@@ -38,6 +38,7 @@ import ReturnsPage from "./security/ReturnsPage";
 import ShippingPage from "./security/ShippingPage";
 import EsewaSuccessPage from "./checkout/EsewaSuccessPage";
 import EsewaFailurePage from "./checkout/EsewaFailurePage";
+import OrdersPage from "./pages/OrdersPage";
 
 const CHROME_HIDDEN_PATHS = ["/checkout", "/login", "/signup", "/auth"];
 
@@ -126,6 +127,7 @@ function AppContent() {
 <Route path="/returns" element={<PageTransition><ReturnsPage /></PageTransition>} />
 <Route path="/payment/esewa/success" element={<EsewaSuccessPage />} />
 <Route path="/payment/esewa/failure" element={<EsewaFailurePage />} />
+<Route path="/orders" element={<PageTransition><OrdersPage /></PageTransition>} />
             </Routes>
           </AnimatePresence>
         </div>

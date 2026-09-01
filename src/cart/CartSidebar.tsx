@@ -42,6 +42,12 @@ export default function CartSidebar({
       ? item.price * (1 - item.discount_percentage / 100)
       : item.price;
   };
+
+  const handleViewOrders = () => {
+    onClose();
+    navigate("/orders");
+  };
+
 // In CartSidebar.tsx - update the handleProceedToCheckout function
 const handleProceedToCheckout = () => {
     if (cartItems.length === 0) return;
@@ -82,11 +88,21 @@ const handleProceedToCheckout = () => {
             <h2 className={styles.appBarTitle}>
               My Shopping Cart ({cartItems.reduce((count, item) => count + item.quantity, 0)})
             </h2>
-            <button className={styles.closeButton} onClick={onClose}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
+            <div className={styles.appBarActions}>
+              <button
+                className={styles.ordersButton}
+                onClick={handleViewOrders}
+                aria-label="View my orders"
+                title="My Orders"
+              >
+                <ReceiptIcon />
+              </button>
+              <button className={styles.closeButton} onClick={onClose}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -226,5 +242,16 @@ const handleProceedToCheckout = () => {
         </div>
       </div>
     </>
+  );
+}
+
+function ReceiptIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2V2z" />
+      <line x1="8" y1="7" x2="16" y2="7" />
+      <line x1="8" y1="11" x2="16" y2="11" />
+      <line x1="8" y1="15" x2="12" y2="15" />
+    </svg>
   );
 }
